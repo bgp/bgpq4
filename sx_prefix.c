@@ -21,16 +21,26 @@ sx_prefix_alloc(struct sx_prefix* p)
 	struct sx_prefix* sp=malloc(sizeof(struct sx_prefix));
 	if(!sp) return NULL;
 	if(p) {
-		*sp=*p;
+	  memcpy(sp, p, sizeof(struct sx_prefix));
 	} else {
-		memset(sp,0,sizeof(struct sx_prefix));
+	  memset(sp,0,sizeof(struct sx_prefix));
 	};
 	return sp;
 };
 void
 sx_prefix_destroy(struct sx_prefix* p)
 {
-	if(p) free(p);
+  if(p) free(p);
+};
+
+void
+sx_radix_node_destroy(struct sx_radix_node *n)
+{
+  if (n) {
+    if (n->payload) free(n->payload);
+    if (n->prefix) free(n->prefix);
+    free(n);
+  }
 };
 
 void
@@ -178,18 +188,24 @@ sx_prefix_setbit(struct sx_prefix* p, int n)
 
 
 int
-sx_radix_tree_insert_specifics(struct sx_radix_tree* t, struct sx_prefix p,
+sx_radix_tree_insert_specifics(struct sx_radix_tree* t, struct sx_prefix *p,
 	unsigned min, unsigned max)
 {
-	if (p.masklen >= min)
-		sx_radix_tree_insert(t, &p);
-	if (p.masklen+1 > max)
-		return 1;
-	p.masklen+=1;
-	sx_radix_tree_insert_specifics(t, p, min, max);
-	sx_prefix_setbit(&p, p.masklen);
-	sx_radix_tree_insert_specifics(t, p, min, max);
-	return 1;
+  struct sx_prefix *np;
+  np = sx_prefix_alloc(p);
+
+  if (np->masklen >= min) {
+    struct sx_radix_node *nn = sx_radix_tree_insert(t, np);
+    sx_prefix_destroy(np);
+    np = nn->prefix;
+  }
+  if (np->masklen+1 > max)
+    return 1;
+  np->masklen+=1;
+  sx_radix_tree_insert_specifics(t, np, min, max);
+  sx_prefix_setbit(np, np->masklen);
+  sx_radix_tree_insert_specifics(t, np, min, max);
+  return 1;
 };
 
 int
@@ -197,32 +213,37 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 	char* text)
 {
 	char* d=strchr(text, '^');
-	struct sx_prefix p;
+	struct sx_prefix *p;
 	unsigned long min, max;
+
+	p = sx_prefix_alloc(NULL);
 
 	if (!d || !d[1]) return 0;
 	*d = 0;
 
-	if (!sx_prefix_parse(&p, 0, text)) {
+	if (!sx_prefix_parse(p, 0, text)) {
 		sx_report(SX_ERROR, "Unable to parse prefix %s^%s\n", text, d+1);
 		return 0;
 	};
 	*d = '^';
-	if (af && p.family != af) {
-		SX_DEBUG(debug_expander, "Ignoring prefix %s, wrong af %i\n", text,
-			p.family);
+
+	if (af && p->family != af) {
+		sx_report(SX_ERROR, "Ignoring prefix %s, wrong af %i\n", text,
+			p->family);
 		return 0;
 	};
-	if (maxlen && p.masklen > maxlen) {
+
+	if (maxlen && p->masklen > maxlen) {
 		SX_DEBUG(debug_expander, "Ignoring prefix %s, masklen %i > max "
-			"masklen %u\n", text, p.masklen, maxlen);
+			"masklen %u\n", text, p->masklen, maxlen);
 		return 0;
 	};
+
 	if (d[1] == '-') {
-		min=p.masklen+1;
+		min=p->masklen+1;
 		max=maxlen;
 	} else if (d[1] == '+') {
-		min=p.masklen;
+		min=p->masklen;
 		max=maxlen;
 	} else if (isdigit(d[1])) {
 		char* dm = NULL;
@@ -237,9 +258,9 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 		sx_report(SX_ERROR, "Invalid prefix-range %s\n", text);
 		return 0;
 	};
-	if (min < p.masklen) {
+	if (min < p->masklen) {
 		sx_report(SX_ERROR, "Invalid prefix-range %s: min %lu < masklen %u\n",
-			text, min, p.masklen);
+			text, min, p->masklen);
 		return 0;
 	};
 	if (af == AF_INET && max > 32) {
@@ -313,7 +334,7 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
 {
 	unsigned off=0;
 	const char* c=format;
-	struct sx_prefix q;
+	struct sx_prefix *q = sx_prefix_alloc(NULL);
 	while(*c) {
 		if(*c=='%') {
 			switch(*(c+1)) {
@@ -332,13 +353,13 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
 					off+=snprintf(buffer+off,size-off,"%s",name);
 					break;
 				case 'm':
-					sx_prefix_mask(p, &q);
-					inet_ntop(p->family,&q.addr,buffer+off,size-off);
+					sx_prefix_mask(p, q);
+					inet_ntop(p->family,&q->addr,buffer+off,size-off);
 					off=strlen(buffer);
 					break;
 				case 'i':
-					sx_prefix_imask(p, &q);
-					inet_ntop(p->family,&q.addr,buffer+off,size-off);
+					sx_prefix_imask(p, q);
+					inet_ntop(p->family,&q->addr,buffer+off,size-off);
 					off=strlen(buffer);
 					break;
 				default :
@@ -404,7 +425,7 @@ sx_radix_node_new(struct sx_prefix* prefix)
 	if(!rn) return NULL;
 	memset(rn,0,sizeof(struct sx_radix_node));
 	if(prefix) {
-		rn->prefix=*prefix; /* structure copy */
+	  rn->prefix = sx_prefix_alloc(prefix);
 	};
 	return rn;
 };
@@ -462,6 +483,7 @@ next:
 		} else {
 			sx_report(SX_ERROR,"Unlinking node with no parent and not root\n");
 		};
+		sx_radix_node_destroy(node);
 		return;
 	} else if(node->l) {
 		if(node->parent) {
@@ -481,6 +503,7 @@ next:
 		} else {
 			sx_report(SX_ERROR,"Unlinking node with no parent and not root\n");
 		};
+		sx_radix_node_destroy(node);
 		return;
 	} else {
 		/* the only case - node does not have descendants */
@@ -500,6 +523,7 @@ next:
 		} else {
 			sx_report(SX_ERROR,"Unlinking node with no parent and not root\n");
 		};
+		sx_radix_node_destroy(node);
 		return;
 	};
 };
@@ -518,12 +542,12 @@ sx_radix_tree_lookup(struct sx_radix_tree* tree, struct sx_prefix* prefix)
 	chead=tree->head;
 
 next:
-	eb=sx_prefix_eqbits(&chead->prefix,prefix);
-	if(eb==chead->prefix.masklen && eb==prefix->masklen) {
+	eb=sx_prefix_eqbits(chead->prefix,prefix);
+	if(eb==chead->prefix->masklen && eb==prefix->masklen) {
 		/* they are equal */
 		if(chead->isGlue) return candidate;
 		return chead;
-	} else if(eb<chead->prefix.masklen) {
+	} else if(eb<chead->prefix->masklen) {
 		return candidate;
 	} else if(eb<prefix->masklen) {
 		/* it equals chead->masklen */
@@ -553,7 +577,7 @@ next:
 	} else {
 		char pbuffer[128], cbuffer[128];
 		sx_prefix_snprintf(prefix,pbuffer,sizeof(pbuffer));
-		sx_prefix_snprintf(&chead->prefix,cbuffer,sizeof(cbuffer));
+		sx_prefix_snprintf(chead->prefix,cbuffer,sizeof(cbuffer));
 		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n", eb,
 			pbuffer, cbuffer);
 		abort();
@@ -579,13 +603,16 @@ sx_radix_tree_insert(struct sx_radix_tree* tree, struct sx_prefix* prefix)
 	chead=tree->head;
 
 next:
-	eb=sx_prefix_eqbits(prefix,&chead->prefix);
-	if(eb<prefix->masklen && eb<chead->prefix.masklen) {
-		struct sx_prefix neoRoot=*prefix;
+	eb=sx_prefix_eqbits(prefix,chead->prefix);
+	if(eb<prefix->masklen && eb<chead->prefix->masklen) {
+		struct sx_prefix *neoRoot = sx_prefix_alloc(prefix);
+		
 		struct sx_radix_node* rn, *ret=sx_radix_node_new(prefix);
-		neoRoot.masklen=eb;
-		sx_prefix_adjust_masklen(&neoRoot);
-		rn=sx_radix_node_new(&neoRoot);
+		neoRoot->masklen=eb;
+		sx_prefix_adjust_masklen(neoRoot);
+		rn=sx_radix_node_new(neoRoot);
+                sx_prefix_destroy(neoRoot);
+                neoRoot = rn->prefix;
 		if(!rn) {
 			sx_report(SX_ERROR,"Unable to create node: %s\n", strerror(errno));
 			return NULL;
@@ -603,9 +630,9 @@ next:
 		rn->isGlue=1;
 		*candidate=rn;
 		return ret;
-	} else if(eb==prefix->masklen && eb<chead->prefix.masklen) {
+	} else if(eb==prefix->masklen && eb<chead->prefix->masklen) {
 		struct sx_radix_node* ret=sx_radix_node_new(prefix);
-		if(sx_prefix_isbitset(&chead->prefix,eb+1)) {
+		if(sx_prefix_isbitset(chead->prefix,eb+1)) {
 			ret->r=chead;
 		} else {
 			ret->l=chead;
@@ -614,7 +641,7 @@ next:
 		chead->parent=ret;
 		*candidate=ret;
 		return ret;
-	} else if(eb==chead->prefix.masklen && eb<prefix->masklen) {
+	} else if(eb==chead->prefix->masklen && eb<prefix->masklen) {
 		if(sx_prefix_isbitset(prefix,eb+1)) {
 			if(chead->r) {
 				candidate=&chead->r;
@@ -636,7 +663,7 @@ next:
 				return chead->l;
 			};
 		};
-	} else if(eb==chead->prefix.masklen && eb==prefix->masklen) {
+	} else if(eb==chead->prefix->masklen && eb==prefix->masklen) {
 		/* equal routes... */
 		if(chead->isGlue) {
 			chead->isGlue=0;
@@ -645,12 +672,12 @@ next:
 	} else {
 		char pbuffer[128], cbuffer[128];
 		sx_prefix_snprintf(prefix,pbuffer,sizeof(pbuffer));
-		sx_prefix_snprintf(&chead->prefix,cbuffer,sizeof(cbuffer));
+		sx_prefix_snprintf(chead->prefix,cbuffer,sizeof(cbuffer));
 		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n", eb,
 			pbuffer, cbuffer);
 		abort();
 	};
-};
+}
 
 void
 sx_radix_node_fprintf(struct sx_radix_node* node, void* udata)
@@ -660,7 +687,7 @@ sx_radix_node_fprintf(struct sx_radix_node* node, void* udata)
 	if(!node) {
 		fprintf(out,"(null)\n");
 	} else {
-		sx_prefix_snprintf(&node->prefix,buffer,sizeof(buffer));
+		sx_prefix_snprintf(node->prefix,buffer,sizeof(buffer));
 		fprintf(out,"%s %s\n", buffer, node->isGlue?"(glue)":"");
 	};
 };
@@ -694,19 +721,19 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 
 	if(debug_aggregation) {
 		printf("Aggregating on node: ");
-		sx_prefix_fprint(stdout,&node->prefix);
+		sx_prefix_fprint(stdout,node->prefix);
 		printf(" %s%s%u,%u\n", node->isGlue?"Glue ":"",
 			node->isAggregate?"Aggregate ":"",node->aggregateLow,
 			node->aggregateHi);
 		if(node->r) {
 			printf("R-Tree: ");
-			sx_prefix_fprint(stdout,&node->r->prefix);
+			sx_prefix_fprint(stdout,node->r->prefix);
 			printf(" %s%s%u,%u\n", (node->r->isGlue)?"Glue ":"",
 				(node->r->isAggregate)?"Aggregate ":"",
 				node->r->aggregateLow,node->r->aggregateHi);
 			if(node->r->son) {
 			printf("R-Son: ");
-			sx_prefix_fprint(stdout,&node->r->son->prefix);
+			sx_prefix_fprint(stdout,node->r->son->prefix);
 			printf(" %s%s%u,%u\n",node->r->son->isGlue?"Glue ":"",
 				node->r->son->isAggregate?"Aggregate ":"",
 				node->r->son->aggregateLow,node->r->son->aggregateHi);
@@ -714,13 +741,13 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 		};
 		if(node->l) {
 			printf("L-Tree: ");
-			sx_prefix_fprint(stdout,&node->l->prefix);
+			sx_prefix_fprint(stdout,node->l->prefix);
 			printf(" %s%s%u,%u\n",node->l->isGlue?"Glue ":"",
 				node->l->isAggregate?"Aggregate ":"",
 				node->l->aggregateLow,node->l->aggregateHi);
 			if(node->l->son) {
 			printf("L-Son: ");
-			sx_prefix_fprint(stdout,&node->l->son->prefix);
+			sx_prefix_fprint(stdout,node->l->son->prefix);
 			printf(" %s%s%u,%u\n",node->l->son->isGlue?"Glue ":"",
 				node->l->son->isAggregate?"Aggregate ":"",
 				node->l->son->aggregateLow,node->l->son->aggregateHi);
@@ -731,27 +758,27 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 	if(node->r && node->l) {
 		if(!node->r->isAggregate && !node->l->isAggregate &&
 			!node->r->isGlue && !node->l->isGlue &&
-			node->r->prefix.masklen==node->l->prefix.masklen) {
-			if(node->r->prefix.masklen==node->prefix.masklen+1) {
+			node->r->prefix->masklen==node->l->prefix->masklen) {
+			if(node->r->prefix->masklen==node->prefix->masklen+1) {
 				node->isAggregate=1;
 				node->r->isGlue=1;
 				node->l->isGlue=1;
-				node->aggregateHi=node->r->prefix.masklen;
+				node->aggregateHi=node->r->prefix->masklen;
 				if(node->isGlue) {
 					node->isGlue=0;
-					node->aggregateLow=node->r->prefix.masklen;
+					node->aggregateLow=node->r->prefix->masklen;
 				} else {
-					node->aggregateLow=node->prefix.masklen;
+					node->aggregateLow=node->prefix->masklen;
 				};
 			};
 			if(node->r->son && node->l->son &&
 				node->r->son->isAggregate && node->l->son->isAggregate &&
 				node->r->son->aggregateHi==node->l->son->aggregateHi &&
 				node->r->son->aggregateLow==node->l->son->aggregateLow &&
-				node->r->prefix.masklen==node->prefix.masklen+1 &&
-				node->l->prefix.masklen==node->prefix.masklen+1)
+				node->r->prefix->masklen==node->prefix->masklen+1 &&
+				node->l->prefix->masklen==node->prefix->masklen+1)
 			{
-				node->son=sx_radix_node_new(&node->prefix);
+				node->son=sx_radix_node_new(node->prefix);
 				node->son->isGlue=0;
 				node->son->isAggregate=1;
 				node->son->aggregateHi=node->r->son->aggregateHi;
@@ -762,8 +789,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 		} else if(node->r->isAggregate && node->l->isAggregate &&
 			node->r->aggregateHi==node->l->aggregateHi &&
 			node->r->aggregateLow==node->l->aggregateLow) {
-			if(node->r->prefix.masklen==node->prefix.masklen+1 &&
-				node->l->prefix.masklen==node->prefix.masklen+1) {
+			if(node->r->prefix->masklen==node->prefix->masklen+1 &&
+				node->l->prefix->masklen==node->prefix->masklen+1) {
 				if(node->isGlue) {
 					node->r->isGlue=1;
 					node->l->isGlue=1;
@@ -771,14 +798,14 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->isGlue=0;
 					node->aggregateHi=node->r->aggregateHi;
 					node->aggregateLow=node->r->aggregateLow;
-				} else if(node->r->prefix.masklen==node->r->aggregateLow) {
+				} else if(node->r->prefix->masklen==node->r->aggregateLow) {
 					node->r->isGlue=1;
 					node->l->isGlue=1;
 					node->isAggregate=1;
 					node->aggregateHi=node->r->aggregateHi;
-					node->aggregateLow=node->prefix.masklen;
+					node->aggregateLow=node->prefix->masklen;
 				} else {
-					node->son=sx_radix_node_new(&node->prefix);
+					node->son=sx_radix_node_new(node->prefix);
 					node->son->isGlue=0;
 					node->son->isAggregate=1;
 					node->son->aggregateHi=node->r->aggregateHi;
@@ -789,7 +816,7 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 						node->r->son->aggregateHi==node->l->son->aggregateHi &&
 						node->r->son->aggregateLow==node->l->son->aggregateLow)
 					{
-						node->son->son=sx_radix_node_new(&node->prefix);
+						node->son->son=sx_radix_node_new(node->prefix);
 						node->son->son->isGlue=0;
 						node->son->son->isAggregate=1;
 						node->son->son->aggregateHi=node->r->son->aggregateHi;
@@ -803,8 +830,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 			node->r->isAggregate && node->l->son->isAggregate &&
 			node->r->aggregateHi==node->l->son->aggregateHi &&
 			node->r->aggregateLow==node->l->son->aggregateLow) {
-			if(node->r->prefix.masklen==node->prefix.masklen+1 &&
-				node->l->prefix.masklen==node->prefix.masklen+1) {
+			if(node->r->prefix->masklen==node->prefix->masklen+1 &&
+				node->l->prefix->masklen==node->prefix->masklen+1) {
 				if(node->isGlue) {
 					node->r->isGlue=1;
 					node->l->son->isGlue=1;
@@ -813,7 +840,7 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->aggregateHi=node->r->aggregateHi;
 					node->aggregateLow=node->r->aggregateLow;
 				} else {
-					node->son=sx_radix_node_new(&node->prefix);
+					node->son=sx_radix_node_new(node->prefix);
 					node->son->isGlue=0;
 					node->son->isAggregate=1;
 					node->son->aggregateHi=node->r->aggregateHi;
@@ -826,8 +853,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 			node->l->isAggregate && node->r->son->isAggregate &&
 			node->l->aggregateHi==node->r->son->aggregateHi &&
 			node->l->aggregateLow==node->r->son->aggregateLow) {
-			if(node->l->prefix.masklen==node->prefix.masklen+1 &&
-				node->r->prefix.masklen==node->prefix.masklen+1) {
+			if(node->l->prefix->masklen==node->prefix->masklen+1 &&
+				node->r->prefix->masklen==node->prefix->masklen+1) {
 				if(node->isGlue) {
 					node->l->isGlue=1;
 					node->r->son->isGlue=1;
@@ -836,7 +863,7 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->aggregateHi=node->l->aggregateHi;
 					node->aggregateLow=node->l->aggregateLow;
 				} else {
-					node->son=sx_radix_node_new(&node->prefix);
+					node->son=sx_radix_node_new(node->prefix);
 					node->son->isGlue=0;
 					node->son->isAggregate=1;
 					node->son->aggregateHi=node->l->aggregateHi;
@@ -861,7 +888,7 @@ static void
 setGlueUpTo(struct sx_radix_node* node, void* udata)
 {
 	unsigned refine=*(unsigned*)udata;
-	if(node && node->prefix.masklen <= refine) {
+	if(node && node->prefix->masklen <= refine) {
 		node->isGlue=1;
 	};
 };
@@ -869,9 +896,9 @@ setGlueUpTo(struct sx_radix_node* node, void* udata)
 int
 sx_radix_node_refine(struct sx_radix_node* node, unsigned refine)
 {
-	if(!node->isGlue && node->prefix.masklen<refine) {
+	if(!node->isGlue && node->prefix->masklen<refine) {
 		node->isAggregate=1;
-		node->aggregateLow=node->prefix.masklen;
+		node->aggregateLow=node->prefix->masklen;
 		node->aggregateHi=refine;
 		if(node->l) {
 			sx_radix_node_foreach(node->l, setGlueUpTo, &refine);
@@ -881,7 +908,7 @@ sx_radix_node_refine(struct sx_radix_node* node, unsigned refine)
 			sx_radix_node_foreach(node->r, setGlueUpTo, &refine);
 			sx_radix_node_refine(node->r, refine);
 		};
-	} else if(!node->isGlue && node->prefix.masklen==refine) {
+	} else if(!node->isGlue && node->prefix->masklen==refine) {
 		/* not setting aggregate in this case */
 		if(node->l) sx_radix_node_refine(node->l, refine);
 		if(node->r) sx_radix_node_refine(node->r, refine);
@@ -911,7 +938,7 @@ static void
 setGlueFrom(struct sx_radix_node* node, void* udata)
 {
 	unsigned refine=*(unsigned*)udata;
-	if(node && node->prefix.masklen <= refine) {
+	if(node && node->prefix->masklen <= refine) {
 		node->isGlue=1;
 	};
 };
@@ -919,11 +946,11 @@ setGlueFrom(struct sx_radix_node* node, void* udata)
 static int
 sx_radix_node_refineLow(struct sx_radix_node* node, unsigned refineLow)
 {
-	if(!node->isGlue && node->prefix.masklen<=refineLow) {
+	if(!node->isGlue && node->prefix->masklen<=refineLow) {
 		if(!node->isAggregate) {
 			node->isAggregate=1;
 			node->aggregateLow=refineLow;
-			if(node->prefix.family == AF_INET) {
+			if(node->prefix->family == AF_INET) {
 				node->aggregateHi=32;
 			} else {
 				node->aggregateHi=128;
@@ -939,7 +966,7 @@ sx_radix_node_refineLow(struct sx_radix_node* node, unsigned refineLow)
 			sx_radix_node_foreach(node->r, setGlueFrom, &refineLow);
 			sx_radix_node_refineLow(node->r, refineLow);
 		};
-	} else if(!node->isGlue && node->prefix.masklen==refineLow) {
+	} else if(!node->isGlue && node->prefix->masklen==refineLow) {
 		/* not setting aggregate in this case */
 		if(node->l) sx_radix_node_refineLow(node->l, refineLow);
 		if(node->r) sx_radix_node_refineLow(node->r, refineLow);

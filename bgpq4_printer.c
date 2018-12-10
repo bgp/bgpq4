@@ -626,7 +626,7 @@ bgpq4_print_jprefix(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) return;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	fprintf(f,"    %s;\n",prefix);
 };
 
@@ -641,11 +641,11 @@ bgpq4_print_json_prefix(struct sx_radix_node* n, void* ff)
 		goto checkSon;
 	if(!f)
 		f=stdout;
-	sx_prefix_jsnprintf(&n->prefix, prefix, sizeof(prefix));
+	sx_prefix_jsnprintf(n->prefix, prefix, sizeof(prefix));
 	if (!n->isAggregate) {
 		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": true }",
 			needscomma?",":"", prefix);
-	} else if (n->aggregateLow > n->prefix.masklen) {
+	} else if (n->aggregateLow > n->prefix->masklen) {
 		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": false,\n      "
 			"\"greater-equal\": %u, \"less-equal\": %u }",
 			needscomma?",":"", prefix,
@@ -701,16 +701,16 @@ bgpq4_print_bird_prefix(struct sx_radix_node* n, void* ff)
 		goto checkSon;
 	if(!f)
 		f=stdout;
-	sx_prefix_snprintf(&n->prefix, prefix, sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 	if (!n->isAggregate) {
 		fprintf(f, "%s\n    %s",
 			needscomma?",":"", prefix);
-	} else if (n->aggregateLow > n->prefix.masklen) {
+	} else if (n->aggregateLow > n->prefix->masklen) {
 		fprintf(f, "%s\n    %s{%u,%u}",
 			needscomma?",":"", prefix, n->aggregateLow, n->aggregateHi);
 	} else {
 		fprintf(f, "%s\n    %s{%u,%u}",
-			needscomma?",":"", prefix, n->prefix.masklen, n->aggregateHi);
+			needscomma?",":"", prefix, n->prefix->masklen, n->aggregateHi);
 	};
 	needscomma=1;
 checkSon:
@@ -762,17 +762,17 @@ bgpq4_print_openbgpd_prefix(struct sx_radix_node* n, void* ff)
 		goto checkSon;
 	if(!f)
 		f=stdout;
-	sx_prefix_snprintf(&n->prefix, prefix, sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 	if (!n->isAggregate) {
 		fprintf(f, "\n\t%s", prefix);
 	} else if (n->aggregateLow == n->aggregateHi) {
 		fprintf(f, "\n\t%s prefixlen = %u", prefix, n->aggregateHi);
-	} else if (n->aggregateLow > n->prefix.masklen) {
+	} else if (n->aggregateLow > n->prefix->masklen) {
 		fprintf(f, "\n\t%s prefixlen %u - %u",
 			prefix, n->aggregateLow, n->aggregateHi);
 	} else {
 		fprintf(f, "\n\t%s prefixlen %u - %u",
-			prefix, n->prefix.masklen, n->aggregateHi);
+			prefix, n->prefix->masklen, n->aggregateHi);
 	};
 checkSon:
 	if(n->son)
@@ -836,12 +836,12 @@ bgpq4_print_jrfilter(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) goto checkSon;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	if(!n->isAggregate) {
 		fprintf(f,"    %s%s exact;\n",
 			jrfilter_prefixed ? "route-filter " : "", prefix);
 	} else {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"    %s%s prefix-length-range /%u-/%u;\n",
 				jrfilter_prefixed ? "route-filter " : "",
 				prefix,n->aggregateLow,n->aggregateHi);
@@ -867,22 +867,22 @@ bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(!f) f=stdout;
 	if(n->isGlue) goto checkSon;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	if(seq)
 		snprintf(seqno, sizeof(seqno), " seq %i", seq++);
 	if(n->isAggregate) {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"%s prefix-list %s%s permit %s ge %u le %u\n",
-				n->prefix.family==AF_INET?"ip":"ipv6",bname?bname:"NN",seqno,
+				n->prefix->family==AF_INET?"ip":"ipv6",bname?bname:"NN",seqno,
 				prefix,n->aggregateLow,n->aggregateHi);
 		} else {
 			fprintf(f,"%s prefix-list %s%s permit %s le %u\n",
-				n->prefix.family==AF_INET?"ip":"ipv6",bname?bname:"NN",seqno,
+				n->prefix->family==AF_INET?"ip":"ipv6",bname?bname:"NN",seqno,
 				prefix,n->aggregateHi);
 		};
 	} else {
 		fprintf(f,"%s prefix-list %s%s permit %s\n",
-			(n->prefix.family==AF_INET)?"ip":"ipv6",bname?bname:"NN",seqno,
+			(n->prefix->family==AF_INET)?"ip":"ipv6",bname?bname:"NN",seqno,
 			prefix);
 	};
 checkSon:
@@ -897,9 +897,9 @@ bgpq4_print_cprefixxr(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(!f) f=stdout;
 	if(n->isGlue) goto checkSon;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	if(n->isAggregate) {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"%s%s ge %u le %u",
 				needscomma?",\n ":" ", prefix, n->aggregateLow,n->aggregateHi);
 		} else {
@@ -922,21 +922,21 @@ bgpq4_print_hprefix(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(!f) f=stdout;
 	if(n->isGlue) goto checkSon;
-	sx_prefix_snprintf_sep(&n->prefix,prefix,sizeof(prefix)," ");
+	sx_prefix_snprintf_sep(n->prefix,prefix,sizeof(prefix)," ");
 	if(n->isAggregate) {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"ip %s-prefix %s permit %s greater-equal %u "
 				"less-equal %u\n",
-				n->prefix.family==AF_INET?"ip":"ipv6",bname?bname:"NN",
+				n->prefix->family==AF_INET?"ip":"ipv6",bname?bname:"NN",
 				prefix,n->aggregateLow,n->aggregateHi);
 		} else {
 			fprintf(f,"ip %s-prefix %s permit %s less-equal %u\n",
-				n->prefix.family==AF_INET?"ip":"ipv6",bname?bname:"NN",
+				n->prefix->family==AF_INET?"ip":"ipv6",bname?bname:"NN",
 				prefix,n->aggregateHi);
 		};
 	} else {
 		fprintf(f,"ip %s-prefix %s permit %s\n",
-			(n->prefix.family==AF_INET)?"ip":"ipv6",bname?bname:"NN",
+			(n->prefix->family==AF_INET)?"ip":"ipv6",bname?bname:"NN",
 			prefix);
 	};
 checkSon:
@@ -954,14 +954,14 @@ bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
 	uint32_t netmask=0xfffffffful;
 	if(!f) f=stdout;
 	if(n->isGlue) goto checkSon;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	c=strchr(prefix,'/');
 	if(c) *c=0;
 
-	if(n->prefix.masklen==32) {
+	if(n->prefix->masklen==32) {
 		netmask=0;
 	} else {
-	 	netmask<<=(32-n->prefix.masklen);
+	 	netmask<<=(32-n->prefix->masklen);
 		netmask&=0xfffffffful;
 	};
 	netmask=htonl(netmask);
@@ -969,7 +969,7 @@ bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
 	if(n->isAggregate) {
 		unsigned long mask=0xfffffffful, wildaddr, wild2addr, wildmask;
 		int masklen=n->aggregateLow;
-		wildaddr=0xfffffffful>>n->prefix.masklen;
+		wildaddr=0xfffffffful>>n->prefix->masklen;
 		if(n->aggregateHi==32) {
 			wild2addr=0;
 		} else {
@@ -989,10 +989,10 @@ bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
 		wildmask=htonl(wildmask);
 
 		if(wildaddr) {
-			fprintf(f," permit ip %s ", inet_ntoa(n->prefix.addr.addr));
+			fprintf(f," permit ip %s ", inet_ntoa(n->prefix->addr.addr));
 			fprintf(f,"%s ", inet_ntoa(*(struct in_addr*)&wildaddr));
 		} else {
-			fprintf(f," permit ip host %s ",inet_ntoa(n->prefix.addr.addr));
+			fprintf(f," permit ip host %s ",inet_ntoa(n->prefix->addr.addr));
 		};
 
 		if(wildmask) {
@@ -1017,7 +1017,7 @@ bgpq4_print_nokia_ipfilter(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) goto checkSon;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	fprintf(f,"    prefix %s\n", prefix);
 checkSon:
 	if(n->son)
@@ -1031,7 +1031,7 @@ bgpq4_print_nokia_md_ipfilter(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) goto checkSon;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	fprintf(f,"    prefix %s { }\n", prefix);
 checkSon:
 	if(n->son)
@@ -1045,16 +1045,16 @@ bgpq4_print_nokia_prefix(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) goto checkSon;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	if(!n->isAggregate) {
 		fprintf(f,"    prefix %s exact\n", prefix);
 	} else {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"    prefix %s prefix-length-range %u-%u\n",
 				prefix,n->aggregateLow,n->aggregateHi);
 		} else {
 			fprintf(f,"    prefix %s prefix-length-range %u-%u\n",
-				prefix, n->prefix.masklen, n->aggregateHi);
+				prefix, n->prefix->masklen, n->aggregateHi);
 		};
 	};
 checkSon:
@@ -1070,11 +1070,11 @@ bgpq4_print_nokia_md_prefix(struct sx_radix_node* n, void* ff)
 	FILE* f=(FILE*)ff;
 	if(n->isGlue) goto checkSon;
 	if(!f) f=stdout;
-	sx_prefix_snprintf(&n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
 	if(!n->isAggregate) {
 		fprintf(f,"    prefix %s type exact {\n    }\n", prefix);
 	} else {
-		if(n->aggregateLow>n->prefix.masklen) {
+		if(n->aggregateLow>n->prefix->masklen) {
 			fprintf(f,"    prefix %s type range {\n        start-length %u\n"
 				"        end-length %u\n    }\n",
 				prefix,n->aggregateLow,n->aggregateHi);
@@ -1261,7 +1261,7 @@ bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
 	if(!f)
 		f=stdout;
 	memset(prefix, 0, sizeof(prefix));
-	sx_prefix_snprintf_fmt(&n->prefix, prefix, sizeof(prefix),
+	sx_prefix_snprintf_fmt(n->prefix, prefix, sizeof(prefix),
 		b->name?b->name:"NN", b->format);
 	fprintf(f, "%s", prefix);
 };

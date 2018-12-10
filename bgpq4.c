@@ -16,6 +16,7 @@
 
 #include "bgpq4.h"
 #include "sx_report.h"
+#include "expander_freeall.h"
 
 extern int debug_expander;
 extern int debug_aggregation;
@@ -636,6 +637,8 @@ main(int argc, char* argv[])
 			bgpq4_print_route_filter_list(stdout, &expander);
 			break;
 	};
+
+        expander_freeall(&expander);
 
 	return 0;
 };

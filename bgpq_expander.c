@@ -25,6 +25,7 @@
 #include "bgpq4.h"
 #include "sx_report.h"
 #include "sx_maxsockbuf.h"
+#include "expander_freeall.h"
 
 int debug_expander=0;
 int pipelining=1;
@@ -65,6 +66,11 @@ bgpq_expander_init(struct bgpq_expander* b, int af)
 	b->server="rr.ntt.net";
 	b->port="43";
 
+	//	b->wq = STAILQ_HEAD_INITIALZIER(b->wq);
+	//      b->rq = STAILQ_HEAD_INITIALZIER(b->rq);
+	//      b->rsets = STAILQ_HEAD_INITIALZIER(b->rsets);
+	//      b->macroses = STAILQ_HEAD_INITIALZIER(b->macroses);
+	
 	STAILQ_INIT(&b->wq);
 	STAILQ_INIT(&b->rq);
 	STAILQ_INIT(&b->rsets);
@@ -72,7 +78,7 @@ bgpq_expander_init(struct bgpq_expander* b, int af)
 
 	return 1;
 fixups:
-	/* if(b->tree) XXXXXXXXXXXXX sx_radix_tree_destroy(b->tree); */
+	if(b->tree) sx_radix_tree_freeall(b->tree);
 	b->tree=NULL;
 	free(b);
 	return 0;
@@ -200,21 +206,22 @@ bgpq_expander_add_as(struct bgpq_expander* b, char* as)
 int
 bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)
 {
-	struct sx_prefix p;
-	if(!sx_prefix_parse(&p,0,prefix)) {
+	struct sx_prefix *p = sx_prefix_alloc(NULL);
+	if(!sx_prefix_parse(p,0,prefix)) {
 		sx_report(SX_ERROR,"Unable to parse prefix %s\n", prefix);
 		return 0;
-	} else if(p.family!=b->family) {
+	} else if(p->family!=b->family) {
 		SX_DEBUG(debug_expander,"Ignoring prefix %s with wrong address family\n"
 			,prefix);
 		return 0;
 	};
-	if(b->maxlen && p.masklen>b->maxlen) {
+	if(b->maxlen && p->masklen>b->maxlen) {
 		SX_DEBUG(debug_expander, "Ignoring prefix %s: masklen %i > max "
-			"masklen %u\n", prefix, p.masklen, b->maxlen);
+			"masklen %u\n", prefix, p->masklen, b->maxlen);
 		return 0;
 	};
-	sx_radix_tree_insert(b->tree,&p);
+	sx_radix_tree_insert(b->tree,p);
+        if (p) sx_prefix_destroy(p);
 	return 1;
 };
 

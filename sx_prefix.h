@@ -24,7 +24,7 @@ typedef struct sx_radix_node {
 	unsigned int isAggregate:1;
 	unsigned int aggregateLow;
 	unsigned int aggregateHi;
-	struct sx_prefix prefix;
+	struct sx_prefix *prefix;
 } sx_radix_node_t;
 
 typedef struct sx_radix_tree { 
@@ -43,6 +43,7 @@ struct sx_radix_node* sx_radix_tree_lookup_exact(struct sx_radix_tree* tree,
 
 struct sx_prefix* sx_prefix_alloc(struct sx_prefix* p);
 void sx_prefix_destroy(struct sx_prefix* p);
+void sx_radix_node_destroy(struct sx_radix_node* p);
 void sx_prefix_adjust_masklen(struct sx_prefix* p);
 struct sx_prefix* sx_prefix_new(int af, char* text);
 int sx_prefix_parse(struct sx_prefix* p, int af, char* text);
