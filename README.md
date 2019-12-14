@@ -371,13 +371,14 @@ SEE ALSO
      for information on Cisco implementation of ASN32.
 4. [JunOS prefix-lists limitation](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html)
 
-AUTHOR
-------
+AUTHORS
+-------
 
+Job Snijders [job@ntt.net](mailto:job@ntt.net)
 Alexandre Snarskii [snar@snar.spb.ru](mailto:snar@snar.spb.ru)
 
 Program Homepage
 ----------------
 
-[http://snar.spb.ru/prog/bgpq4/](http://snar.spb.ru/prog/bgpq4/)
+[https://github.com/bgp/bgpq4](https://github.com/bgp/bgpq4)
 
