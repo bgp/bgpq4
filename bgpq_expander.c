@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "bgpq3.h"
+#include "bgpq4.h"
 #include "sx_report.h"
 #include "sx_maxsockbuf.h"
 

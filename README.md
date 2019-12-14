@@ -1,19 +1,19 @@
 NAME
 ----
 
-`bgpq3` - bgp filtering automation tool
+`bgpq4` - bgp filtering automation tool
 
 SYNOPSIS
 --------
 
 ```
-	bgpq3 [-h host[:port]] [-S sources] [-EPz] [-f asn | -F fmt | -G asn | -t] [-2346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
+	bgpq4 [-h host[:port]] [-S sources] [-EPz] [-f asn | -F fmt | -G asn | -t] [-2346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
 ```
 
 DESCRIPTION
 -----------
 
-The bgpq3 utility used to generate configuration (prefix-lists,
+The bgpq4 utility used to generate configuration (prefix-lists,
 extended access-lists, policy-statement terms and as-path lists)
 based on RADB data.
 
@@ -112,7 +112,7 @@ Generate config for Nokia SR OS (former Alcatel-Lucent) classic CLI (default: Ci
 
 #### -L `limit`
 
-Limit recursion depth when expanding. This slows `bgpq3` a bit, but sometimes
+Limit recursion depth when expanding. This slows `bgpq4` a bit, but sometimes
 is a useful feature to prevent generated filters from growing too big.
 
 #### -p
@@ -181,7 +181,7 @@ EXAMPLES
 
 Generating named Juniper prefix-filter for `AS20597`:
 
-     user@host:~>bgpq3 -Jl eltel AS20597
+     user@host:~>bgpq4 -Jl eltel AS20597
      policy-options {
      replace:
       prefix-list eltel {
@@ -204,7 +204,7 @@ Generating named Juniper prefix-filter for `AS20597`:
 For Cisco we can use aggregation (-A) flag to make this prefix-filter
 more compact:
 
-     user@host:~>bgpq3 -Al eltel AS20597
+     user@host:~>bgpq4 -Al eltel AS20597
      no ip prefix-list eltel
      ip prefix-list eltel permit 81.9.0.0/20
      ip prefix-list eltel permit 81.9.32.0/20
@@ -227,7 +227,7 @@ Well, for Juniper we can generate even more interesting policy-statement,
 using `-M <extra match conditions>`, `-r <len>`, `-R <len>` and hierarchical 
 names:
 
-     user@host:~>bgpq3 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
+     user@host:~>bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
 	policy-options {
 	 policy-statement eltel {
 	  term specifics {
@@ -253,9 +253,9 @@ generated policy-option term now allows more-specific routes in range
 /29 - /32 for eltel networks if they marked with community 'blackhole' 
 (defined elsewhere in configuration).
 
-Of course, `bgpq3` supports IPv6 (-6):
+Of course, `bgpq4` supports IPv6 (-6):
 
-     user@host:~>bgpq3 -6l as-retn-6 AS-RETN6
+     user@host:~>bgpq4 -6l as-retn-6 AS-RETN6
      no ipv6 prefix-list as-retn-6
      ipv6 prefix-list as-retn-6 permit 2001:7fb:fe00::/48
      ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
@@ -263,7 +263,7 @@ Of course, `bgpq3` supports IPv6 (-6):
 
 and ASN32
 
-     user@host:~>bgpq3 -J3f 112 AS-SPACENET
+     user@host:~>bgpq4 -J3f 112 AS-SPACENET
      policy-options {
      replace:
       as-path-group NN {
@@ -279,7 +279,7 @@ see `AS196611` in the end of the list ? That's `AS3.3` in 'asplain' notation.
 If your router does not support ASN32 (yet) you should not use switch -3, 
 and the result will be next:
 
-     user@host:~>bgpq3 -f 112 AS-SPACENET
+     user@host:~>bgpq4 -f 112 AS-SPACENET
      no ip as-path access-list NN
      ip as-path access-list NN permit ^112( 112)*$
      ip as-path access-list NN permit ^112( [0-9]+)* (1898|5539|8495|8763)$
@@ -298,7 +298,7 @@ If you want to generate configuration not for routers, but for some
 other programs/systems, you may use user-defined formatting, like in
 example below:
 
-	user@host:~>bgpq3 -F "ipfw add pass all from %n/%l to any\\n" as3254
+	user@host:~>bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
 	ipfw add pass all from 62.244.0.0/18 to any
 	ipfw add pass all from 91.219.29.0/24 to any
 	ipfw add pass all from 91.219.30.0/24 to any
@@ -311,20 +311,20 @@ Please note that no new lines inserted automatically after each sentence,
 you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
 
-	user@host:~>bgpq3 -6F "%n/%l; " as-eltel
+	user@host:~>bgpq4 -6F "%n/%l; " as-eltel
 	2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
 
 DIAGNOSTICS
 -----------
 
-When everything is OK, `bgpq3` generates result to standard output and
+When everything is OK, `bgpq4` generates result to standard output and
 exits with status == 0.  In case of errors they are printed to stderr and
 program exits with non-zero status.
 
 NOTES ON ULTRA-LARGE PREFIX-LISTS
 ---------------------------------
 
-To improve `bgpq3` performance when expanding extra-large AS-SETs you
+To improve `bgpq4` performance when expanding extra-large AS-SETs you
 shall tune OS settings to enlarge TCP send buffer.
 
 FreeBSD can be tuned in the following way:
@@ -362,5 +362,5 @@ Alexandre Snarskii [snar@snar.spb.ru](mailto:snar@snar.spb.ru)
 Program Homepage
 ----------------
 
-[http://snar.spb.ru/prog/bgpq3/](http://snar.spb.ru/prog/bgpq3/)
+[http://snar.spb.ru/prog/bgpq4/](http://snar.spb.ru/prog/bgpq4/)
 

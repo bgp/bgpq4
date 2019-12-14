@@ -1,3 +1,6 @@
+0.0.1 (2019-12-14):
+    - fork bgpq3 into bgpq4
+
 0.1.36-pre (2019-11-08):
     - minor documentation cleanup: bgpq3 supports much more vendors
     than just Cisco and Juniper. Copyright years updated.

@@ -12,31 +12,31 @@ infodir = @infodir@
 mandir = @mandir@
 
 
-OBJECTS=bgpq3.o sx_report.o bgpq_expander.o sx_slentry.o bgpq3_printer.o \
+OBJECTS=bgpq4.o sx_report.o bgpq_expander.o sx_slentry.o bgpq4_printer.o \
 	sx_prefix.o strlcpy.o sx_maxsockbuf.o
-SRCS=bgpq3.c sx_report.c bgpq_expander.c sx_slentry.c bgpq3_printer.c \
+SRCS=bgpq4.c sx_report.c bgpq_expander.c sx_slentry.c bgpq4_printer.c \
 	sx_prefix.c strlcpy.c sx_maxsockbuf.c
 
-all: bgpq3
+all: bgpq4
 
-bgpq3: ${OBJECTS}
-	${CC} ${CFLAGS} -o bgpq3 ${OBJECTS} ${LDADD}
+bgpq4: ${OBJECTS}
+	${CC} ${CFLAGS} -o bgpq4 ${OBJECTS} ${LDADD}
 
 .c.o: 
 	${CC} ${CFLAGS} -c $<
 
 clean: 
-	rm -rf Makefile autom4te.cache bgpq3 config.h config.log config.status
+	rm -rf Makefile autom4te.cache bgpq4 config.h config.log config.status
 	rm -rf *.o *.core core.* core
 
-install: bgpq3
+install: bgpq4
 	if test ! -d @bindir@ ; then mkdir -p @bindir@ ; fi
-	${INSTALL} -c -s -m 755 bgpq3 @bindir@
+	${INSTALL} -c -s -m 755 bgpq4 @bindir@
 	if test ! -d @prefix@/man/man8 ; then mkdir -p @prefix@/man/man8 ; fi
-	${INSTALL} -m 644 bgpq3.8 @prefix@/man/man8
+	${INSTALL} -m 644 bgpq4.8 @prefix@/man/man8
 
 depend: 
 	makedepend -- $(CFLAGS) -- $(SRCS)
 
-bgpq3.html: readme.header README.md
-	cat readme.header README.md | @MARKDOWN@ > bgpq3.html
+bgpq4.html: readme.header README.md
+	cat readme.header README.md | @MARKDOWN@ > bgpq4.html

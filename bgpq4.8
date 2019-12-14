@@ -22,11 +22,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Oct 27, 2008
-.Dt BGPQ3 8
+.Dd Dec 1, 2019
+.Dt BGPQ4 8
 .Os
 .Sh NAME
-.Nm bgpq3
+.Nm bgpq4
 .Nd "bgp filtering automation tool"
 .Sh SYNOPSIS
 .Nm
@@ -139,7 +139,7 @@ those objects will be excluded from expansion.
 Generating named juniper prefix-filter for AS20597: 
 .nf
 .RS
-~>bgpq3 -Jl eltel AS20597
+~>bgpq4 -Jl eltel AS20597
 policy-options {
 replace:
  prefix-list eltel {
@@ -165,7 +165,7 @@ For Cisco we can use aggregation (-A) flag to make this prefix-filter
 more compact: 
 .nf
 .RS
-~>bgpq3 -Al eltel AS20597
+~>bgpq4 -Al eltel AS20597
 no ip prefix-list eltel
 ip prefix-list eltel permit 81.9.0.0/20
 ip prefix-list eltel permit 81.9.32.0/20
@@ -187,7 +187,7 @@ Well, for Juniper we can generate even more interesting policy-options,
 using -M <extra match conditions>, -R <len> and hierarchical names: 
 .nf
 .RS
-~>bgpq3 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
+~>bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
 policy-options {
  policy-statement eltel {
   term specifics {
@@ -216,7 +216,7 @@ blackhole (defined elsewhere in configuration).
 Of course, this version supports IPv6 (-6): 
 .nf
 .RS
-~>bgpq3 -6l as-retn-6 AS-RETN6
+~>bgpq4 -6l as-retn-6 AS-RETN6
 no ipv6 prefix-list as-retn-6
 ipv6 prefix-list as-retn-6 permit 2001:7fb:fe00::/48
 ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
@@ -226,7 +226,7 @@ ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
 and support for ASN 32 is also here
 .nf
 .RS
-~>bgpq3 -J3f 112 AS-SPACENET
+~>bgpq4 -J3f 112 AS-SPACENET
 policy-options {
 replace:
  as-path-group NN {
@@ -244,7 +244,7 @@ For non-ASN32 capable routers you should not use switch -3,
 and the result will be next: 
 .nf
 .RS
-~>bgpq3 -f 112 AS-SPACENET
+~>bgpq4 -f 112 AS-SPACENET
 no ip as-path access-list NN
 ip as-path access-list NN permit ^112(_112)*$
 ip as-path access-list NN permit ^112(_[0-9]+)*_(1898|5539|8495|8763)$
@@ -263,7 +263,7 @@ other programs/systems, you may use user-defined formatting, like in
 example below:
 .nf
 .RS
-user@host:~>bgpq3 -F "ipfw add pass all from %n/%l to any\\n" as3254
+user@host:~>bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
 ipfw add pass all from 62.244.0.0/18 to any
 ipfw add pass all from 91.219.29.0/24 to any
 ipfw add pass all from 91.219.30.0/24 to any
@@ -279,7 +279,7 @@ you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
 .nf
 .RS
-user@host:~>bgpq3 -6F "%n/%l; " as-eltel
+user@host:~>bgpq4 -6F "%n/%l; " as-eltel
 2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
 .RE
 .fi

@@ -14,7 +14,7 @@
 #include <strings.h>
 #include <unistd.h>
 
-#include "bgpq3.h"
+#include "bgpq4.h"
 #include "sx_report.h"
 
 extern int debug_expander;
@@ -26,7 +26,7 @@ extern int expand_special_asn;
 int
 usage(int ecode)
 {
-	printf("\nUsage: bgpq3 [-h host[:port]] [-S sources] [-P|E|G <num>|f <num>|t]"
+	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-P|E|G <num>|f <num>|t]"
 		" [-2346ABbDdJjNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -2        : allow routes belonging to as23456 (transition-as) "
 		"(default: false)\n");
@@ -77,7 +77,6 @@ usage(int ecode)
 		"registered routes\n");
 	printf(" -X        : generate config for IOS XR (Cisco IOS by default)\n");
 	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION "\n");
-	printf("Copyright(c) Alexandre Snarskii <snar@snar.spb.ru> 2007-2018\n\n");
 	exit(ecode);
 };
 
@@ -625,18 +624,18 @@ main(int argc, char* argv[])
 	switch(expander.generation) {
 		case T_NONE: sx_report(SX_FATAL,"Unreachable point... call snar\n");
 			exit(1);
-		case T_ASPATH: bgpq3_print_aspath(stdout,&expander);
+		case T_ASPATH: bgpq4_print_aspath(stdout,&expander);
 			break;
-		case T_OASPATH: bgpq3_print_oaspath(stdout,&expander);
+		case T_OASPATH: bgpq4_print_oaspath(stdout,&expander);
 			break;
-		case T_ASSET: bgpq3_print_asset(stdout,&expander);
+		case T_ASSET: bgpq4_print_asset(stdout,&expander);
 			break;
-		case T_PREFIXLIST: bgpq3_print_prefixlist(stdout,&expander);
+		case T_PREFIXLIST: bgpq4_print_prefixlist(stdout,&expander);
 			break;
-		case T_EACL: bgpq3_print_eacl(stdout,&expander);
+		case T_EACL: bgpq4_print_eacl(stdout,&expander);
 			break;
 		case T_ROUTE_FILTER_LIST:
-			bgpq3_print_route_filter_list(stdout, &expander);
+			bgpq4_print_route_filter_list(stdout, &expander);
 			break;
 	};
 

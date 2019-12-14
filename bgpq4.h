@@ -1,5 +1,5 @@
-#ifndef BGPQ3_H_
-#define BGPQ3_H_
+#ifndef BGPQ4_H_
+#define BGPQ4_H_
 
 #if HAVE_SYS_QUEUE_H && HAVE_STAILQ_IN_SYS_QUEUE
 #include <sys/queue.h>
@@ -83,12 +83,12 @@ int bgpq_expander_add_stop(struct bgpq_expander* b, char* object);
 
 int bgpq_expand(struct bgpq_expander* b);
 
-int bgpq3_print_prefixlist(FILE* f, struct bgpq_expander* b);
-int bgpq3_print_eacl(FILE* f, struct bgpq_expander* b);
-int bgpq3_print_aspath(FILE* f, struct bgpq_expander* b);
-int bgpq3_print_asset(FILE* f, struct bgpq_expander* b);
-int bgpq3_print_oaspath(FILE* f, struct bgpq_expander* b);
-int bgpq3_print_route_filter_list(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_eacl(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_aspath(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_asset(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_route_filter_list(FILE* f, struct bgpq_expander* b);
 
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char* dst, const char* src, size_t size);

@@ -1,12 +1,12 @@
-Name:           bgpq3
-Version:        0.1.35
+Name:           bgpq4
+Version:        0.0.1
 Release:        0%{?dist}
 
 Group:          System/Utilities
 Summary:        Automate BGP filter generation based on routing database information
-URL:            http://snar.spb.ru/prog/bgpq3/
+URL:            https://github.com/bgp/bgpq4
 License:        BSD
-Source0:        https://github.com/snar/bgpq3/archive/v0.1.35.tar.gz
+Source0:        https://github.com/bgp/bgpq4
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -28,14 +28,17 @@ make install
 
 %files
 %defattr(-,root,root,-)
-/usr/bin/bgpq3
-/usr/man/man8/bgpq3.8.gz
+/usr/bin/bgpq4
+/usr/man/man8/bgpq4.8.gz
 %doc COPYRIGHT CHANGES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat Dec 14 2019 Job Snijders <job@ntt.net> 0.0.1
+- fork from bgpq3
+
 * Tue Nov 30 2018 Alexandre Snarskii <snar@snar.spb.ru> 0.1.35
 - Version updated
 
