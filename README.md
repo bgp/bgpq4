@@ -90,6 +90,10 @@ Generate config for Juniper (default: Cisco).
 
 Generate output in JSON format (default: Cisco).
 
+#### -K
+
+Generate config for MikroTik (default: Cisco).
+
 #### -m `length`
 
 Maximum length of accepted prefixes (default: `32` for IPv4, `128` for IPv6).
@@ -178,6 +182,19 @@ expansion from future expansion.
 
 EXAMPLES
 --------
+Generating prefix filter for MikroTik for `AS20597`:
+
+     user@host:~>./bgpq4 -Kl eltel AS20597
+     /routing filter add action=accept chain="eltel-V4" prefix=81.9.0.0/20
+     /routing filter add action=accept chain="eltel-V4" prefix=81.9.32.0/20
+     /routing filter add action=accept chain="eltel-V4" prefix=81.9.96.0/20
+     /routing filter add action=accept chain="eltel-V4" prefix=81.222.128.0/20
+     /routing filter add action=accept chain="eltel-V4" prefix=81.222.160.0/20
+     /routing filter add action=accept chain="eltel-V4" prefix=81.222.192.0/18
+     /routing filter add action=accept chain="eltel-V4" prefix=85.249.8.0/21
+     /routing filter add action=accept chain="eltel-V4" prefix=85.249.224.0/19
+     /routing filter add action=accept chain="eltel-V4" prefix=89.112.0.0/17
+     /routing filter add action=accept chain="eltel-V4" prefix=217.170.64.0/19
 
 Generating named Juniper prefix-filter for `AS20597`:
 
