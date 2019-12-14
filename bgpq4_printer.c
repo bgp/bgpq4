@@ -1387,6 +1387,52 @@ bgpq4_print_nokia_md_ipprefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 };
 
+void
+bgpq4_print_kprefix(struct sx_radix_node* n, void* ff)
+{
+	char prefix[128];
+	FILE* f=(FILE*)ff;
+	if(!f) f=stdout;
+	if(n->isGlue) goto checkSon;
+	sx_prefix_snprintf_sep(&n->prefix,prefix,sizeof(prefix),"/");
+	if(n->isAggregate) {
+		if(n->aggregateLow>n->prefix.masklen) {
+			fprintf(f,"/routing filter add action=accept chain=\"%s-%s\" prefix=%s prefix-length=%d-%d\n",
+				bname?bname:"NN",
+				n->prefix.family==AF_INET?"V4":"V6",
+				prefix,
+				n->aggregateLow,
+				n->aggregateHi);
+		} else {
+			fprintf(f,"/routing filter add action=accept chain=\"%s-%s\" prefix=%s prefix-length=%d\n",
+				bname?bname:"NN",
+				n->prefix.family==AF_INET?"V4":"V6",
+				prefix,
+				n->aggregateHi);
+		};
+	} else {
+		fprintf(f,"/routing filter add action=accept chain=\"%s-%s\" prefix=%s\n",
+			bname?bname:"NN",
+			n->prefix.family==AF_INET?"V4":"V6",
+			prefix);
+	};
+checkSon:
+	if(n->son)
+		bgpq4_print_kprefix(n->son,ff);
+};
+
+int
+bgpq4_print_mikrotik_prefixlist(FILE* f, struct bgpq_expander* b)
+{
+	bname=b->name ? b->name : "NN";
+	if (!sx_radix_tree_empty(b->tree)) {
+		sx_radix_tree_foreach(b->tree,bgpq4_print_kprefix,f);
+	} else {
+		fprintf(f, "# generated prefix-list %s is empty\n", bname);
+	};
+	return 0;
+};
+
 int
 bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 {
@@ -1401,6 +1447,7 @@ bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 		case V_NOKIA: return bgpq4_print_nokia_prefixlist(f,b);
 		case V_NOKIA_MD: return bgpq4_print_nokia_md_ipprefixlist(f,b);
 		case V_HUAWEI: return bgpq4_print_huawei_prefixlist(f,b);
+		case V_MIKROTIK: return bgpq4_print_mikrotik_prefixlist(f,b);
 	};
 	return 0;
 };
@@ -1418,6 +1465,7 @@ bgpq4_print_eacl(FILE* f, struct bgpq_expander* b)
 		case V_FORMAT: sx_report(SX_FATAL, "unreachable point\n");
 		case V_NOKIA: return bgpq4_print_nokia_ipprefixlist(f,b);
 		case V_NOKIA_MD: return bgpq4_print_nokia_md_prefixlist(f,b);
+		case V_MIKROTIK: return sx_report(SX_FATAL, "unreachable point\n");
 		case V_HUAWEI: return sx_report(SX_FATAL, "unreachable point\n");
 	};
 	return 0;

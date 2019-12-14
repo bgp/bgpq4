@@ -50,6 +50,7 @@ usage(int ecode)
 		"             (use host:port to specify alternate port)\n");
 	printf(" -J        : generate config for JunOS (Cisco IOS by default)\n");
 	printf(" -j        : generate JSON output (Cisco IOS by default)\n");
+	printf(" -K        : generate config for MikroTik RouterOS (Cisco IOS by default)\n");
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
 	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
 		"128 for IPv6)\n");
@@ -145,7 +146,7 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while((c=getopt(argc,argv,"2346a:AbBdDEF:S:jJf:l:L:m:M:NnW:Ppr:R:G:tTh:UwXsz"))
+	while((c=getopt(argc,argv,"2346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:Ppr:R:G:tTh:UwXsz"))
 		!=EOF) {
 	switch(c) {
 		case '2':
@@ -222,6 +223,9 @@ main(int argc, char* argv[])
 			break;
 		case 'j': if(expander.vendor) vendor_exclusive();
 			expander.vendor=V_JSON;
+			break;
+		case 'K': if(expander.vendor) vendor_exclusive();
+			expander.vendor=V_MIKROTIK;
 			break;
 		case 'p':
 			expand_special_asn=1;
@@ -348,6 +352,8 @@ main(int argc, char* argv[])
 				expander.aswidth=6;
 			} else if(expander.vendor==V_JUNIPER) {
 				expander.aswidth=8;
+			} else if(expander.vendor==V_MIKROTIK) {
+				expander.aswidth=4;
 			} else if(expander.vendor==V_BIRD) {
 				expander.aswidth=10;
 			} else if(expander.vendor==V_NOKIA || expander.vendor==V_NOKIA_MD) {
