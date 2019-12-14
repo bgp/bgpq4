@@ -56,10 +56,6 @@ Generate output in BIRD format (default: Cisco).
 
 Enable some debugging output.
 
-#### -D      
-
-Use asdot notation for Cisco as-path access-lists.
-
 #### -E      
 
 Generate extended access-list (Cisco) or policy-statement term using
@@ -365,11 +361,9 @@ SEE ALSO
 --------
 
 1. [Routing Arbiter](http://www.radb.net/)
-2. [draft-michaelson-4byte-as-representation-05](https://tools.ietf.org/html/draft-michaelson-4byte-as-representation-05)
-     for information on 'asdot' and 'asplain' notations.
-3. [Cisco documentation](http://www.cisco.com/en/US/prod/collateral/iosswrel/ps6537/ps6554/ps6599/data_sheet_C78-521821.html)
+2. [Cisco documentation](http://www.cisco.com/en/US/prod/collateral/iosswrel/ps6537/ps6554/ps6599/data_sheet_C78-521821.html)
      for information on Cisco implementation of ASN32.
-4. [JunOS prefix-lists limitation](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html)
+3. [JunOS prefix-lists limitation](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html)
 
 AUTHORS
 -------

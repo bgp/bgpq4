@@ -27,7 +27,7 @@ int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-P|E|G <num>|f <num>|t]"
-		" [-2346ABbDdJjNnwXz] [-R len] <OBJECTS>...\n");
+		" [-2346ABbdJjNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -2        : allow routes belonging to as23456 (transition-as) "
 		"(default: false)\n");
 	printf(" -3        : assume that your device is asn32-safe\n");
@@ -36,7 +36,6 @@ usage(int ecode)
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
 	printf(" -B        : generate OpenBGPD output (Cisco IOS by default)\n");
 	printf(" -b        : generate BIRD output (Cisco IOS by default)\n");
-	printf(" -D        : use asdot notation in as-path (Cisco only)\n");
 	printf(" -d        : generate some debugging output\n");
 	printf(" -E        : generate extended access-list(Cisco), "
 		"route-filter(Juniper)\n"
@@ -187,8 +186,6 @@ main(int argc, char* argv[])
 			if(expander.vendor) vendor_exclusive();
 			expander.vendor=V_OPENBGPD;
 			expander.asn32=1;
-			break;
-		case 'D': expander.asdot=1;
 			break;
 		case 'd': debug_expander++;
 			break;
@@ -412,11 +409,6 @@ main(int argc, char* argv[])
 		expander.vendor!=V_OPENBGPD && expander.vendor!=V_BIRD) {
 		sx_report(SX_FATAL, "As-Sets (-t) supported for JSON (-j), OpenBGPD "
 			"(-B) and BIRD (-b) output only\n");
-	};
-
-	if(expander.asdot && expander.vendor!=V_CISCO) {
-		sx_report(SX_FATAL,"asdot notation supported only for Cisco, "
-			"other formats use asplain only\n");
 	};
 
 	if(!expander.asn32 && expander.asnumber>65535) {

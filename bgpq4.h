@@ -52,7 +52,7 @@ struct bgpq_expander {
 	int family;
 	char* sources;
 	uint32_t asnumber;
-	int aswidth, asdot;
+	int aswidth;
 	char* name;
 	bgpq_vendor_t vendor;
 	bgpq_gen_t    generation;
