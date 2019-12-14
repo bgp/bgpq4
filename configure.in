@@ -1,4 +1,4 @@
-AC_INIT(bgpq4,0.0.1,job@ntt.net)
+AC_INIT(bgpq4,0.0.2,job@ntt.net)
 AC_CONFIG_HEADER(config.h)
 AC_PROG_CC
 AC_PROG_INSTALL
