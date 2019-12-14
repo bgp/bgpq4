@@ -62,7 +62,7 @@ bgpq_expander_init(struct bgpq_expander* b, int af)
 	};
 	memset(b->asn32s[0],0,8192);
 	b->identify=1;
-	b->server="whois.radb.net";
+	b->server="rr.ntt.net";
 	b->port="43";
 
 	STAILQ_INIT(&b->wq);

@@ -45,7 +45,7 @@ usage(int ecode)
 	printf(" -F fmt    : generate output in user-defined format\n");
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
-	printf(" -h host   : host running IRRD software (whois.radb.net by "
+	printf(" -h host   : host running IRRD software (rr.ntt.net by "
 		"default)\n"
 		"             (use host:port to specify alternate port)\n");
 	printf(" -J        : generate config for JunOS (Cisco IOS by default)\n");

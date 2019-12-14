@@ -80,7 +80,7 @@ Generate output as-path access-list.
 
 #### -h `host[:port]`
 
-Host running IRRD database (default: `whois.radb.net`).
+Host running IRRD database (default: `rr.ntt.net`).
 
 #### -J      
 
