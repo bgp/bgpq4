@@ -376,6 +376,9 @@ working tree, run:
 
     make maintainer-clean
 
+In order to create a distribution archive, run:
+
+    make dist
 
 SEE ALSO
 --------
