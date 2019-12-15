@@ -12,10 +12,10 @@ bgpq4.html: readme.header README.md
 	cat readme.header README.md | @MARKDOWN@ > bgpq4.html
 
 clean-local:
-	@rm config.status configure config.log
-	@rm Makefile
-	@rm -r autom4te.cache/
-	@rm aclocal.m4
-	@rm compile install-sh missing Makefile.in depcomp stamp-h1
-	@rm config.h config.h.in
+	-rm config.status configure config.log
+	-rm Makefile
+	-rm -r autom4te.cache/
+	-rm aclocal.m4
+	-rm compile install-sh missing Makefile.in depcomp stamp-h1
+	-rm config.h config.h.in
 

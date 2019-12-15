@@ -3,6 +3,7 @@ Makefile
 config.h
 *.o
 bgpq4
+bgpq4.html
 Makefile.in
 .deps
 /ar-lib
