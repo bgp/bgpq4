@@ -371,6 +371,11 @@ In order to compile the software, run:
     make
     make install
 
+If you wish to remove the generated build system files from your
+working tree, run:
+
+    make clean-local
+
 
 SEE ALSO
 --------
