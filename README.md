@@ -374,7 +374,7 @@ In order to compile the software, run:
 If you wish to remove the generated build system files from your
 working tree, run:
 
-    make clean-local
+    make maintainer-clean
 
 
 SEE ALSO
