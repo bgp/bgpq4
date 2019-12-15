@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Script to help bootstrap the build system when checked out from git
+#
+set -auxo pipefail
+
+autoreconf -i
