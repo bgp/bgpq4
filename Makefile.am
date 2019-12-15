@@ -6,7 +6,7 @@ bgpq4_SOURCES=bgpq4.c sx_report.c bgpq_expander.c sx_slentry.c \
               sx_report.h sx_slentry.h sys_queue.h sys_tree.h
 dist_doc_DATA=bgpq4.html
 dist_man8_MANS=bgpq4.8
-EXTRA_DIST=bootstrap readme.header README.md
+EXTRA_DIST=bootstrap readme.header README.md CHANGES COPYRIGHT bgpq4.spec
 
 bgpq4.html: readme.header README.md
 	cat readme.header README.md | @MARKDOWN@ > bgpq4.html
