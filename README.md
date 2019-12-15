@@ -180,24 +180,24 @@ EXAMPLES
 --------
 Generating prefix filter for MikroTik for `AS20597`:
 
-     user@host:~>./bgpq4 -Kl eltel AS20597
-     /routing filter add action=accept chain="eltel-V4" prefix=81.9.0.0/20
-     /routing filter add action=accept chain="eltel-V4" prefix=81.9.32.0/20
-     /routing filter add action=accept chain="eltel-V4" prefix=81.9.96.0/20
-     /routing filter add action=accept chain="eltel-V4" prefix=81.222.128.0/20
-     /routing filter add action=accept chain="eltel-V4" prefix=81.222.160.0/20
-     /routing filter add action=accept chain="eltel-V4" prefix=81.222.192.0/18
-     /routing filter add action=accept chain="eltel-V4" prefix=85.249.8.0/21
-     /routing filter add action=accept chain="eltel-V4" prefix=85.249.224.0/19
-     /routing filter add action=accept chain="eltel-V4" prefix=89.112.0.0/17
-     /routing filter add action=accept chain="eltel-V4" prefix=217.170.64.0/19
+     user@host:~>./bgpq4 -Kl eltel-v4 AS20597
+     /routing filter add action=accept chain="eltel-v4" prefix=81.9.0.0/20
+     /routing filter add action=accept chain="eltel-v4" prefix=81.9.32.0/20
+     /routing filter add action=accept chain="eltel-v4" prefix=81.9.96.0/20
+     /routing filter add action=accept chain="eltel-v4" prefix=81.222.128.0/20
+     /routing filter add action=accept chain="eltel-v4" prefix=81.222.160.0/20
+     /routing filter add action=accept chain="eltel-v4" prefix=81.222.192.0/18
+     /routing filter add action=accept chain="eltel-v4" prefix=85.249.8.0/21
+     /routing filter add action=accept chain="eltel-v4" prefix=85.249.224.0/19
+     /routing filter add action=accept chain="eltel-v4" prefix=89.112.0.0/17
+     /routing filter add action=accept chain="eltel-v4" prefix=217.170.64.0/19
 
 Generating named Juniper prefix-filter for `AS20597`:
 
-     user@host:~>bgpq4 -Jl eltel AS20597
+     user@host:~>bgpq4 -Jl eltel-v4 AS20597
      policy-options {
      replace:
-      prefix-list eltel {
+      prefix-list eltel-v4 {
          81.9.0.0/20;
          81.9.32.0/20;
          81.9.96.0/20;
@@ -217,19 +217,19 @@ Generating named Juniper prefix-filter for `AS20597`:
 For Cisco we can use aggregation (-A) flag to make this prefix-filter
 more compact:
 
-     user@host:~>bgpq4 -Al eltel AS20597
-     no ip prefix-list eltel
-     ip prefix-list eltel permit 81.9.0.0/20
-     ip prefix-list eltel permit 81.9.32.0/20
-     ip prefix-list eltel permit 81.9.96.0/20
-     ip prefix-list eltel permit 81.222.128.0/20
-     ip prefix-list eltel permit 81.222.192.0/18
-     ip prefix-list eltel permit 85.249.8.0/21
-     ip prefix-list eltel permit 85.249.224.0/19
-     ip prefix-list eltel permit 89.112.0.0/18 ge 19 le 19
-     ip prefix-list eltel permit 89.112.4.0/22
-     ip prefix-list eltel permit 89.112.64.0/19
-     ip prefix-list eltel permit 217.170.64.0/19 ge 20 le 20
+     user@host:~>bgpq4 -Al eltel-v4 AS20597
+     no ip prefix-list eltel-v4
+     ip prefix-list eltel-v4 permit 81.9.0.0/20
+     ip prefix-list eltel-v4 permit 81.9.32.0/20
+     ip prefix-list eltel-v4 permit 81.9.96.0/20
+     ip prefix-list eltel-v4 permit 81.222.128.0/20
+     ip prefix-list eltel-v4 permit 81.222.192.0/18
+     ip prefix-list eltel-v4 permit 85.249.8.0/21
+     ip prefix-list eltel-v4 permit 85.249.224.0/19
+     ip prefix-list eltel-v4 permit 89.112.0.0/18 ge 19 le 19
+     ip prefix-list eltel-v4 permit 89.112.4.0/22
+     ip prefix-list eltel-v4 permit 89.112.64.0/19
+     ip prefix-list eltel-v4 permit 217.170.64.0/19 ge 20 le 20
 
 and, as you see, prefixes `89.112.0.0/19` and `89.112.32.0/19` now aggregated 
 into single entry 
@@ -268,10 +268,10 @@ generated policy-option term now allows more-specific routes in range
 
 Of course, `bgpq4` supports IPv6 (-6):
 
-     user@host:~>bgpq4 -6l as-retn-6 AS-RETN6
-     no ipv6 prefix-list as-retn-6
-     ipv6 prefix-list as-retn-6 permit 2001:7fb:fe00::/48
-     ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
+     user@host:~>bgpq4 -6l as-retn-v6 AS-RETN6
+     no ipv6 prefix-list as-retn-v6
+     ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe00::/48
+     ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe01::/48
      [....]
 
 and ASN32
@@ -368,8 +368,8 @@ SEE ALSO
 AUTHORS
 -------
 
-Job Snijders [job@ntt.net](mailto:job@ntt.net)
-Alexandre Snarskii [snar@snar.spb.ru](mailto:snar@snar.spb.ru)
+- Job Snijders [job@ntt.net](mailto:job@ntt.net)
+- Alexandre Snarskii [snar@snar.spb.ru](mailto:snar@snar.spb.ru)
 
 Program Homepage
 ----------------
