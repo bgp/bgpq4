@@ -6,6 +6,7 @@ bgpq4
 bgpq4.html
 Makefile.in
 .deps
+/bgpq4-*.tar.gz
 /ar-lib
 /mdate-sh
 /py-compile
