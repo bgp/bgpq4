@@ -357,6 +357,29 @@ limitations. For example, JunOS supports only 85,325 prefixes in
 each prefix-list [4](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html). 
 
 
+BUILDING
+--------
+
+This project uses autotools. If you are building from the repository,
+run the following command to prepare the build system:
+
+    ./bootstrap
+
+In order to compile the software, run:
+
+    ./configure
+    make
+    make install
+
+If you wish to remove the generated build system files from your
+working tree, run:
+
+    make maintainer-clean
+
+In order to create a distribution archive, run:
+
+    make dist
+
 SEE ALSO
 --------
 

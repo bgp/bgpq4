@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Script to help bootstrap the build system when checked out from git
+#
+
+autoreconf -i
