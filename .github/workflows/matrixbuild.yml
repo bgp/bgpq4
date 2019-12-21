@@ -1,0 +1,23 @@
+name: Build and test (linux matrix)
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerenv:
+          - debian:buster
+          - debian:stretch
+          - ubuntu:bionic
+          - ubuntu:xenial
+          - centos:8
+          - centos:7
+          - fedora:31
+          - fedora:30
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run build on ${{matrix.dockerenv}}
+      run: docker build . --file .github/images/${{matrix.dockerenv}}.Dockerfile --build-arg image=${{matrix.dockerenv}}
