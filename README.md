@@ -391,11 +391,13 @@ SEE ALSO
 AUTHORS
 -------
 
-- Job Snijders [job@ntt.net](mailto:job@ntt.net)
-- Alexandre Snarskii [snar@snar.spb.ru](mailto:snar@snar.spb.ru)
+Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders, Massimiliano Stucchi, Michail Litvak,
+Peter Schoenmaker, Roelf Wichertjes, and contributions from many others.
 
-Program Homepage
-----------------
+Project
+-------
+
+BGPQ4 is maintained by Job Snijders `<job@ntt.net>`.
 
 [https://github.com/bgp/bgpq4](https://github.com/bgp/bgpq4)
 
