@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 
-#include <bgpq3.h>
+#include <bgpq4.h>
 
 void sx_radix_node_freeall(struct sx_radix_node *n) {
   if (n->l != NULL) {
@@ -33,7 +33,7 @@ void bgpq_prequest_freeall(struct bgpq_prequest *bpr) {
 
 void expander_freeall(struct bgpq_expander *expander) {
 
-  printf("starting to free all\n");
+  // printf("starting to free all\n");
   // seg fault here
   // if (expander->sources != NULL) {
   //  printf("freeing soruces\n");
@@ -43,7 +43,7 @@ void expander_freeall(struct bgpq_expander *expander) {
   //  printf("freeing name\n");
   //  free(expander->name);
   //}
-    printf("freeing asn32s\n");
+  // printf("freeing asn32s\n");
     for (int i = 0; i < 65536; i++) {
       if (expander->asn32s[i] != NULL) {
         free(expander->asn32s[i]);
@@ -70,7 +70,7 @@ void expander_freeall(struct bgpq_expander *expander) {
 
   bgpq_prequest_freeall(expander->firstpipe);
   bgpq_prequest_freeall(expander->lastpipe);
-  printf("finished freeing all\n");
+  // printf("finished freeing all\n");
   
 }
 
