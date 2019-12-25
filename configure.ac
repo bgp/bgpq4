@@ -2,7 +2,11 @@ AC_INIT(bgpq4,0.0.2,job@ntt.net)
 AM_INIT_AUTOMAKE
 AC_PACKAGE_URL(https://github.com/bgp/bgpq4)
 AM_CONFIG_HEADER(config.h)
+
 AC_PROG_CC
+CC=cc
+CFLAGS="${CFLAGS} -std=gnu11"
+
 AC_PROG_INSTALL
 
 AC_CHECK_HEADERS([sys/cdefs.h sys/queue.h sys/tree.h sys/select.h])
