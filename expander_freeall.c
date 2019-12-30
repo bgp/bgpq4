@@ -23,7 +23,9 @@ void sx_radix_node_freeall(struct sx_radix_node *n) {
 }
 
 void sx_radix_tree_freeall(struct sx_radix_tree *t) {
-  sx_radix_node_freeall(t->head);
+  if (t->head != NULL) {
+    sx_radix_node_freeall(t->head);
+  }
   free(t);
 }
 
