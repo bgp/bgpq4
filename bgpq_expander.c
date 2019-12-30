@@ -827,6 +827,13 @@ bgpq_expand(struct bgpq_expander* b)
 		exit(1);
 	};
 
+	if(b->identify) {
+		char ident[128];
+		snprintf(ident,sizeof(ident),"!n" PACKAGE_STRING "\n");
+		write(fd, ident, strlen(ident));
+		read(fd, ident, sizeof(ident));
+	};
+
 	if(b->sources && b->sources[0]!=0) {
 		int slen = strlen(b->sources)+4;
 		if (slen < 128)
@@ -843,13 +850,6 @@ bgpq_expand(struct bgpq_expander* b)
 				sources);
 			exit(1);
 		};
-	};
-
-	if(b->identify) {
-		char ident[128];
-		snprintf(ident,sizeof(ident),"!n" PACKAGE_STRING "\n");
-		write(fd, ident, strlen(ident));
-		read(fd, ident, sizeof(ident));
 	};
 
 	if (pipelining)
