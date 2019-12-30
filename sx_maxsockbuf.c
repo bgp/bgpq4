@@ -18,66 +18,85 @@
 int
 sx_maxsockbuf(int s, int dir)
 { 
-	int optval=0, voptval;
-	int hiconf=-1, loconf=-1;
+	int optval = 0, voptval;
+	int hiconf = -1, loconf = -1;
 	unsigned int voptlen;
-	int phase=0, iterations=0;
+	int phase = 0, iterations = 0;
 
-	if(s<0) { 
-		sx_report(SX_FATAL,"Unable to maximize sockbuf on invalid socket %i\n",
-			s);
+	if (s<0) { 
+		sx_report(SX_FATAL,"Unable to maximize sockbuf on invalid "
+		    "socket %i\n", s);
 		exit(1);
 	};
 
+	voptlen = sizeof(optval);
 
-	voptlen=sizeof(optval);
-	if(getsockopt(s,SOL_SOCKET,dir,(void*)&optval,&voptlen)==-1) {
-		sx_report(SX_ERROR,"initial getsockopt failed: %s\n", strerror(errno));
+	if (getsockopt(s, SOL_SOCKET, dir, (void*)&optval, &voptlen) == -1) {
+		sx_report(SX_ERROR,"initial getsockopt failed: %s\n",
+		    strerror(errno));
 		return -1;
 	};
 
-	for(;;) { 
+	for (;;) { 
 		iterations++;
-		if(phase==0) optval<<=1; 
+
+		if (phase == 0)
+			optval<<=1; 
 		else { 
-			if(optval==(hiconf+loconf)/2) break;
-			optval=(hiconf+loconf)/2;
+			if (optval == (hiconf + loconf) / 2)
+				break;
+			optval = (hiconf + loconf) / 2;
 		};
-		if(optval>SX_MAXSOCKBUF_MAX && phase==0) 
+
+		if (optval > SX_MAXSOCKBUF_MAX && phase == 0) 
 			break;
 
-		if(setsockopt(s,SOL_SOCKET,dir,(void*)&optval,sizeof(optval))==-1)
-		{
-			if(phase==0) phase=1; 
-			hiconf=optval; 
+		if (setsockopt(s, SOL_SOCKET, dir, (void*)&optval,
+		    sizeof(optval)) == -1) {
+
+			if (phase == 0)
+				phase = 1; 
+
+			hiconf = optval; 
+
 			continue;
 		} else { 
-			loconf=optval;
+			loconf = optval;
 		};
 
-		voptlen=sizeof(voptval);
+		voptlen = sizeof(voptval);
 
-		if(getsockopt(s,SOL_SOCKET,dir,(void*)&voptval,&voptlen)==-1) {
-			sx_report(SX_ERROR,"getsockopt failed: %s\n", strerror(errno));
+		if (getsockopt(s, SOL_SOCKET, dir, (void*)&voptval,
+		    &voptlen) == -1) {
+			sx_report(SX_ERROR,"getsockopt failed: %s\n",
+			    strerror(errno));
 			return -1;
-		} else if(voptval<optval) { 
-			if(phase==0) { 
-				phase=1; optval>>=1; continue;
-			} else if(phase==1) { 
-				phase=2; optval-=2048; continue;
-			} else break;
-		} else if(voptval>=SX_MAXSOCKBUF_MAX) { 
-			/* ... and getsockopt not failed and voptval>=optval. Do not allow
-			 * to increase sockbuf too much even in case OS permits it */
+		} else if (voptval < optval) { 
+			if (phase == 0) { 
+				phase = 1;
+				optval >>= 1;
+				continue;
+			} else if (phase == 1) { 
+				phase = 2;
+				optval -= 2048;
+				continue;
+			} else
+				break;
+		} else if (voptval >= SX_MAXSOCKBUF_MAX) { 
+			/*
+			 * ... and getsockopt not failed and voptval>=optval.
+			 * Do not allow to increase sockbuf too much even in
+			 * case OS permits it
+			 */
 			break;
 		};
 	};
 
-
-	voptlen=sizeof(voptval);
-	if(getsockopt(s,SOL_SOCKET,dir,(void*)&voptval,&voptlen)==-1) {
+	voptlen = sizeof(voptval);
+	if (getsockopt(s, SOL_SOCKET, dir, (void*)&voptval,
+	    &voptlen) == -1) {
 		sx_report(SX_ERROR,"getsockopt(final stage) failed: %s\n", 
-			strerror(errno));
+		    strerror(errno));
 		return -1;
 	} else { 
 		/*
@@ -85,5 +104,6 @@ sx_maxsockbuf(int s, int dir)
 			voptval, iterations);
 		*/
 	};
+
 	return voptval;
 };

@@ -62,11 +62,11 @@ strlcpy(dst, src, siz)
 	/* Not enough room in dst, add NUL and traverse rest of src */
 	if (n == 0) {
 		if (siz != 0)
-			*d = '\0';		/* NUL-terminate dst */
+			*d = '\0';	/* NUL-terminate dst */
 		while (*s++)
 			;
 	}
 
-	return(s - src - 1);	/* count does not include NUL */
+	return(s - src - 1);		/* count does not include NUL */
 }
 #endif

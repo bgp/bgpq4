@@ -7,7 +7,7 @@ SYNOPSIS
 --------
 
 ```
-	bgpq4 [-h host[:port]] [-S sources] [-EPz] [-f asn | -F fmt | -G asn | -t] [-2346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
+	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-2346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
 ```
 
 DESCRIPTION
@@ -46,11 +46,11 @@ Specify ASN that shall be denied in case of empty prefix-list (OpenBGPD).
 
 #### -B
 
-Generate output in OpenBGPD format (default: Cisco).
+Generate output in OpenBGPD format.
 
 #### -b
 
-Generate output in BIRD format (default: Cisco).
+Generate output in BIRD format.
 
 #### -d      
 
@@ -80,15 +80,15 @@ Host running IRRD database (default: `rr.ntt.net`).
 
 #### -J      
 
-Generate config for Juniper (default: Cisco).
+Generate config for Juniper.
 
 #### -j      
 
-Generate output in JSON format (default: Cisco).
+Generate output in JSON format.
 
 #### -K
 
-Generate config for MikroTik (default: Cisco).
+Generate config for MikroTik.
 
 #### -m `length`
 
@@ -100,11 +100,11 @@ Extra match conditions for Juniper route-filters. See the examples section.
 
 #### -n
 
-Generate config for Nokia SR OS (former Alcatel-Lucent) MD-CLI (default: Cisco)
+Generate config for Nokia SR OS (former Alcatel-Lucent) MD-CLI.
 
 #### -N
 
-Generate config for Nokia SR OS (former Alcatel-Lucent) classic CLI (default: Cisco)
+Generate config for Nokia SR OS (former Alcatel-Lucent) classic CLI.
 
 #### -l `name`
 
@@ -119,11 +119,6 @@ is a useful feature to prevent generated filters from growing too big.
 
 Enable use of private ASNs and ASNs used for documentation purpose only
 (default: disabled).
-
-#### -P      
-
-Generate prefix-list (default behaviour, flag added for backward compatibility
-only).
 
 #### -r `length`
 
@@ -152,7 +147,7 @@ Disable pipelining. (not recommended)
 
 #### -U
 
-Generate output in Huawei format (default: Cisco).
+Generate output in Huawei format.
 
 #### -W `length`
 
@@ -160,7 +155,7 @@ Generate as-path strings of a given length maximum (0 for infinity).
 
 #### -X      
 
-Generate config for Cisco IOS XR devices (plain IOS by default).
+Generate output in Cisco IOS XR format.
 
 #### -z
 
