@@ -304,9 +304,9 @@ bgpq_expanded_prefix(char* as, struct bgpq_expander* ex,
 {
 	char* d = strchr(as, '^');
 	if (!d)
-		bgpq_expander_add_prefix(ex,as);
+		bgpq_expander_add_prefix(ex, as);
 	else
-		bgpq_expander_add_prefix_range(ex,as);
+		bgpq_expander_add_prefix_range(ex, as);
 	return 1;
 };
 
@@ -760,7 +760,7 @@ have3:
 int
 bgpq_expand(struct bgpq_expander* b)
 {
-	int fd=-1, err, ret;
+	int fd=-1, err, ret, aquery=0;
 	struct sx_slentry* mc;
 	struct addrinfo hints, *res=NULL, *rp;
 	struct linger sl;
@@ -834,6 +834,22 @@ bgpq_expand(struct bgpq_expander* b)
 		read(fd, ident, sizeof(ident));
 	};
 
+	/* Test whether the server has support for the A query */
+	if(b->generation>=T_PREFIXLIST) {
+		char aret[128];
+		char aresp[] = "F Missing required set name for A query";
+		SX_DEBUG(debug_expander, "Testing support for A queries\n");
+		write(fd, "!a\n", 3);
+		memset(aret, 0, sizeof(aret));
+		read(fd, aret, sizeof(aret));
+		if(strncmp(aret, aresp, strlen(aresp)) == 0) {
+			SX_DEBUG(debug_expander, "OK: found support for A queries\n");
+			aquery=1;
+		} else {
+			SX_DEBUG(debug_expander, "No support for A queries\n");
+		}
+	}
+
 	if(b->sources && b->sources[0]!=0) {
 		int slen = strlen(b->sources)+4;
 		if (slen < 128)
@@ -857,7 +873,12 @@ bgpq_expand(struct bgpq_expander* b)
 
 	STAILQ_FOREACH(mc, &b->macroses, next) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
-			bgpq_expand_irrd(b, bgpq_expanded_macro, b, "!i%s,1\n", mc->text);
+			if(aquery)
+				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
+				    (b->family == AF_INET) ? "!a4%s\n" : "!a6%s\n",
+				    mc->text);
+			else
+				bgpq_expand_irrd(b, bgpq_expanded_macro, b, "!i%s,1\n", mc->text);
 		} else {
 			bgpq_expander_add_already(b,mc->text);
 			if (pipelining) {
