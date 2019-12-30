@@ -21,16 +21,13 @@
 extern int debug_expander;
 extern int debug_aggregation;
 extern int pipelining;
-extern int expand_as23456;
 extern int expand_special_asn;
 
 int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
-	    "|f <num>|t] [-2346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
-	printf(" -2        : allow routes belonging to as23456 (transition-as) "
-		"(default: false)\n");
+	    "|f <num>|t] [-346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -3        : assume that your device is asn32-safe\n");
 	printf(" -4        : generate IPv4 prefix-lists (default)\n");
 	printf(" -6        : generate IPv6 prefix-lists\n");
@@ -150,12 +147,9 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"2346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
+	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
 	    !=EOF) {
 	switch (c) {
-		case '2':
-			expand_as23456 = 1;
-			break;
 		case '3':
 			expander.asn32 = 1;
 			break;

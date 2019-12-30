@@ -7,7 +7,7 @@ SYNOPSIS
 --------
 
 ```
-	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-2346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
+	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
 ```
 
 DESCRIPTION
@@ -18,10 +18,6 @@ extended access-lists, policy-statement terms and as-path lists)
 based on RADB data.
 
 The options are as follows:
-
-#### -2
-
-Allow routes registered for as23456 (transition-as) (default: false)
 
 #### -3      
 
@@ -277,7 +273,7 @@ and ASN32
       as-path-group NN {
        as-path a0 "^112(112)*$";
        as-path a1 "^112(.)*(1898|5539|8495|8763|8878|12136|12931|15909)$";
-       as-path a2 "^112(.)*(21358|23456|23600|24151|25152|31529|34127|34906)$";
+       as-path a2 "^112(.)*(21358|23600|24151|25152|31529|34127|34906)$";
        as-path a3 "^112(.)*(35052|41720|43628|44450|196611)$";
       }
      }

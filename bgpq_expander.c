@@ -29,7 +29,6 @@
 
 int debug_expander = 0;
 int pipelining = 1;
-int expand_as23456 = 0;
 int expand_special_asn = 0;
 
 static inline int
@@ -225,9 +224,6 @@ bgpq_expander_add_as(struct bgpq_expander* b, char* as)
 		sx_report(SX_ERROR,"Invalid AS number in %s\n", as);
 		return 0;
 	};
-
-	if (asno == 23456 && !expand_as23456)
-		return 0;
 
 	if (!expand_special_asn && (asno >= 64496 && asno <= 65536))
 		return 0;
