@@ -1,12 +1,13 @@
 0.0.3 (2019-12-30):
-    - Add support for IRRd 4's A query
+    - Significant code reformating
+    - Improve performance by using IRRd 4's A query when available
 
 0.0.2 (2019-12-14):
     - Add Mikrotik support
-    - remove ASDDOT support
+    - Remove ASDDOT support
 
 0.0.1 (2019-12-14):
-    - fork bgpq3 into bgpq4
+    - Fork bgpq3 into bgpq4
 
 0.1.36-pre (2019-11-08):
     - minor documentation cleanup: bgpq3 supports much more vendors
