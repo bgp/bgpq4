@@ -28,7 +28,7 @@ int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-P|E|G <num>|f <num>|t]"
-		" [-2346ABbdJjNnwXz] [-R len] <OBJECTS>...\n");
+		" [-2346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -2        : allow routes belonging to as23456 (transition-as) "
 		"(default: false)\n");
 	printf(" -3        : assume that your device is asn32-safe\n");
