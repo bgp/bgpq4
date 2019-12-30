@@ -1,16 +1,16 @@
 Name:           bgpq4
-Version:        0.0.1
+Version:        0.0.3
 Release:        0%{?dist}
 
 Group:          System/Utilities
-Summary:        Automate BGP filter generation based on routing database information
+Summary:        Generate BGP filters based on routing database information
 URL:            https://github.com/bgp/bgpq4
 License:        BSD
 Source0:        https://github.com/bgp/bgpq4
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
-You are running BGP in your network and want to automate filter generation for your routers? Well, with BGPQ3 it's easy.
+You are running BGP in your network and want to automate filter generation for your routers? Well, with BGPQ4 it's easy.
 
 %prep
 %setup -q
@@ -36,8 +36,16 @@ make install
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Mon Dec 30 2019 Job Snijders <job@ntt.net> 0.0.3
+- Significant code reformating
+- Improve performance by using IRRd 4's A query when available
+
+* Sat Dec 14 2019 Job Snijders <job@ntt.net> 0.0.2
+- Add Mikrotik support
+- Remove ASDDOT support
+
 * Sat Dec 14 2019 Job Snijders <job@ntt.net> 0.0.1
-- fork from bgpq3
+- Fork from bgpq3
 
 * Tue Nov 30 2018 Alexandre Snarskii <snar@snar.spb.ru> 0.1.35
 - Version updated
