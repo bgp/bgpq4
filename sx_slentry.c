@@ -19,7 +19,7 @@ sx_slentry_new(char* t)
 		e->text = strdup(t);
 
 	return e;
-};
+}
 
 struct sx_tentry*
 sx_tentry_new(char* t)
@@ -33,4 +33,4 @@ sx_tentry_new(char* t)
 	te->text = strdup(t);
 
 	return te;
-};
+}

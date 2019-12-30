@@ -27,7 +27,7 @@ sx_maxsockbuf(int s, int dir)
 		sx_report(SX_FATAL,"Unable to maximize sockbuf on invalid "
 		    "socket %i\n", s);
 		exit(1);
-	};
+	}
 
 	voptlen = sizeof(optval);
 
@@ -35,7 +35,7 @@ sx_maxsockbuf(int s, int dir)
 		sx_report(SX_ERROR,"initial getsockopt failed: %s\n",
 		    strerror(errno));
 		return -1;
-	};
+	}
 
 	for (;;) { 
 		iterations++;
@@ -46,7 +46,7 @@ sx_maxsockbuf(int s, int dir)
 			if (optval == (hiconf + loconf) / 2)
 				break;
 			optval = (hiconf + loconf) / 2;
-		};
+		}
 
 		if (optval > SX_MAXSOCKBUF_MAX && phase == 0) 
 			break;
@@ -62,7 +62,7 @@ sx_maxsockbuf(int s, int dir)
 			continue;
 		} else { 
 			loconf = optval;
-		};
+		}
 
 		voptlen = sizeof(voptval);
 
@@ -89,8 +89,8 @@ sx_maxsockbuf(int s, int dir)
 			 * case OS permits it
 			 */
 			break;
-		};
-	};
+		}
+	}
 
 	voptlen = sizeof(voptval);
 	if (getsockopt(s, SOL_SOCKET, dir, (void*)&voptval,
@@ -103,7 +103,7 @@ sx_maxsockbuf(int s, int dir)
 		printf("Finally got %i bytes of recvspace in %i interations\n", 
 			voptval, iterations);
 		*/
-	};
+	}
 
 	return voptval;
-};
+}

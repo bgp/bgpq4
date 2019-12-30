@@ -29,10 +29,10 @@ sx_report_name(sx_report_t t)
 		return "Notice:";
 	case SX_DEBUG:
 		return "Debug:";
-	};
+	}
 
 	return "...... HMMMMM.... ERROR... \n";
-};
+}
 
 int
 sx_report(sx_report_t t, char* fmt, ...)
@@ -62,14 +62,14 @@ sx_report(sx_report_t t, char* fmt, ...)
 		case SX_DEBUG: 
 			syslog(LOG_DEBUG,"Debug: %s", buffer);
 			break;
-		};
-	};
+		}
+	}
 
 	if (t == SX_FATAL)
 		exit(-1);
 
 	return 0;
-};
+}
 
 int 
 sx_debug(char const* const file, char const* const func, int const line, 
@@ -90,15 +90,15 @@ sx_debug(char const* const file, char const* const func, int const line,
 		fputs(buffer, stderr);
 	} else { 
 		syslog(LOG_DEBUG,"%s %s", bline, buffer);
-	};
+	}
 
 	return 0;
-};
+}
 
 void
 sx_openlog(char* progname)
 { 
 	openlog(progname ? progname : "<unknown>", LOG_PID, LOG_DAEMON);
 	reportStderr = 0;
-};
+}
 

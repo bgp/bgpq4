@@ -72,7 +72,7 @@ usage(int ecode)
 	printf(" -X        : generate Cisco IOS XR output\n");
 	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION "\n");
 	exit(ecode);
-};
+}
 
 void
 exclusive()
@@ -80,7 +80,7 @@ exclusive()
 	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, and -t are mutually "
 	    "exclusive\n");
 	exit(1);
-};
+}
 
 void
 vendor_exclusive()
@@ -89,7 +89,7 @@ vendor_exclusive()
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
 	    " -U (Huawei) and -X (IOS XR) options are mutually exclusive\n");
 	exit(1);
-};
+}
 
 int
 parseasnumber(struct bgpq_expander* expander, char* optarg)
@@ -99,7 +99,7 @@ parseasnumber(struct bgpq_expander* expander, char* optarg)
 	if (expander->asnumber < 1 || expander->asnumber > (65535ul * 65535)) {
 		sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 		exit(1);
-	};
+	}
 	if(eon && *eon == '.') {
 		/* -f 3.3, for example */
 		uint32_t loas = strtoul(eon+1, &eon, 10);
@@ -107,24 +107,24 @@ parseasnumber(struct bgpq_expander* expander, char* optarg)
 			/* should prevent incorrect numbers like 65537.1 */
 			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 			exit(1);
-		};
+		}
 		if(loas < 1 || loas > 65535) {
 			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 			exit(1);
-		};
+		}
 		if (eon && *eon) {
 			sx_report(SX_FATAL,"Invalid symbol in AS number: "
 			    "%c (%s)\n", *eon, optarg);
 			exit(1);
-		};
+		}
 		expander->asnumber=(expander->asnumber << 16) + loas;
 	} else if (eon && *eon) {
 		sx_report(SX_FATAL,"Invalid symbol in AS number: %c (%s)\n",
 			*eon, optarg);
 		exit(1);
-	};
+	}
 	return 0;
-};
+}
 
 int
 main(int argc, char* argv[])
@@ -159,7 +159,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL, "-4 and -6 are mutually "
 				    "exclusive\n");
 				exit(1);
-			};
+			}
 			selectedipv4=1;
 			break;
 		case '6':
@@ -167,7 +167,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL, "-4 and -6 are mutually "
 				    "exclusive\n");
 				exit(1);
-			};
+			}
 			af = AF_INET6;
 			expander.family = AF_INET6;
 			expander.tree->family = AF_INET6;
@@ -224,8 +224,8 @@ main(int argc, char* argv[])
 				if (d) {
 					*d = 0;
 					expander.port = d + 1;
-				};
-			};
+				}
+			}
 			break;
 		case 'J':
 			if (expander.vendor)
@@ -251,7 +251,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL, "Invalid refineLow value:"
 				    " %s\n", optarg);
 				exit(1);
-			};
+			}
 			break;
 		case 'R':
 			refine = strtoul(optarg, NULL, 10);
@@ -259,7 +259,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL,"Invalid refine length:"
 				    " %s\n", optarg);
 				exit(1);
-			};
+			}
 			break;
 		case 'l':
 			expander.name = optarg;
@@ -270,7 +270,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL, "Invalid maximum recursion"
 				    " (-L): %s\n", optarg);
 				exit(1);
-			};
+			}
 			break;
 		case 'm':
 			maxlen=strtoul(optarg, NULL, 10);
@@ -278,7 +278,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL, "Invalid maxlen (-m): %s\n",
 				    optarg);
 				exit(1);
-			};
+			}
 			break;
 		case 'M':
 			{
@@ -310,17 +310,17 @@ main(int argc, char* argv[])
 						    isprint(*c) ? *c : 20,
 						    *c, optarg);
 						exit(1);
-					};
+					}
 				} else {
 					if (c != d) {
 						*d = *c;
-					};
+					}
 					d++;
 					c++;
-				};
-			};
+				}
+			}
 			*d = 0;
-			};
+			}
 			break;
 		case 'N':
 			if (expander.vendor)
@@ -357,7 +357,7 @@ main(int argc, char* argv[])
 				sx_report(SX_FATAL,"Invalid as-width: %s\n",
 				    optarg);
 				exit(1);
-			};
+			}
 			widthSet = 1;
 			break;
 		case 'w':
@@ -375,8 +375,8 @@ main(int argc, char* argv[])
 			break;
 		default:
 			usage(1);
-	};
-	};
+	}
+	}
 
 	argc -= optind;
 	argv += optind;
@@ -396,7 +396,7 @@ main(int argc, char* argv[])
 			} else if (expander.vendor == V_NOKIA ||
 			    expander.vendor == V_NOKIA_MD) {
 				expander.aswidth = 8;
-			};
+			}
 		} else if (expander.generation == T_OASPATH) {
 			if (expander.vendor == V_CISCO) {
 				expander.aswidth = 5;
@@ -407,29 +407,29 @@ main(int argc, char* argv[])
 			} else if (expander.vendor == V_NOKIA ||
 			    expander.vendor == V_NOKIA_MD) {
 				expander.aswidth = 8;
-			};
-		};
-	};
+			}
+		}
+	}
 
 	if (!expander.generation) {
 		expander.generation = T_PREFIXLIST;
-	};
+	}
 
 	if (expander.generation != (T_PREFIXLIST & T_ASPATH & T_OASPATH) &&
 	    expander.vendor == V_CISCO_XR) {
 		sx_report(SX_FATAL, "Sorry, only prefix-sets and as-paths "
 			"supported for IOS XR\n");
-	};
+	}
 	if (expander.vendor == V_BIRD && expander.generation != T_PREFIXLIST &&
 		expander.generation != T_ASPATH && expander.generation != T_ASSET) {
 		sx_report(SX_FATAL, "Sorry, only prefix-lists and as-paths/as-sets "
 		    "supported for BIRD output\n");
-	};
+	}
 	if (expander.vendor == V_JSON && expander.generation != T_PREFIXLIST &&
 		expander.generation != T_ASPATH && expander.generation != T_ASSET) {
 		sx_report(SX_FATAL, "Sorry, only prefix-lists and as-paths/as-sets "
 		    "supported for JSON output\n");
-	};
+	}
 
 	if (expander.vendor == V_FORMAT && expander.generation != T_PREFIXLIST)
 		sx_report(SX_FATAL, "Sorry, only prefix-lists supported in formatted "
@@ -439,7 +439,7 @@ main(int argc, char* argv[])
 		sx_report(SX_FATAL, "Sorry, formatted output (-F <fmt>) in not "
 		    "compatible with -R/-r options\n");
 		exit(1);
-	};
+	}
 
 	if (expander.vendor == V_HUAWEI && expander.generation != T_ASPATH &&
 	    expander.generation != T_OASPATH && expander.generation != T_PREFIXLIST)
@@ -463,64 +463,64 @@ main(int argc, char* argv[])
 		    " Juniper prefix-lists\nYou can try route-filters (-E) "
 		    "or route-filter-lists (-z) instead of prefix-lists\n.");
 		exit(1);
-	};
+	}
 
 	if(aggregate && expander.vendor == V_FORMAT) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not compatible with "
 			"formatted output (-F <fmt>)\n");
 		exit(1);
-	};
+	}
 
 	if (aggregate && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
-	};
+	}
 
 	if (refine && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-R) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
-	};
+	}
 
 	if (refineLow && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	     && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-r) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
-	};
+	}
 
 	if (aggregate && expander.generation < T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) used only for prefix-"
 		    "lists, extended access-lists and route-filters\n");
 		exit(1);
-	};
+	}
 
 	if (expander.sequence && expander.vendor != V_CISCO) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
 		    " only for IOS\n");
 		exit(1);
-	};
+	}
 
 	if (expander.sequence && expander.generation < T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) can't be "
 		    " used for non prefix-list\n");
 		exit(1);
-	};
+	}
 
 	if (refineLow && !refine) {
 		if (expander.family == AF_INET)
 			refine = 32;
 		else
 			refine = 128;
-	};
+	}
 
 	if (refineLow && refineLow > refine) {
 		sx_report(SX_FATAL, "Incompatible values for -r %u and -R %u\n",
 		    refineLow, refine);
-	};
+	}
 
 	if (refine || refineLow) {
 		if (expander.family == AF_INET6 && refine > 128) {
@@ -535,7 +535,7 @@ main(int argc, char* argv[])
 		} else if (expander.family == AF_INET && refineLow > 32) {
 			sx_report(SX_FATAL, "Invalid value for refineLow(-r): %u (1-32 for"
 			    " IPv4)\n", refineLow);
-		};
+		}
 
 		if (expander.vendor == V_JUNIPER && expander.generation == T_PREFIXLIST) {
 			if (refine) {
@@ -548,8 +548,8 @@ main(int argc, char* argv[])
 				    "is not supported for Juniper prefix-lists.\n"
 				    "Use route-filters (-E) or route-filter-lists (-z) "
 				    "instead\n", refineLow);
-			};
-		};
+			}
+		}
 
 		if (expander.generation < T_PREFIXLIST) {
 			if (refine) {
@@ -558,9 +558,9 @@ main(int argc, char* argv[])
 			} else {
 				sx_report(SX_FATAL, "Sorry, more-specific filter (-r %u) "
 				    "supported only with prefix-list generation\n", refineLow);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	if (maxlen) {
 		if ((expander.family == AF_INET6 && maxlen > 128)
@@ -575,36 +575,36 @@ main(int argc, char* argv[])
 			 * routes will be accepted, so save some CPU cycles :)
 			 */
 			expander.maxlen = maxlen;
-		};
+		}
 	} else if (expander.family == AF_INET) {
 		expander.maxlen = 32;
 	} else if (expander.family == AF_INET6) {
 		expander.maxlen = 128;
-	};
+	}
 
 	if (expander.generation == T_EACL && expander.vendor == V_CISCO
 	    && expander.family == AF_INET6) {
 		sx_report(SX_FATAL,"Sorry, ipv6 access-lists not supported "
 		    "for Cisco yet.\n");
-	};
+	}
 
 	if (expander.match != NULL
 	    && (expander.vendor != V_JUNIPER || expander.generation != T_EACL)) {
 		sx_report(SX_FATAL, "Sorry, extra match conditions (-M) can be used "
 		    "only with Juniper route-filters\n");
-	};
+	}
 
 	if ((expander.generation == T_ASPATH || expander.generation == T_OASPATH)
 	    && af != AF_INET && !expander.validate_asns) {
 		sx_report(SX_FATAL, "Sorry, -6 makes no sense with as-path (-f/-G) "
 		    "generation\n");
-	};
+	}
 
 	if (expander.validate_asns && expander.generation != T_ASPATH
 	    && expander.generation != T_OASPATH) {
 		sx_report(SX_FATAL, "Sorry, -w makes sense only for as-path "
 		    "(-f/-G) generation\n");
-	};
+	}
 
 	if (!argv[0])
 		usage(1);
@@ -628,10 +628,10 @@ main(int argc, char* argv[])
 				} else {
 					SX_DEBUG(debug_expander,"Unknown sub-as"
 					    " object %s\n", argv[0]);
-				};
+				}
 			} else {
 				bgpq_expander_add_as(&expander,argv[0]);
-			};
+			}
 		} else {
 			char* c = strchr(argv[0], '^');
 			if (!c && !bgpq_expander_add_prefix(&expander, argv[0])) {
@@ -643,11 +643,11 @@ main(int argc, char* argv[])
 				    "%s (bad range or address-family)\n",
 				    argv[0]);
 				exit(1);
-			};
-		};
+			}
+		}
 		argv++;
 		argc--;
-	};
+	}
 
 	if (!bgpq_expand(&expander))
 		exit(1);
@@ -683,9 +683,9 @@ main(int argc, char* argv[])
 		case T_ROUTE_FILTER_LIST:
 			bgpq4_print_route_filter_list(stdout, &expander);
 			break;
-	};
+	}
 
         expander_freeall(&expander);
 
 	return 0;
-};
+}

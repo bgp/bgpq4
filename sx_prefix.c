@@ -29,14 +29,14 @@ sx_prefix_alloc(struct sx_prefix* p)
 		memset(sp, 0, sizeof(struct sx_prefix));
 
 	return sp;
-};
+}
 
 void
 sx_prefix_destroy(struct sx_prefix* p)
 {
 	if (p)
 		free(p);
-};
+}
 
 void
 sx_radix_node_destroy(struct sx_radix_node *n)
@@ -50,7 +50,7 @@ sx_radix_node_destroy(struct sx_radix_node *n)
 
     		free(n);
 	}
-};
+}
 
 void
 sx_prefix_adjust_masklen(struct sx_prefix* p)
@@ -63,12 +63,12 @@ sx_prefix_adjust_masklen(struct sx_prefix* p)
 
 	for (i = nbytes -1; i > p->masklen / 8; i--) {
 		p->addr.addrs[i]=0;
-	};
+	}
 
 	for (i = 1; i <= 8 - p->masklen % 8; i++) {
 		p->addr.addrs[p->masklen / 8] &= (0xff << i);
-	};
-};
+	}
+}
 
 void
 sx_prefix_mask(struct sx_prefix* p, struct sx_prefix* q)
@@ -85,7 +85,7 @@ sx_prefix_mask(struct sx_prefix* p, struct sx_prefix* q)
 
 	for (i = 1; i <= p->masklen % 8; i++)
 		q->addr.addrs[p->masklen / 8] |= (1 << (8 - i));
-};
+}
 
 void
 sx_prefix_imask(struct sx_prefix* p, struct sx_prefix* q)
@@ -102,7 +102,7 @@ sx_prefix_imask(struct sx_prefix* p, struct sx_prefix* q)
 
 	for (i = 1;i <= p->masklen % 8; i++)
 		q->addr.addrs[p->masklen / 8] &= ~(1 <<(8 - i));
-};
+}
 
 
 int
@@ -125,17 +125,17 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 			sx_report(SX_ERROR, "Invalid masklen in prefix %s\n",
 			    text);
 			goto fixups;
-		};
+		}
 	} else {
 		masklen = -1;
-	};
+	}
 
 	if (!af) {
 		if (strchr(mtext, ':'))
 			af = AF_INET6;
 		else
 			af = AF_INET;
-	};
+	}
 
 	ret = inet_pton(af, mtext, &p->addr);
 
@@ -162,8 +162,8 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 			    " (%s), ret=%i\n", mtext, af,
 			    af == AF_INET ? "inet" : "inet6", ret);
 			goto fixups;
-		};
-	};
+		}
+	}
 
 	if (af == AF_INET) {
 		if (masklen == -1)
@@ -173,8 +173,8 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 				p->masklen = 32;
 			} else {
 				p->masklen = masklen;
-			};
-		};
+			}
+		}
 	} else if (af == AF_INET6) {
 		if (masklen == -1)
 			p->masklen = 128;
@@ -183,12 +183,12 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 				p->masklen = 128;
 			} else {
 				p->masklen = masklen;
-			};
-		};
+			}
+		}
 	} else {
 		sx_report(SX_ERROR, "Invalid address family %i\n", af);
 		goto fixups;
-	};
+	}
 
 	p->family = af;
 	sx_prefix_adjust_masklen(p);
@@ -200,7 +200,7 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 
 fixups:
 	return 0;
-};
+}
 
 int
 sx_prefix_isbitset(struct sx_prefix* p, int n)
@@ -215,7 +215,7 @@ sx_prefix_isbitset(struct sx_prefix* p, int n)
 	s = p->addr.addrs[(n - 1) / 8];
 
 	return (s & (0x80 >> ((n - 1) % 8))) ? 1 : 0;
-};
+}
 
 void
 sx_prefix_setbit(struct sx_prefix* p, int n)
@@ -230,7 +230,7 @@ sx_prefix_setbit(struct sx_prefix* p, int n)
 	s = p->addr.addrs + (n - 1) / 8;
 
 	(*s) |= 0x80 >> ((n - 1) % 8);
-};
+}
 
 
 int
@@ -255,7 +255,7 @@ sx_radix_tree_insert_specifics(struct sx_radix_tree* t, struct sx_prefix *p,
 	sx_radix_tree_insert_specifics(t, np, min, max);
 
 	return 1;
-};
+}
 
 int
 sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
@@ -276,7 +276,7 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 		sx_report(SX_ERROR, "Unable to parse prefix %s^%s\n", text,
 		    d+1);
 		return 0;
-	};
+	}
 
 	*d = '^';
 
@@ -284,13 +284,13 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 		sx_report(SX_ERROR, "Ignoring prefix %s, wrong af %i\n", text,
 		    p->family);
 		return 0;
-	};
+	}
 
 	if (maxlen && p->masklen > maxlen) {
 		SX_DEBUG(debug_expander, "Ignoring prefix %s, masklen %i > max"
 		    " masklen %u\n", text, p->masklen, maxlen);
 		return 0;
-	};
+	}
 
 	if (d[1] == '-') {
 		min = p->masklen + 1;
@@ -307,17 +307,17 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 			sx_report(SX_ERROR, "Unable to parse prefix-range "
 			    "%s\n", text);
 			return 0;
-		};
+		}
 	} else {
 		sx_report(SX_ERROR, "Invalid prefix-range %s\n", text);
 		return 0;
-	};
+	}
 
 	if (min < p->masklen) {
 		sx_report(SX_ERROR, "Invalid prefix-range %s: min %lu < "
 		    "masklen %u\n", text, min, p->masklen);
 		return 0;
-	};
+	}
 
 	if (af == AF_INET && max > 32) {
 		sx_report(SX_ERROR, "Invalid prefix-range %s: max %lu > "
@@ -327,7 +327,7 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 		sx_report(SX_ERROR, "Invalid ipv6 prefix-range %s: max %lu > "
 		    "128\n", text, max);
 		return 0;
-	};
+	}
 
 	if (max > maxlen)
 		max = maxlen;
@@ -338,7 +338,7 @@ sx_prefix_range_parse(struct sx_radix_tree* tree, int af, int maxlen,
 	sx_radix_tree_insert_specifics(tree, p, min, max);
 
 	return 1;
-};
+}
 
 struct sx_prefix*
 sx_prefix_new(int af, char* text)
@@ -356,10 +356,10 @@ sx_prefix_new(int af, char* text)
 	if (!sx_prefix_parse(p, af, text)) {
 		sx_prefix_destroy(p);
 		return NULL;
-	};
+	}
 
 	return p;
-};
+}
 
 int
 sx_prefix_fprint(FILE* f, struct sx_prefix* p)
@@ -369,11 +369,11 @@ sx_prefix_fprint(FILE* f, struct sx_prefix* p)
 	if (!p) {
 		fprintf(f?f:stdout,"(null)");
 		return 0;
-	};
+	}
 
 	inet_ntop(p->family, &p->addr, buffer, sizeof(buffer));
 	return fprintf( f ? f : stdout, "%s/%i", buffer, p->masklen);
-};
+}
 
 int
 sx_prefix_snprintf_sep(struct sx_prefix* p, char* rbuffer, int srb, char* sep)
@@ -386,18 +386,18 @@ sx_prefix_snprintf_sep(struct sx_prefix* p, char* rbuffer, int srb, char* sep)
 	if (!p) {
 		snprintf(rbuffer, srb, "(null)");
 		return 0;
-	};
+	}
 
 	inet_ntop(p->family, &p->addr, buffer, sizeof(buffer));
 
 	return snprintf(rbuffer, srb, "%s%s%i", buffer, sep, p->masklen);
-};
+}
 
 int
 sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb)
 {
 	return sx_prefix_snprintf_sep(p, rbuffer, srb, "/");
-};
+}
 
 int
 sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
@@ -442,7 +442,7 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
 				sx_report(SX_ERROR, "Unknown format char "
 				    "'%c'\n", *(c + 1));
 				return 0;
-			};
+			}
 			c += 2;
 		} else if (*c == '\\') {
 			switch(*(c+1)) {
@@ -458,16 +458,16 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
 			default:
 				buffer[off++] = *(c + 1);
 				break;
-			};
+			}
 			c += 2;
 		} else {
 			buffer[off++] = *c;
 			c++;
-		};
-	};
+		}
+	}
 
 	return strlen(buffer);
-};
+}
 
 int
 sx_prefix_jsnprintf(struct sx_prefix* p, char* rbuffer, int srb)
@@ -477,11 +477,11 @@ sx_prefix_jsnprintf(struct sx_prefix* p, char* rbuffer, int srb)
 	if (!p) {
 		snprintf(rbuffer, srb, "(null)");
 		return 0;
-	};
+	}
 	inet_ntop(p->family, &p->addr, buffer, sizeof(buffer));
 
 	return snprintf(rbuffer, srb, "%s\\/%i", buffer, p->masklen);
-};
+}
 
 struct sx_radix_tree*
 sx_radix_tree_new(int af)
@@ -495,13 +495,13 @@ sx_radix_tree_new(int af)
 	rt->family = af;
 
 	return rt;
-};
+}
 
 int
 sx_radix_tree_empty(struct sx_radix_tree* t)
 {
 	return t->head == NULL;
-};
+}
 
 struct sx_radix_node*
 sx_radix_node_new(struct sx_prefix* prefix)
@@ -517,7 +517,7 @@ sx_radix_node_new(struct sx_prefix* prefix)
 		rn->prefix = sx_prefix_alloc(prefix);
 
 	return rn;
-};
+}
 
 int
 sx_prefix_eqbits(struct sx_prefix* a, struct sx_prefix* b)
@@ -536,15 +536,15 @@ sx_prefix_eqbits(struct sx_prefix* a, struct sx_prefix* b)
 				if ((a->addr.addrs[i] & (0x80 >> j))
 				    != (b->addr.addrs[i] & (0x80 >> j)))
 					return i * 8 + j;
-			};
-		};
-	};
+			}
+		}
+	}
 
 	if (a->masklen < b->masklen)
 		return a->masklen;
 
 	return b->masklen;
-};
+}
 
 struct sx_prefix*
 sx_prefix_overlay(struct sx_prefix* p, int n)
@@ -554,7 +554,7 @@ sx_prefix_overlay(struct sx_prefix* p, int n)
 	sx_prefix_adjust_masklen(sp);
 
 	return sp;
-};
+}
 
 void
 sx_radix_tree_unlink(struct sx_radix_tree* tree, struct sx_radix_node* node)
@@ -573,7 +573,7 @@ next:
 			} else {
 				sx_report(SX_ERROR,"Unlinking node which is "
 				    "not descendant of its parent\n");
-			};
+			}
 		} else if (tree->head == node) {
 			/* only one case, really */
 			tree->head = node->r;
@@ -581,7 +581,7 @@ next:
 		} else {
 			sx_report(SX_ERROR,"Unlinking node with no parent and"
 			    " not root\n");
-		};
+		}
 		sx_radix_node_destroy(node);
 		return;
 	} else if (node->l) {
@@ -595,13 +595,13 @@ next:
 			} else {
 				sx_report(SX_ERROR,"Unlinking node which is not descendant "
 					"of its parent\n");
-			};
+			}
 		} else if(tree->head==node) {
 			tree->head=node->l;
 			node->l->parent=NULL;
 		} else {
 			sx_report(SX_ERROR,"Unlinking node with no parent and not root\n");
-		};
+		}
 		sx_radix_node_destroy(node);
 		return;
 	} else {
@@ -614,22 +614,22 @@ next:
 			else {
 				sx_report(SX_ERROR,"Unlinking node which is "
 				    "not descendant of its parent\n");
-			};
+			}
 
 			if (node->parent->isGlue) {
 				node = node->parent;
 				goto next;
-			};
+			}
 		} else if (tree->head==node) {
 			tree->head = NULL;
 		} else {
 			sx_report(SX_ERROR, "Unlinking node with no parent and"
 			    " not root\n");
-		};
+		}
 		sx_radix_node_destroy(node);
 		return;
-	};
-};
+	}
+}
 	
 			
 struct sx_radix_node*
@@ -664,27 +664,27 @@ next:
 			if (chead->r) {
 				if (!chead->isGlue) {
 					candidate = chead;
-				};
+				}
 				chead = chead->r;
 				goto next;
 			} else {
 				if (chead->isGlue)
 					return candidate;
 				return chead;
-			};
+			}
 		} else {
 			if (chead->l) {
 				if (!chead->isGlue) {
 					candidate = chead;
-				};
+				}
 				chead = chead->l;
 				goto next;
 			} else {
 				if (chead->isGlue)
 					return candidate;
 				return chead;
-			};
-		};
+			}
+		}
 	} else {
 		char pbuffer[128], cbuffer[128];
 		sx_prefix_snprintf(prefix, pbuffer, sizeof(pbuffer));
@@ -692,8 +692,8 @@ next:
 		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n",
 		    eb, pbuffer, cbuffer);
 		abort();
-	};
-};
+	}
+}
 
 
 struct sx_radix_node*
@@ -711,7 +711,7 @@ sx_radix_tree_insert(struct sx_radix_tree* tree, struct sx_prefix* prefix)
 	if (!tree->head) {
 		tree->head=sx_radix_node_new(prefix);
 		return tree->head;
-	};
+	}
 
 	candidate = &tree->head;
 	chead = tree->head;
@@ -731,7 +731,7 @@ next:
 			sx_report(SX_ERROR,"Unable to create node: %s\n",
 			    strerror(errno));
 			return NULL;
-		};
+		}
 
 		if (sx_prefix_isbitset(prefix, eb + 1)) {
 			rn->l = chead;
@@ -739,7 +739,7 @@ next:
 		} else {
 			rn->l = ret;
 			rn->r = chead;
-		};
+		}
 
 		rn->parent = chead->parent;
 		chead->parent = rn;
@@ -753,7 +753,7 @@ next:
 			ret->r = chead;
 		} else {
 			ret->l = chead;
-		};
+		}
 		ret->parent = chead->parent;
 		chead->parent = ret;
 		*candidate = ret;
@@ -768,7 +768,7 @@ next:
 				chead->r = sx_radix_node_new(prefix);
 				chead->r->parent = chead;
 				return chead->r;
-			};
+			}
 		} else {
 			if (chead->l) {
 				candidate = &chead->l;
@@ -778,13 +778,13 @@ next:
 				chead->l = sx_radix_node_new(prefix);
 				chead->l->parent = chead;
 				return chead->l;
-			};
-		};
+			}
+		}
 	} else if (eb == chead->prefix->masklen && eb == prefix->masklen) {
 		/* equal routes... */
 		if (chead->isGlue) {
 			chead->isGlue = 0;
-		};
+		}
 		return chead;
 	} else {
 		char pbuffer[128], cbuffer[128];
@@ -793,7 +793,7 @@ next:
 		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n", eb,
 		    pbuffer, cbuffer);
 		abort();
-	};
+	}
 }
 
 void
@@ -806,8 +806,8 @@ sx_radix_node_fprintf(struct sx_radix_node* node, void* udata)
 	} else {
 		sx_prefix_snprintf(node->prefix, buffer, sizeof(buffer));
 		fprintf(out, "%s %s\n", buffer, node->isGlue ? "(glue)" : "");
-	};
-};
+	}
+}
 
 int
 sx_radix_node_foreach(struct sx_radix_node* node,
@@ -822,7 +822,7 @@ sx_radix_node_foreach(struct sx_radix_node* node,
 		sx_radix_node_foreach(node->r, func, udata);
 
 	return 0;
-};
+}
 
 int
 sx_radix_tree_foreach(struct sx_radix_tree* tree,
@@ -831,7 +831,7 @@ sx_radix_tree_foreach(struct sx_radix_tree* tree,
 	if(!func || !tree || !tree->head) return 0;
 	sx_radix_node_foreach(tree->head,func,udata);
 	return 0;
-};
+}
 
 int
 sx_radix_node_aggregate(struct sx_radix_node* node)
@@ -862,8 +862,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 			    node->r->son->isAggregate ? "Aggregate " : "",
 			    node->r->son->aggregateLow,
 			    node->r->son->aggregateHi);
-			};
-		};
+			}
+		}
 		if (node->l) {
 			printf("L-Tree: ");
 			sx_prefix_fprint(stdout, node->l->prefix);
@@ -878,9 +878,9 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 				    node->l->son->isAggregate ? "Aggregate " : "",
 				    node->l->son->aggregateLow,
 				    node->l->son->aggregateHi);
-			};
-		};
-	};
+			}
+		}
+	}
 
 	if (node->r && node->l) {
 		if (!node->r->isAggregate && !node->l->isAggregate
@@ -896,8 +896,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->aggregateLow = node->r->prefix->masklen;
 				} else {
 					node->aggregateLow = node->prefix->masklen;
-				};
-			};
+				}
+			}
 			if (node->r->son && node->l->son
 			    && node->r->son->isAggregate
 			    && node->l->son->isAggregate
@@ -912,7 +912,7 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 				node->son->aggregateLow = node->r->son->aggregateLow;
 				node->r->son->isGlue = 1;
 				node->l->son->isGlue = 1;
-			};
+			}
 		} else if (node->r->isAggregate && node->l->isAggregate
 		    && node->r->aggregateHi == node->l->aggregateHi
 		    && node->r->aggregateLow==node->l->aggregateLow) {
@@ -949,9 +949,9 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 						node->son->son->aggregateLow = node->r->son->aggregateLow;
 						node->r->son->isGlue = 1;
 						node->l->son->isGlue = 1;
-					};
-				};
-			};
+					}
+				}
+			}
 		} else if (node->l->son && node->r->isAggregate
 		    && node->l->son->isAggregate
 		    && node->r->aggregateHi == node->l->son->aggregateHi
@@ -973,8 +973,8 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->son->aggregateLow = node->r->aggregateLow;
 					node->r->isGlue = 1;
 					node->l->son->isGlue = 1;
-				};
-			};
+				}
+			}
 		} else if (node->r->son && node->l->isAggregate
 		    && node->r->son->isAggregate
 		    && node->l->aggregateHi == node->r->son->aggregateHi
@@ -996,13 +996,13 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 					node->son->aggregateLow = node->l->aggregateLow;
 					node->l->isGlue = 1;
 					node->r->son->isGlue = 1;
-				};
-			};
-		};
-	};
+				}
+			}
+		}
+	}
 
 	return 0;
-};
+}
 
 int
 sx_radix_tree_aggregate(struct sx_radix_tree* tree)
@@ -1011,7 +1011,7 @@ sx_radix_tree_aggregate(struct sx_radix_tree* tree)
 		return sx_radix_node_aggregate(tree->head);
 
 	return 0;
-};
+}
 
 static void
 setGlueUpTo(struct sx_radix_node* node, void* udata)
@@ -1020,7 +1020,7 @@ setGlueUpTo(struct sx_radix_node* node, void* udata)
 
 	if (node && node->prefix->masklen <= refine)
 		node->isGlue = 1;
-};
+}
 
 int
 sx_radix_node_refine(struct sx_radix_node* node, unsigned refine)
@@ -1032,11 +1032,11 @@ sx_radix_node_refine(struct sx_radix_node* node, unsigned refine)
 		if (node->l) {
 			sx_radix_node_foreach(node->l, setGlueUpTo, &refine);
 			sx_radix_node_refine(node->l, refine);
-		};
+		}
 		if (node->r) {
 			sx_radix_node_foreach(node->r, setGlueUpTo, &refine);
 			sx_radix_node_refine(node->r, refine);
-		};
+		}
 	} else if (!node->isGlue && node->prefix->masklen == refine) {
 		/* not setting aggregate in this case */
 		if (node->l)
@@ -1060,9 +1060,9 @@ sx_radix_node_refine(struct sx_radix_node* node, unsigned refine)
 		if (node->r)
 			sx_radix_node_foreach(node->r, setGlue, NULL);
 		*/
-	};
+	}
 	return 0;
-};
+}
 	
 int
 sx_radix_tree_refine(struct sx_radix_tree* tree, unsigned refine)
@@ -1071,7 +1071,7 @@ sx_radix_tree_refine(struct sx_radix_tree* tree, unsigned refine)
 		return sx_radix_node_refine(tree->head, refine);
 
 	return 0;
-};
+}
 
 static void
 setGlueFrom(struct sx_radix_node* node, void* udata)
@@ -1080,7 +1080,7 @@ setGlueFrom(struct sx_radix_node* node, void* udata)
 
 	if (node && node->prefix->masklen <= refine)
 		node->isGlue=1;
-};
+}
 
 static int
 sx_radix_node_refineLow(struct sx_radix_node* node, unsigned refineLow)
@@ -1100,12 +1100,12 @@ sx_radix_node_refineLow(struct sx_radix_node* node, unsigned refineLow)
 		if (node->l) {
 			sx_radix_node_foreach(node->l, setGlueFrom, &refineLow);
 			sx_radix_node_refineLow(node->l, refineLow);
-		};
+		}
 
 		if (node->r) {
 			sx_radix_node_foreach(node->r, setGlueFrom, &refineLow);
 			sx_radix_node_refineLow(node->r, refineLow);
-		};
+		}
 
 	} else if (!node->isGlue && node->prefix->masklen == refineLow) {
 		/* not setting aggregate in this case */
@@ -1128,10 +1128,10 @@ sx_radix_node_refineLow(struct sx_radix_node* node, unsigned refineLow)
 		if (node->r)
 			sx_radix_node_foreach(node->r, setGlue, NULL);
 		*/
-	};
+	}
 
 	return 0;
-};
+}
 
 int
 sx_radix_tree_refineLow(struct sx_radix_tree* tree, unsigned refineLow)
@@ -1140,7 +1140,7 @@ sx_radix_tree_refineLow(struct sx_radix_tree* tree, unsigned refineLow)
 		return sx_radix_node_refineLow(tree->head, refineLow);
 
 	return 0;
-};
+}
 
 #if SX_PTREE_TEST
 int
@@ -1310,6 +1310,6 @@ main() {
 	sx_radix_tree_foreach(tree, sx_radix_node_fprintf, NULL);
 
 	return 0;
-};
+}
 
 #endif
