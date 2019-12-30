@@ -382,8 +382,9 @@ SEE ALSO
 AUTHORS
 -------
 
-Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders, Massimiliano Stucchi, Michail Litvak,
-Peter Schoenmaker, Roelf Wichertjes, and contributions from many others.
+Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders,
+Massimiliano Stucchi, Michail Litvak, Peter Schoenmaker, Roelf Wichertjes,
+and contributions from many others.
 
 Project
 -------

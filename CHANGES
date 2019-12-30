@@ -1,4 +1,5 @@
 0.0.3 (2019-12-30):
+    - Remove the '-2' command line option
     - Significant code reformating
     - Improve performance by using IRRd 4's A query when available
 
