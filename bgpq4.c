@@ -27,13 +27,13 @@ extern int expand_special_asn;
 int
 usage(int ecode)
 {
-	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-P|E|G <num>|f <num>|t]"
-		" [-2346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
+	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
+	    "|f <num>|t] [-2346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -2        : allow routes belonging to as23456 (transition-as) "
 		"(default: false)\n");
 	printf(" -3        : assume that your device is asn32-safe\n");
 	printf(" -4        : generate IPv4 prefix-lists (default)\n");
-	printf(" -6        : generate IPv6 prefix-lists (IPv4 by default)\n");
+	printf(" -6        : generate IPv6 prefix-lists\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
 	printf(" -B        : generate OpenBGPD output (Cisco IOS by default)\n");
 	printf(" -b        : generate BIRD output (Cisco IOS by default)\n");
@@ -57,12 +57,8 @@ usage(int ecode)
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
-	printf(" -N        : generate config for Nokia SR OS classic CLI "
-		"(Cisco IOS by default)\n");
-	printf(" -n        : generate config for Nokia SR OS MD-CLI (Cisco IOS "
-		"by default)\n");
-	printf(" -P        : generate prefix-list (default, just for backward"
-		" compatibility)\n");
+	printf(" -N        : generate config for Nokia SR OS classic CLI\n");
+	printf(" -n        : generate config for Nokia SR OS MD-CLI\n");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
 	printf(" -r len    : allow more specific routes from masklen specified\n");
 	printf(" -S sources: use only specified sources (recommended:"
@@ -71,12 +67,12 @@ usage(int ecode)
 	printf(" -T        : disable pipelining (experimental, faster mode)\n");
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBSD 6.4+), BIRD "
 		"and JSON formats\n");
-	printf(" -U        : generate config for Huawei (Cisco IOS by default)\n");
+	printf(" -U        : generate config for Huawei\n");
 	printf(" -W len    : specify max-entries on as-path line (use 0 for "
 		"infinity)\n");
 	printf(" -w        : 'validate' AS numbers: accept only ones with "
 		"registered routes\n");
-	printf(" -X        : generate config for IOS XR (Cisco IOS by default)\n");
+	printf(" -X        : generate Cisco IOS XR output\n");
 	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION "\n");
 	exit(ecode);
 };
@@ -84,8 +80,8 @@ usage(int ecode)
 void
 exclusive()
 {
-	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, -P and -t are mutually "
-		"exclusive\n");
+	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, and -t are mutually "
+	    "exclusive\n");
 	exit(1);
 };
 
@@ -146,7 +142,7 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while((c=getopt(argc,argv,"2346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:Ppr:R:G:tTh:UwXsz"))
+	while((c=getopt(argc,argv,"2346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
 		!=EOF) {
 	switch(c) {
 		case '2':
@@ -227,10 +223,6 @@ main(int argc, char* argv[])
 			break;
 		case 'p':
 			expand_special_asn=1;
-			break;
-		case 'P':
-			if(expander.generation) exclusive();
-			expander.generation=T_PREFIXLIST;
 			break;
 		case 'r':
 			refineLow=strtoul(optarg,NULL,10);
