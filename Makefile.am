@@ -16,4 +16,4 @@ bgpq4.html: readme.header README.md
 	cat readme.header README.md | @MARKDOWN@ > bgpq4.html
 
 maintainer-clean-local:
-	-rm -rf autom4te.cache
+	-rm -rf autom4te.cache config.h.in~

@@ -27,7 +27,7 @@ extern int expand_special_asn;
 int
 usage(int ecode)
 {
-	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-P|E|G <num>"
+	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
 	    "|f <num>|t] [-2346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -2        : allow routes belonging to as23456 (transition-as) "
 		"(default: false)\n");
@@ -467,38 +467,34 @@ main(int argc, char* argv[])
 	if (aggregate && expander.vendor == V_JUNIPER && expander.generation == T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) does not work in"
 		    " Juniper prefix-lists\nYou can try route-filters (-E) "
-		    "or route-filter-lists (-z) instead of prefix-lists "
-		    "(-P, default)\n");
+		    "or route-filter-lists (-z) instead of prefix-lists\n.");
 		exit(1);
 	};
 
-	if(aggregate && expander.vendor==V_FORMAT) {
+	if(aggregate && expander.vendor == V_FORMAT) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not compatible with "
 			"formatted output (-F <fmt>)\n");
 		exit(1);
 	};
 
-	if (aggregate && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA) &&
-		expander.generation != T_PREFIXLIST) {
+	if (aggregate && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
-		    "ip-prefix-lists (-E) on Nokia. You can try prefix-lists (-P) "
-		    "instead\n");
+		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
 	};
 
-	if (refine && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA) &&
-	    expander.generation != T_PREFIXLIST) {
+	if (refine && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-R) is not supported with "
-		    "ip-prefix-lists (-E) on Nokia. You can try prefix-lists (-P) "
-		    "instead\n");
+		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
 	};
 
-	if (refineLow && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA) &&
-		expander.generation != T_PREFIXLIST) {
+	if (refineLow && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	     && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-r) is not supported with "
-		    "ip-prefix-lists (-E) on Nokia. You can try prefix-lists (-P) "
-		    "instead\n");
+		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
 	};
 
