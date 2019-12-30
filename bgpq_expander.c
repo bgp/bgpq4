@@ -161,77 +161,49 @@ int
 bgpq_expander_add_as(struct bgpq_expander* b, char* as)
 {
 	char* eoa;
-	uint32_t asno;
+	uint32_t asn1 = 0, asn2 = 0;
+	uint32_t asno = 0;
 
 	if (!b || !as)
 		return 0;
 
-	asno = strtoul(as+2,&eoa,10);
-	if (eoa && (*eoa!='.' && *eoa!=0)) {
+	asno = strtoul(as + 2, &eoa, 10);
+
+	if (eoa && *eoa != 0) {
 		sx_report(SX_ERROR,"Invalid symbol in AS number: '%c' in %s\n",
 		    *eoa, as);
 		return 0;
 	};
 
-	if (*eoa == '.' || asno > 65535) {
-		if (b->asn32 || b->generation >= T_PREFIXLIST) {
-			uint32_t asn1;
-			if (asno > 65535) {
-				asn1 = asno % 65536;
-				asno /= 65536;
-			} else if (eoa && *(eoa+1)) {
-				asn1 = strtoul(eoa+1, &eoa, 10);
-			} else {
-				sx_report(SX_ERROR, "Invalid AS number: '%s'\n", as);
-				return 0;
-			};
 
-			if (eoa && *eoa!=0)
-			    sx_report(SX_ERROR,"Invalid symbol in AS number: '%c' in %s\n",
-			    *eoa, as);
-				return 0;
+	if (asno > 65535) {
+		asn1 = asno / 65536;
+		asn2 = asno % 65536;
+	} else
+		asn1 = asno;
 
-			if (asn1 > 65535) {
-				sx_report(SX_ERROR, "Invalid AS number in %s\n", as);
-				return 0;
-			};
-
-			if (!expand_special_asn && (((asno * 65536 + asn1) >= 4200000000ul) ||
-			    ((asno * 65536 + asn1) >= 64496 && (asno * 65536 + asn1) <= 65551)))
-				return 0;
-
-			if (!b->asn32s[asno]) {
-				b->asn32s[asno] = malloc(8192);
-				if (!b->asn32s[asno]) {
-					sx_report(SX_FATAL, "Unable to allocate 8192 bytes: %s."
-					    " Unable to add asn32 %s to future expansion\n",
-					    strerror(errno), as);
-					return 0;
-				};
-				memset(b->asn32s[asno], 0, 8192);
-			};
-
-			b->asn32s[asno][asn1/8] |= (0x80 >> (asn1 % 8));
-
-		} else if (!b->asn32) {
-			b->asn32s[0][23456/8] |= (0x80 >> (23456 % 8));
-		};
-
-		return 1;
-	};
-
-	if (asno < 1 || asno > 65535) {
-		sx_report(SX_ERROR,"Invalid AS number in %s\n", as);
-		return 0;
-	};
-
-	if (!expand_special_asn && (asno >= 64496 && asno <= 65536))
+	if (!expand_special_asn &&
+	    ((asno  >= 4200000000ul) || (asno >= 64496 && asno <= 65551)))
 		return 0;
 
-	b->asn32s[0][asno / 8] |= (0x80 >> (asno % 8));
+	if (!b->asn32s[asn1]) {
+		b->asn32s[asn1] = malloc(8192);
+		if (!b->asn32s[asn1]) {
+			sx_report(SX_FATAL, "Unable to allocate 8192 "
+			    "bytes: %s. Unable to add asn32 %s to "
+			    " future expansion\n", strerror(errno), as);
+				return 0;
+			}
+		memset(b->asn32s[asn1], 0, 8192);
+	}
+
+	if (asno > 65535)
+		b->asn32s[asn1][asn2 / 8] |= (0x80 >> (asn2 % 8));
+	else
+		b->asn32s[0][asn1 / 8] |= (0x80 >> (asn1 % 8));
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)

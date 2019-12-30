@@ -60,7 +60,6 @@ struct bgpq_expander {
 	int sequence;
 	int maxdepth;
 	int validate_asns;
-	unsigned char asn32;
 	unsigned char* asn32s[65536];
 	struct bgpq_prequest* firstpipe, *lastpipe;
 	int piped;

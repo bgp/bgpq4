@@ -7,7 +7,7 @@ SYNOPSIS
 --------
 
 ```
-	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-346ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
+	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-46ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
 ```
 
 DESCRIPTION
@@ -18,10 +18,6 @@ extended access-lists, policy-statement terms and as-path lists)
 based on RADB data.
 
 The options are as follows:
-
-#### -3      
-
-Assume that your device is asn32-capable.
 
 #### -4 
 

@@ -24,61 +24,61 @@ int bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b);
 int
 bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
 {
+
 	int nc = 0, i, j, k, empty = 1;
 
-	fprintf(f, "no ip as-path access-list %s\n",
-	    b->name ? b->name : "NN");
+	fprintf(f, "no ip as-path access-list %s\n", b->name ? b->name : "NN");
 
 	if (b->asn32s[b->asnumber / 65536] &&
-	    b->asn32s[b->asnumber / 65536][(b->asnumber % 65536)/8] &
+	    b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
 	    (0x80 >> (b->asnumber % 8))) {
-			fprintf(f,"ip as-path access-list %s permit "
-			    "^%u(_%u)*$\n", b->name ? b->name : "NN",
-			    b->asnumber, b->asnumber);
-			empty = 0;
-	};
+		fprintf(f,"ip as-path access-list %s permit ^%u(_%u)*$\n",
+		    b->name?b->name:"NN",b->asnumber,b->asnumber);
+		empty = 0;
+	}
 
-	for (k = 0; k < 65536; k++) {
+	for(k = 0; k < 65536; k++) {
+
 		if (!b->asn32s[k])
 			continue;
 
-		for (i = 0; i < 8192; i++) {
-			for (j = 0; j <8 ; j++) {
-				if (b->asn32s[k][i] & (0x80 >> j)) {
+		for(i = 0; i < 8192; i++) {
+			for(j = 0; j <8;j++) {
+				if (b->asn32s[k][i] & (0x80>>j)) {
+
 					if (k * 65536 + i * 8 + j == b->asnumber)
 						continue;
+
 					if (!nc) {
 						fprintf(f,"ip as-path access-list %s permit"
-						    " ^%u(_[0-9]+)*_(%u",
-						    b->name ? b->name : "NN",
-						    b->asnumber,
-						    k * 65536 + i * 8 + j);
-						empty = 0;
-					};
-				} else {
-					fprintf(f, "|%u", k * 65536 + i * 8 + j);
-					empty = 0;
-				};
+						    " ^%u(_[0-9]+)*_(%u", b->name?b->name:"NN",
+						    b->asnumber,k*65536+i*8+j);
+						empty=0;
+					} else {
+						fprintf(f,"|%u",k*65536+i*8+j);
+						empty=0;
+					}
+
+					nc++;
+
+					if (nc == b->aswidth) {
+						fprintf(f, ")$\n");
+						nc = 0;
+					}
+				}
 			}
-
-			nc++;
-
-			if (nc == b->aswidth) {
-				fprintf(f, ")$\n");
-				nc = 0;
-			};
-		};
-	};
+		}
+	}
 
 	if (nc)
-		fprintf(f, ")$\n");
+		fprintf(f,")$\n");
 
 	if (empty)
 		fprintf(f, "ip as-path access-list %s deny .*\n",
 		    b->name ? b->name : "NN");
 
 	return 0;
-};
+}
 
 int
 bgpq4_print_cisco_xr_aspath(FILE* f, struct bgpq_expander* b)
@@ -754,27 +754,28 @@ bgpq4_print_nokia_md_oaspath(FILE* f, struct bgpq_expander* b)
 int
 bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
 {
-	if (b->vendor == V_JUNIPER) {
+	switch (b->vendor) {
+	case V_JUNIPER:
 		return bgpq4_print_juniper_aspath(f, b);
-	} else if (b->vendor == V_CISCO) {
+	case V_CISCO:
 		return bgpq4_print_cisco_aspath(f, b);
-	} else if (b->vendor == V_CISCO_XR) {
+	case V_CISCO_XR:
 		return bgpq4_print_cisco_xr_aspath(f, b);
-	} else if (b->vendor == V_JSON) {
+	case V_JSON:
 		return bgpq4_print_json_aspath(f, b);
-	} else if (b->vendor == V_BIRD) {
+	case V_BIRD:
 		return bgpq4_print_bird_aspath(f, b);
-	} else if (b->vendor == V_OPENBGPD) {
+	case V_OPENBGPD:
 		return bgpq4_print_openbgpd_aspath(f, b);
-	} else if (b->vendor == V_NOKIA) {
+	case V_NOKIA:
 		return bgpq4_print_nokia_aspath(f, b);
-	} else if (b->vendor == V_NOKIA_MD) {
+	case V_NOKIA_MD:
 		return bgpq4_print_nokia_md_aspath(f, b);
-	} else if (b->vendor == V_HUAWEI) {
+	case V_HUAWEI:
 		return bgpq4_print_huawei_aspath(f, b);
-	} else {
+	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
-	};
+	}
 
 	return 0;
 };
@@ -782,23 +783,24 @@ bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
 int
 bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b)
 {
-	if (b->vendor == V_JUNIPER) {
+	switch (b->vendor) {
+	case V_JUNIPER:
 		return bgpq4_print_juniper_oaspath(f, b);
-	} else if (b->vendor == V_CISCO) {
+	case V_CISCO:
 		return bgpq4_print_cisco_oaspath(f, b);
-	} else if (b->vendor == V_CISCO_XR) {
+	case V_CISCO_XR:
 		return bgpq4_print_cisco_xr_oaspath(f, b);
-	} else if (b->vendor == V_OPENBGPD) {
+	case V_OPENBGPD:
 		return bgpq4_print_openbgpd_oaspath(f, b);
-	} else if (b->vendor == V_NOKIA) {
+	case V_NOKIA:
 		return bgpq4_print_nokia_oaspath(f, b);
-	} else if (b->vendor == V_NOKIA_MD) {
+	case V_NOKIA_MD:
 		return bgpq4_print_nokia_md_oaspath(f, b);
-	} else if (b->vendor == V_HUAWEI) {
+	case V_HUAWEI:
 		return bgpq4_print_huawei_oaspath(f, b);
-	} else {
+	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
-	};
+	}
 
 	return 0;
 };

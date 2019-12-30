@@ -27,8 +27,7 @@ int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
-	    "|f <num>|t] [-346ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
-	printf(" -3        : assume that your device is asn32-safe\n");
+	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
 	printf(" -4        : generate IPv4 prefix-lists (default)\n");
 	printf(" -6        : generate IPv6 prefix-lists\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
@@ -36,7 +35,7 @@ usage(int ecode)
 	printf(" -b        : generate BIRD output\n");
 	printf(" -d        : generate some debugging output\n");
 	printf(" -E        : generate extended access-list(Cisco), "
-	    "route-filter(Juniper)\n"
+	    "route-filter (Juniper)\n"
 	    "             [ip|ipv6]-prefix-list (Nokia) or prefix-set "
 	    "(OpenBGPD)\n");
 	printf(" -F fmt    : generate output in user-defined format\n");
@@ -147,12 +146,9 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
+	while ((c = getopt(argc,argv,"46a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
 	    !=EOF) {
 	switch (c) {
-		case '3':
-			expander.asn32 = 1;
-			break;
 		case '4':
 			/* do nothing, expander already configured for IPv4 */
 			if (expander.family == AF_INET6) {
@@ -189,7 +185,6 @@ main(int argc, char* argv[])
 			if (expander.vendor)
 				vendor_exclusive();
 			expander.vendor = V_OPENBGPD;
-			expander.asn32 = 1;
 			break;
 		case 'd':
 			debug_expander++;
@@ -454,9 +449,6 @@ main(int argc, char* argv[])
 	    expander.vendor != V_OPENBGPD && expander.vendor != V_BIRD)
 		sx_report(SX_FATAL, "As-Sets (-t) supported for JSON (-j), OpenBGPD "
 		    "(-B) and BIRD (-b) output only\n");
-
-	if (!expander.asn32 && expander.asnumber > 65535)
-		expander.asnumber = 23456;
 
 	if (aggregate && expander.vendor == V_JUNIPER && expander.generation == T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) does not work in"
