@@ -142,6 +142,13 @@ main(int argc, char* argv[])
 	int widthSet=0, aggregate=0, refine=0, refineLow=0;
 	unsigned long maxlen=0;
 
+#ifdef HAVE_PLEDGE
+	if (pledge("stdio inet dns", NULL) == -1) {
+		sx_report(SX_ERROR, "pledge() failed");
+		exit(1);
+	}
+#endif
+	
 	bgpq_expander_init(&expander,af);
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
