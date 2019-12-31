@@ -27,48 +27,54 @@ int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
-	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS>...\n");
+	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS> ... "
+	    "[EXCEPT <OBJECTS> ...]\n");
+	printf("\nVendor targets:\n");
+	printf(" no option : Cisco IOS Classic (default)\n");
+	printf(" -X        : Cisco IOS XR\n");
+	printf(" -U        : Huawei\n");
+	printf(" -j        : JSON\n");
+	printf(" -J        : Juniper Junos\n");
+	printf(" -K        : MikroTik RouterOS\n");
+	printf(" -b        : NIC.CZ BIRD\n");
+	printf(" -N        : Nokia SR OS (Classic CLI)\n");
+	printf(" -n        : Nokia SR OS (MD-CLI)\n");
+	printf(" -B        : OpenBSD OpenBGPD\n");
+	printf("\n");
+	printf("Output modifiers:\n");
 	printf(" -4        : generate IPv4 prefix-lists (default)\n");
 	printf(" -6        : generate IPv6 prefix-lists\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
-	printf(" -B        : generate OpenBGPD output\n");
-	printf(" -b        : generate BIRD output\n");
-	printf(" -d        : generate some debugging output\n");
-	printf(" -E        : generate extended access-list(Cisco), "
+	printf(" -E        : generate extended access-list (Cisco), "
 	    "route-filter (Juniper)\n"
 	    "             [ip|ipv6]-prefix-list (Nokia) or prefix-set "
 	    "(OpenBGPD)\n");
 	printf(" -F fmt    : generate output in user-defined format\n");
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
-	printf(" -h host   : host running IRRD software (rr.ntt.net by "
-		"default)\n"
-		"             (use host:port to specify alternate port)\n");
-	printf(" -J        : generate config for JunOS\n");
-	printf(" -j        : generate JSON output\n");
-	printf(" -K        : generate config for MikroTik RouterOS\n");
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
 	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
 		"128 for IPv6)\n");
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
-	printf(" -N        : generate config for Nokia SR OS classic CLI\n");
-	printf(" -n        : generate config for Nokia SR OS MD-CLI\n");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
 	printf(" -r len    : allow more specific routes from masklen specified\n");
-	printf(" -S sources: use only specified sources (recommended:"
-		" RADB,RIPE,APNIC)\n");
 	printf(" -s        : generate sequence numbers in prefix-lists (IOS only)\n");
-	printf(" -T        : disable pipelining (experimental, faster mode)\n");
-	printf(" -t        : generate as-sets for OpenBGPD (OpenBSD 6.4+), BIRD "
+	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
-	printf(" -U        : generate config for Huawei\n");
+    printf(" -z        : generate route-filter-list (Junos only)\n");
 	printf(" -W len    : specify max-entries on as-path line (use 0 for "
 		"infinity)\n");
 	printf(" -w        : 'validate' AS numbers: accept only ones with "
 		"registered routes\n");
-	printf(" -X        : generate Cisco IOS XR output\n");
+	printf("\n");
+	printf("Utility operations:\n");
+	printf(" -d        : generate some debugging output\n");
+	printf(" -h host   : host running IRRD software (default: rr.ntt.net)\n"
+		    "             use 'host:port' to specify alternate port\n");
+	printf(" -S sources: only use specified IRR sources, in the specified order\n");
+	printf(" -T        : disable pipelining (not recommended)\n");
 	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION "\n");
 	exit(ecode);
 }

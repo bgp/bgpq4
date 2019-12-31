@@ -135,7 +135,7 @@ Generate as-sets for OpenBGPD (OpenBSD 6.4+), BIRD and JSON formats.
 
 #### -T      
 
-Disable pipelining. (not recommended)
+Disable pipelining (not recommended).
 
 #### -U
 
