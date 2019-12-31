@@ -167,7 +167,7 @@ EXAMPLES
 --------
 Generating prefix filter for MikroTik for `AS20597`:
 
-     user@host:~>./bgpq4 -Kl eltel-v4 AS20597
+     $ ./bgpq4 -Kl eltel-v4 AS20597
      /routing filter add action=accept chain="eltel-v4" prefix=81.9.0.0/20
      /routing filter add action=accept chain="eltel-v4" prefix=81.9.32.0/20
      /routing filter add action=accept chain="eltel-v4" prefix=81.9.96.0/20
@@ -181,7 +181,7 @@ Generating prefix filter for MikroTik for `AS20597`:
 
 Generating named Juniper prefix-filter for `AS20597`:
 
-     user@host:~>bgpq4 -Jl eltel-v4 AS20597
+     $ bgpq4 -Jl eltel-v4 AS20597
      policy-options {
      replace:
       prefix-list eltel-v4 {
@@ -204,7 +204,7 @@ Generating named Juniper prefix-filter for `AS20597`:
 For Cisco we can use aggregation (-A) flag to make this prefix-filter
 more compact:
 
-     user@host:~>bgpq4 -Al eltel-v4 AS20597
+     $ bgpq4 -Al eltel-v4 AS20597
      no ip prefix-list eltel-v4
      ip prefix-list eltel-v4 permit 81.9.0.0/20
      ip prefix-list eltel-v4 permit 81.9.32.0/20
@@ -227,7 +227,7 @@ Well, for Juniper we can generate even more interesting policy-statement,
 using `-M <extra match conditions>`, `-r <len>`, `-R <len>` and hierarchical 
 names:
 
-     user@host:~>bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
+     $ bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
 	policy-options {
 	 policy-statement eltel {
 	  term specifics {
@@ -255,7 +255,7 @@ generated policy-option term now allows more-specific routes in range
 
 Of course, `bgpq4` supports IPv6 (-6):
 
-     user@host:~>bgpq4 -6l as-retn-v6 AS-RETN6
+     $ bgpq4 -6l as-retn-v6 AS-RETN6
      no ipv6 prefix-list as-retn-v6
      ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe00::/48
      ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe01::/48
@@ -263,7 +263,7 @@ Of course, `bgpq4` supports IPv6 (-6):
 
 and assumes your device supports 32-bit ASNs
 
-     user@host:~>bgpq4 -Jf 112 AS-SPACENET
+     $ bgpq4 -Jf 112 AS-SPACENET
      policy-options {
      replace:
       as-path-group NN {
@@ -283,7 +283,7 @@ If you want to generate configuration not for routers, but for some
 other programs/systems, you may use user-defined formatting, like in
 example below:
 
-	user@host:~>bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
+	$ bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
 	ipfw add pass all from 62.244.0.0/18 to any
 	ipfw add pass all from 91.219.29.0/24 to any
 	ipfw add pass all from 91.219.30.0/24 to any
@@ -296,7 +296,7 @@ Please note that no new lines inserted automatically after each sentence,
 you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
 
-	user@host:~>bgpq4 -6F "%n/%l; " as-eltel
+	$ bgpq4 -6F "%n/%l; " as-eltel
 	2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
 
 DIAGNOSTICS
