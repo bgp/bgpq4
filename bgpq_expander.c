@@ -35,7 +35,7 @@ static inline int
 tentry_cmp(struct sx_tentry* a, struct sx_tentry* b)
 {
 	return strcasecmp(a->text, b->text);
-};
+}
 
 RB_GENERATE(tentree, sx_tentry, entry, tentry_cmp);
 
@@ -64,7 +64,7 @@ bgpq_expander_init(struct bgpq_expander* b, int af)
 		sx_report(SX_FATAL,"Unable to allocate 8192 bytes: %s\n",
 		    strerror(errno));
 		exit(1);
-	};
+	}
 	memset(b->asn32s[0], 0, 8192);
 	b->identify = 1;
 	b->server = "rr.ntt.net";
@@ -90,7 +90,7 @@ fixups:
 	free(b);
 
 	return 0;
-};
+}
 
 int
 bgpq_expander_add_asset(struct bgpq_expander* b, char* as)
@@ -105,7 +105,7 @@ bgpq_expander_add_asset(struct bgpq_expander* b, char* as)
 	STAILQ_INSERT_TAIL(&b->macroses, le, next);
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_rset(struct bgpq_expander* b, char* rs)
@@ -123,7 +123,7 @@ bgpq_expander_add_rset(struct bgpq_expander* b, char* rs)
 	STAILQ_INSERT_TAIL(&b->rsets, le, next);
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_already(struct bgpq_expander* b, char* rs)
@@ -139,7 +139,7 @@ bgpq_expander_add_already(struct bgpq_expander* b, char* rs)
 	RB_INSERT(tentree, &b->already, le);
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_stop(struct bgpq_expander* b, char* rs)
@@ -155,7 +155,7 @@ bgpq_expander_add_stop(struct bgpq_expander* b, char* rs)
 	RB_INSERT(tentree, &b->stoplist, le);
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_as(struct bgpq_expander* b, char* as)
@@ -173,8 +173,7 @@ bgpq_expander_add_as(struct bgpq_expander* b, char* as)
 		sx_report(SX_ERROR,"Invalid symbol in AS number: '%c' in %s\n",
 		    *eoa, as);
 		return 0;
-	};
-
+	}
 
 	if (asno > 65535) {
 		asn1 = asno / 65536;
@@ -216,25 +215,25 @@ bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)
 		SX_DEBUG(debug_expander, "Ignoring prefix %s with wrong "
 		    "address family\n", prefix);
 		return 0;
-	};
+	}
 	if (b->maxlen && p->masklen>b->maxlen) {
 		SX_DEBUG(debug_expander, "Ignoring prefix %s: masklen %i > max"
 		    " masklen %u\n", prefix, p->masklen, b->maxlen);
 		return 0;
-	};
+	}
 	sx_radix_tree_insert(b->tree,p);
 
         if (p)
 		sx_prefix_destroy(p);
 
 	return 1;
-};
+}
 
 int
 bgpq_expander_add_prefix_range(struct bgpq_expander* b, char* prefix)
 {
 	return sx_prefix_range_parse(b->tree, b->family, b->maxlen, prefix);
-};
+}
 
 int
 bgpq_expanded_macro(char* as, struct bgpq_expander* ex,
@@ -243,7 +242,7 @@ bgpq_expanded_macro(char* as, struct bgpq_expander* ex,
 	bgpq_expander_add_as(ex, as);
 
 	return 1;
-};
+}
 
 struct bgpq_request* bgpq_pipeline(struct bgpq_expander* b,
 	int (*callback)(char*, struct bgpq_expander* b, struct bgpq_request* req),
@@ -263,13 +262,13 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 			SX_DEBUG(debug_expander>2, "%s is already expanding, "
 			    "ignore\n", as);
 			return 0;
-		};
+		}
 
 		if (RB_FIND(tentree, &b->stoplist, &tkey)) {
 			SX_DEBUG(debug_expander>2, "%s is in the stoplist, "
 			    "ignore\n", as);
 			return 0;
-		};
+		}
 
 		if (!b->maxdepth ||
 		    (b->cdepth + 1 < b->maxdepth &&
@@ -285,12 +284,12 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
 				    NULL, "!i%s\n", as);
 				b->cdepth--;
-			};
+			}
 		} else {
 			SX_DEBUG(debug_expander>2, "ignoring %s at depth %i\n",
 			    as,
 			    b->cdepth ? (b->cdepth + 1) : (req->depth + 1));
-		};
+		}
 	} else if (!strncasecmp(as, "AS", 2)) {
 		struct sx_tentry tkey = { .text = as };
 
@@ -298,7 +297,7 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 			SX_DEBUG(debug_expander > 2,
 			    "%s is in the stoplist, ignore\n", as);
 			return 0;
-		};
+		}
 
 		if (bgpq_expander_add_as(b, as)) {
 			SX_DEBUG(debug_expander > 2, ".. added asn %s\n", as);
@@ -315,7 +314,7 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 		    req->request);
 
 	return 1;
-};
+}
 
 int
 bgpq_expanded_prefix(char* as, struct bgpq_expander* ex,
@@ -329,7 +328,7 @@ bgpq_expanded_prefix(char* as, struct bgpq_expander* ex,
 		bgpq_expander_add_prefix_range(ex, as);
 
 	return 1;
-};
+}
 
 int
 bgpq_expanded_v6prefix(char* prefix, struct bgpq_expander* ex,
@@ -343,7 +342,7 @@ bgpq_expanded_v6prefix(char* prefix, struct bgpq_expander* ex,
 		bgpq_expander_add_prefix_range(ex, prefix);
 
 	return 1;
-};
+}
 
 int bgpq_pipeline_dequeue(int fd, struct bgpq_expander* b);
 
@@ -364,7 +363,7 @@ bgpq_request_alloc(char* request, int (*callback)(char*, struct bgpq_expander*,
 	bp->udata = udata;
 
 	return bp;
-};
+}
 
 static void
 bgpq_request_free(struct bgpq_request* req)
@@ -373,7 +372,7 @@ bgpq_request_free(struct bgpq_request* req)
 		free(req->request);
 
 	free(req);
-};
+}
 
 struct bgpq_request*
 bgpq_pipeline(struct bgpq_expander* b,
@@ -398,7 +397,7 @@ bgpq_pipeline(struct bgpq_expander* b,
 		    (unsigned long)sizeof(struct bgpq_request),
 		    strerror(errno));
 		exit(1);
-	};
+	}
 
 	if (STAILQ_EMPTY(&b->wq)) {
 		ret = write(b->fd, request, bp->size);
@@ -406,21 +405,21 @@ bgpq_pipeline(struct bgpq_expander* b,
 			if (errno == EAGAIN) {
 				STAILQ_INSERT_TAIL(&b->wq, bp, next);
 				return bp;
-			};
+			}
 			sx_report(SX_FATAL, "Error writing request: %s\n",
 			    strerror(errno));
-		};
+		}
 		bp->offset=ret;
 		if (ret == bp->size) {
 			STAILQ_INSERT_TAIL(&b->rq, bp, next);
 		} else {
 			STAILQ_INSERT_TAIL(&b->wq, bp, next);
-		};
+		}
 	} else
 		STAILQ_INSERT_TAIL(&b->wq, bp, next);
 
 	return bp;
-};
+}
 
 static void
 bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
@@ -433,7 +432,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
 			sx_report(SX_ERROR, "some problem invalidating asn"
 			    " %s\n", q);
 			return;
-		};
+		}
 		asn1 = asn % 65536;
 		asn0 = asn / 65536;
 		if (!b->asn32s[asn0] ||
@@ -442,9 +441,9 @@ bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
 			    "asn %lu(%s)\n", asn, q);
 		} else {
 			b->asn32s[asn0][asn1 / 8] &= ~(0x80 >> (asn1 % 8));
-		};
-	};
-};
+		}
+	}
+}
 
 static void
 bgpq_write(struct bgpq_expander* b)
@@ -460,7 +459,7 @@ bgpq_write(struct bgpq_expander* b)
 				return;
 			sx_report(SX_FATAL, "error writing data: %s\n",
 			    strerror(errno));
-		};
+		}
 
 		if (ret == req->size - req->offset) {
 			/* this request was dequeued */
@@ -469,9 +468,9 @@ bgpq_write(struct bgpq_expander* b)
 		} else {
 			req->offset += ret;
 			break;
-		};
-	};
-};
+		}
+	}
+}
 
 static int
 bgpq_selread(struct bgpq_expander* b, char* buffer, int size)
@@ -505,7 +504,7 @@ repeat:
 		return read(b->fd, buffer, size);
 
 	goto repeat;
-};
+}
 
 int
 bgpq_read(struct bgpq_expander* b)
@@ -535,7 +534,7 @@ repeat:
 			    "%s (dequeue)\n", strerror(errno));
 		} else if (ret == 0) {
 			sx_report(SX_FATAL,"EOF from IRRd (dequeue)\n");
-		};
+		}
 		off += ret;
 
 		if (!(cres = strchr(response, '\n')))
@@ -554,7 +553,7 @@ have:
 			if (!recvbuffer) {
 				sx_report(SX_FATAL, "error allocating %lu "
 				    "bytes: %s\n", togot + 2, strerror(errno));
-			};
+			}
 
 			memset(recvbuffer,0,togot+2);
 
@@ -563,7 +562,7 @@ have:
 				    " char '%c'(%s)\n", eon ? *eon : '0',
 				    response);
 				exit(1);
-			};
+			}
 
 			if (off - ((eon + 1) - response) > togot) {
 				// full response and more data is already in buffer
@@ -581,7 +580,7 @@ have:
 				offset = off - ((eon+1) - response);
 				memset(response, 0, sizeof(response));
 				off = 0;
-			};
+			}
 
 			SX_DEBUG(debug_expander>5,
 			    "starting read with ready '%.*s', waiting for "
@@ -603,7 +602,7 @@ reread:
 			} else if (ret == 0) {
 				sx_report(SX_FATAL,"EOF from IRRd (dequeue, "
 				    "result)\n");
-			};
+			}
 			SX_DEBUG(debug_expander > 5,
 				"Read1: got '%.*s'\n", ret,
 				    recvbuffer + offset);
@@ -613,7 +612,7 @@ reread:
 				    "%lu expanding %s", togot,
 				    strlen(recvbuffer), req->request);
 				goto reread;
-			};
+			}
 
 reread2:
 			ret = bgpq_selread(b, response + off,
@@ -627,7 +626,7 @@ reread2:
 			} else if (ret == 0) {
 				sx_report(SX_FATAL,"EOF from IRRd (dequeue,"
 				    "final)\n");
-			};
+			}
 
 			SX_DEBUG(debug_expander > 5,
 				"Read2: got '%.*s'\n", ret, response + off);
@@ -651,7 +650,7 @@ have3:
 					break;
 				req->callback(c, b, req);
 				c += spn+1;
-			};
+			}
 			assert(c == recvbuffer + togot);
 			memset(recvbuffer, 0, togot + 2);
 			free(recvbuffer);
@@ -677,7 +676,7 @@ have3:
 			sx_report(SX_ERROR,"Wrong reply: %s to %s\n", response,
 			    req->request);
 			exit(1);
-		};
+		}
 
 		memmove(response, cres + 1, off - ((cres + 1) - response));
 		off -= (cres+1) - response;
@@ -689,10 +688,10 @@ have3:
 		b->piped--;
 
 		bgpq_request_free(req);
-	};
+	}
 
 	return 0;
-};
+}
 
 int
 bgpq_expand_irrd(struct bgpq_expander* b,
@@ -717,7 +716,7 @@ bgpq_expand_irrd(struct bgpq_expander* b,
 		sx_report(SX_FATAL,"Partial write to IRRd, only %i bytes "
 		    "written: %s\n", ret, strerror(errno));
 		exit(1);
-	};
+	}
 	memset(response, 0, sizeof(response));
 
 repeat:
@@ -729,7 +728,7 @@ repeat:
 	} else if (ret == 0) {
 		sx_report(SX_FATAL, "EOF reading IRRd\n");
 		exit(1);
-	};
+	}
 
 	off += ret;
 
@@ -748,13 +747,13 @@ repeat:
 		if (!recvbuffer) {
 			sx_report(SX_FATAL, "Error allocating %lu bytes: %s\n",
 			    togot + 2, strerror(errno));
-		};
+		}
 
 		if (eon && *eon != '\n') {
 			sx_report(SX_ERROR,"A-code finised with wrong char "
 			    "'%c' (%s)\n", *eon,response);
 			exit(1);
-		};
+		}
 
 		if (off - ((eon + 1)-response) > togot) {
 			memcpy(recvbuffer, eon+1, togot);
@@ -769,7 +768,7 @@ repeat:
 			offset = off - ((eon + 1) - response);
 			memset(response, 0, sizeof(response));
 			off = 0;
-		};
+		}
 
 		if (off > 0)
 			goto have3;
@@ -783,7 +782,7 @@ reread:
 		} else if (ret < 0) {
 			sx_report(SX_FATAL,"Error reading IRRd: %s "
 			    "(expand,result)\n", strerror(errno));
-		};
+		}
 		offset += ret;
 		if (offset < togot)
 			goto reread;
@@ -797,7 +796,7 @@ reread2:
 		} else if (ret == 0) {
 			sx_report(SX_FATAL, "eof reading IRRd\n");
 			exit(1);
-		};
+		}
 		off += ret;
 
 have3:
@@ -818,7 +817,7 @@ have3:
 			if (callback)
 				callback(c, b, req);
 			c += spn + 1;
-		};
+		}
 		memset(recvbuffer, 0, togot + 2);
 		free(recvbuffer);
 	} else if (response[0] == 'C') {
@@ -836,11 +835,11 @@ have3:
 	} else {
 		sx_report(SX_ERROR,"Wrong reply: %s\n", response);
 		exit(0);
-	};
+	}
 	bgpq_request_free(req);
 
 	return 0;
-};
+}
 
 int
 bgpq_expand(struct bgpq_expander* b)
@@ -862,7 +861,7 @@ bgpq_expand(struct bgpq_expander* b)
 		sx_report(SX_ERROR,"Unable to resolve %s: %s\n", b->server,
 		    gai_strerror(err));
 		exit(1);
-	};
+	}
 
 	for (rp=res; rp; rp = rp->ai_next) {
 		fd = socket(rp->ai_family, rp->ai_socktype, 0);
@@ -872,7 +871,7 @@ bgpq_expand(struct bgpq_expander* b)
 			sx_report(SX_ERROR,"Unable to create socket: %s\n",
 			    strerror(errno));
 			exit(1);
-		};
+		}
 		if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &sl,
 		    sizeof(struct linger))) {
 			sx_report(SX_ERROR,"Unable to set linger on socket: "
@@ -880,14 +879,14 @@ bgpq_expand(struct bgpq_expander* b)
 			shutdown(fd, SHUT_RDWR);
 			close(fd);
 			exit(1);
-		};
+		}
 		err = connect(fd, rp->ai_addr, rp->ai_addrlen);
 		if (err) {
 			shutdown(fd, SHUT_RDWR);
 			close(fd);
 			fd = -1;
 			continue;
-		};
+		}
 		err = sx_maxsockbuf(fd, SO_SNDBUF);
 		if (err > 0) {
 			SX_DEBUG(debug_expander, "Acquired sendbuf of %i "
@@ -897,9 +896,9 @@ bgpq_expand(struct bgpq_expander* b)
 			close(fd);
 			fd = -1;
 			continue;
-		};
+		}
 		break;
-	};
+	}
 
 	freeaddrinfo(res);
 
@@ -908,7 +907,7 @@ bgpq_expand(struct bgpq_expander* b)
 		sx_report(SX_ERROR,"All attempts to connect %s failed, last"
 		    " error: %s\n", b->server, strerror(errno));
 		exit(1);
-	};
+	}
 
 	b->fd = fd;
 
@@ -916,14 +915,14 @@ bgpq_expand(struct bgpq_expander* b)
 		sx_report(SX_ERROR,"Partial write to IRRd: %i bytes, %s\n",
 		    ret, strerror(errno));
 		exit(1);
-	};
+	}
 
 	if (b->identify) {
 		char ident[128];
 		snprintf(ident, sizeof(ident), "!n" PACKAGE_STRING "\n");
 		write(fd, ident, strlen(ident));
 		read(fd, ident, sizeof(ident));
-	};
+	}
 
 	/* Test whether the server has support for the A query */
 	if (b->generation >= T_PREFIXLIST) {
@@ -955,8 +954,8 @@ bgpq_expand(struct bgpq_expander* b)
 			sx_report(SX_ERROR, "Invalid source(s) '%s': %s\n",
 			    b->sources, sources);
 			exit(1);
-		};
-	};
+		}
+	}
 
 	if (pipelining)
 		fcntl(fd, F_SETFL, O_NONBLOCK|(fcntl(fd, F_GETFL)));
@@ -979,15 +978,15 @@ bgpq_expand(struct bgpq_expander* b)
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
 				    NULL, "!i%s\n", mc->text);
-		};
-	};
+		}
+	}
 
 	if (pipelining) {
 		if (!STAILQ_EMPTY(&b->wq))
 			bgpq_write(b);
 		if (!STAILQ_EMPTY(&b->rq))
 			bgpq_read(b);
-	};
+	}
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		uint32_t i, j, k;
@@ -998,7 +997,7 @@ bgpq_expand(struct bgpq_expander* b)
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
 				    NULL, "!i%s,1\n", mc->text);
-		};
+		}
 		for (k=0; k < sizeof(b->asn32s) / sizeof(unsigned char*); k++) {
 			if (!b->asn32s[k])
 				continue;
@@ -1012,7 +1011,7 @@ bgpq_expand(struct bgpq_expander* b)
 							} else {
 								bgpq_pipeline(b, bgpq_expanded_v6prefix,
 								    NULL, "!6as%" PRIu32 "\n", (k << 16) + i * 8 + j);
-							};
+							}
 						} else {
 							if (!pipelining) {
 								bgpq_expand_irrd(b, bgpq_expanded_prefix,
@@ -1020,29 +1019,29 @@ bgpq_expand(struct bgpq_expander* b)
 							} else {
 								bgpq_pipeline(b, bgpq_expanded_prefix,
 								    NULL, "!gas%" PRIu32 "\n", ( k<< 16) + i* 8 + j);
-							};
-						};
-					};
-				};
-			};
-		};
+							}
+						}
+					}
+				}
+			}
+		}
 		if (pipelining) {
 			if (!STAILQ_EMPTY(&b->wq))
 				bgpq_write(b);
 			if (!STAILQ_EMPTY(&b->rq))
 				bgpq_read(b);
-		};
-	};
+		}
+	}
 
 	write(fd, "!q\n",3);
 	if (pipelining) {
 		int fl = fcntl(fd, F_GETFL);
 		fl &= ~O_NONBLOCK;
 		fcntl(fd, F_SETFL, fl);
-	};
+	}
 	shutdown(fd, SHUT_RDWR);
 	close(fd);
 
 	return 1;
-};
+}
 
