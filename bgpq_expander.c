@@ -911,6 +911,8 @@ bgpq_expand(struct bgpq_expander* b)
 
 	b->fd = fd;
 
+	SX_DEBUG(debug_expander, "Sending '!!' to server to request for the"
+	    "connection to remain open\n");
 	if ((ret = write(fd, "!!\n", 3)) != 3) {
 		sx_report(SX_ERROR,"Partial write to IRRd: %i bytes, %s\n",
 		    ret, strerror(errno));
@@ -918,6 +920,8 @@ bgpq_expand(struct bgpq_expander* b)
 	}
 
 	if (b->identify) {
+		SX_DEBUG(debug_expander, "b->identify: Sending '!n "
+		    PACKAGE_STRING "' to server.\n");
 		char ident[128];
 		snprintf(ident, sizeof(ident), "!n" PACKAGE_STRING "\n");
 		write(fd, ident, strlen(ident));
