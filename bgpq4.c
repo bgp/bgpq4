@@ -48,6 +48,8 @@ usage(int ecode)
 	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
 		"128 for IPv6)\n");
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
+	printf(" -S sources: only use specified IRR sources, in the specified "
+	    "order (comma separated)\n");
 	printf(" -w        : 'validate' AS numbers: accept only ones with "
 		"registered routes\n");
 
@@ -75,7 +77,6 @@ usage(int ecode)
 	printf(" -d        : generate some debugging output\n");
 	printf(" -h host   : host running IRRD software (default: rr.ntt.net)\n"
 		    "             use 'host:port' to specify alternate port\n");
-	printf(" -S sources: only use specified IRR sources, in the specified order\n");
 	printf(" -T        : disable pipelining (not recommended)\n");
 	printf(" -v        : print version and exit\n");
 	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION " "
