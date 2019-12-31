@@ -47,6 +47,7 @@ usage(int ecode)
 	printf(" -6        : generate IPv6 prefix-lists\n");
 	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
 		"128 for IPv6)\n");
+	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -w        : 'validate' AS numbers: accept only ones with "
 		"registered routes\n");
 
@@ -59,7 +60,6 @@ usage(int ecode)
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
-	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
