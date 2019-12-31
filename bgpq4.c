@@ -77,8 +77,20 @@ usage(int ecode)
 		    "             use 'host:port' to specify alternate port\n");
 	printf(" -S sources: only use specified IRR sources, in the specified order\n");
 	printf(" -T        : disable pipelining (not recommended)\n");
-	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION "\n");
+	printf(" -v        : print version and exit\n");
+	printf("\n" PACKAGE_NAME " version: " PACKAGE_VERSION " "
+	    "(https://github.com/bgp/bgpq4)\n");
 	exit(ecode);
+}
+
+void
+version()
+{
+	printf(PACKAGE_NAME " - a versatile utility to generate BGP filters\n"
+	    "version: " PACKAGE_VERSION "\n"
+	    "website: https://github.com/bgp/bgpq4\n"
+	    "maintainer: Job Snijders <job@ntt.net>\n");
+	exit(0);
 }
 
 void
@@ -154,7 +166,7 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
+	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
 	    !=EOF) {
 	switch (c) {
         case '3':
@@ -375,6 +387,9 @@ main(int argc, char* argv[])
 			if (expander.vendor)
 				vendor_exclusive();
 			expander.vendor = V_CISCO_XR;
+			break;
+		case 'v':
+			version();
 			break;
 		case 'z':
 			if (expander.generation)
