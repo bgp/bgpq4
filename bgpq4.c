@@ -40,21 +40,25 @@ usage(int ecode)
 	printf(" -N        : Nokia SR OS (Classic CLI)\n");
 	printf(" -n        : Nokia SR OS (MD-CLI)\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
-	printf("\n");
-	printf("Output modifiers:\n");
+	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
+
+	printf("\nInput filters:\n");
 	printf(" -4        : generate IPv4 prefix-lists (default)\n");
 	printf(" -6        : generate IPv6 prefix-lists\n");
+	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
+		"128 for IPv6)\n");
+	printf(" -w        : 'validate' AS numbers: accept only ones with "
+		"registered routes\n");
+
+	printf("\nOutput modifiers:\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
 	printf(" -E        : generate extended access-list (Cisco), "
 	    "route-filter (Juniper)\n"
 	    "             [ip|ipv6]-prefix-list (Nokia) or prefix-set "
 	    "(OpenBGPD)\n");
-	printf(" -F fmt    : generate output in user-defined format\n");
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
-	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
-		"128 for IPv6)\n");
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
@@ -63,13 +67,11 @@ usage(int ecode)
 	printf(" -s        : generate sequence numbers in prefix-lists (IOS only)\n");
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
-    printf(" -z        : generate route-filter-list (Junos only)\n");
+	printf(" -z        : generate route-filter-list (Junos only)\n");
 	printf(" -W len    : specify max-entries on as-path line (use 0 for "
 		"infinity)\n");
-	printf(" -w        : 'validate' AS numbers: accept only ones with "
-		"registered routes\n");
-	printf("\n");
-	printf("Utility operations:\n");
+
+	printf("\nUtility operations:\n");
 	printf(" -d        : generate some debugging output\n");
 	printf(" -h host   : host running IRRD software (default: rr.ntt.net)\n"
 		    "             use 'host:port' to specify alternate port\n");
