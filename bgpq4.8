@@ -219,10 +219,10 @@ ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
 [....]
 .RE
 .fi
-and support for ASN 32 is also here
+and assumes your device supports 32-bit ASNs
 .nf
 .RS
-~>bgpq4 -J3f 112 AS-SPACENET
+~>bgpq4 -Jf 112 AS-SPACENET
 policy-options {
 replace:
  as-path-group NN {
@@ -234,25 +234,8 @@ replace:
 }
 .RE
 .fi
-see AS196611 in the end of the list ? That's AS3.3 in 'asplain' notation. 
+see `AS196611` in the end of the list ? That's a 32-bit ASN.
 .Pp
-For non-ASN32 capable routers you should not use switch -3, 
-and the result will be next: 
-.nf
-.RS
-~>bgpq4 -f 112 AS-SPACENET
-no ip as-path access-list NN
-ip as-path access-list NN permit ^112(_112)*$
-ip as-path access-list NN permit ^112(_[0-9]+)*_(1898|5539|8495|8763)$
-ip as-path access-list NN permit ^112(_[0-9]+)*_(8878|12136|12931|15909)$
-ip as-path access-list NN permit ^112(_[0-9]+)*_(21358|23456|23600|24151)$
-ip as-path access-list NN permit ^112(_[0-9]+)*_(25152|31529|34127|34906)$
-ip as-path access-list NN permit ^112(_[0-9]+)*_(35052|41720|43628|44450)$
-.RE
-.fi
-.Pp
-AS196611 is no more in the list, however, AS23456 (transition AS)
-would be added to list if it were not present. 
 .Sh USER-DEFINED FORMAT
 If you want to generate configuration not for routers, but for some
 other programs/systems, you may use user-defined formatting, like in

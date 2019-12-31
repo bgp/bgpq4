@@ -261,9 +261,9 @@ Of course, `bgpq4` supports IPv6 (-6):
      ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe01::/48
      [....]
 
-and ASN32
+and assumes your device supports 32-bit ASNs
 
-     user@host:~>bgpq4 -J3f 112 AS-SPACENET
+     user@host:~>bgpq4 -Jf 112 AS-SPACENET
      policy-options {
      replace:
       as-path-group NN {
@@ -274,22 +274,7 @@ and ASN32
       }
      }
 
-see `AS196611` in the end of the list ? That's `AS3.3` in 'asplain' notation.
-
-If your router does not support ASN32 (yet) you should not use switch -3, 
-and the result will be next:
-
-     user@host:~>bgpq4 -f 112 AS-SPACENET
-     no ip as-path access-list NN
-     ip as-path access-list NN permit ^112( 112)*$
-     ip as-path access-list NN permit ^112( [0-9]+)* (1898|5539|8495|8763)$
-     ip as-path access-list NN permit ^112( [0-9]+)* (8878|12136|12931|15909)$
-     ip as-path access-list NN permit ^112( [0-9]+)* (21358|23456|23600|24151)$
-     ip as-path access-list NN permit ^112( [0-9]+)* (25152|31529|34127|34906)$
-     ip as-path access-list NN permit ^112( [0-9]+)* (35052|41720|43628|44450)$
-
-`AS196611` is no more in the list, however, `AS23456` (transition AS) would
-have been added to list if it were not present.
+see `AS196611` in the end of the list ? That's a 32-bit ASN.
 
 USER-DEFINED FORMAT
 -------------------
