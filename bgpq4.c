@@ -146,9 +146,14 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"46a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
+	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsz"))
 	    !=EOF) {
 	switch (c) {
+        case '3':
+            /*
+             * No-op, left for backwards compatibility with bgpq3
+             */
+            break;
 		case '4':
 			/* do nothing, expander already configured for IPv4 */
 			if (expander.family == AF_INET6) {
