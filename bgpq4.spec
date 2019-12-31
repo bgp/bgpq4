@@ -1,5 +1,5 @@
 Name:           bgpq4
-Version:        0.0.3
+Version:        0.0.4
 Release:        0%{?dist}
 
 Group:          System/Utilities
@@ -36,6 +36,9 @@ make install
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Tue Dec 31 2019 Job Snijders <job@ntt.net> 0.0.4
+- Remove '-3' command line option, assume all devices are 32-bit ASN safe
+
 * Mon Dec 30 2019 Job Snijders <job@ntt.net> 0.0.3
 - Remove the '-2' command line option
 - Significant code reformating
