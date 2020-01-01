@@ -1,3 +1,6 @@
+0.0.5 (2020-01-01):
+    - Bugfixes
+
 0.0.4 (2019-12-31):
     - Remove the '-3' command line option, assume all devices are
       32-bit ASN safe
