@@ -33,30 +33,31 @@ bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
 	    b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
 	    (0x80 >> (b->asnumber % 8))) {
 		fprintf(f,"ip as-path access-list %s permit ^%u(_%u)*$\n",
-		    b->name?b->name:"NN",b->asnumber,b->asnumber);
+		    b->name ? b->name: "NN", b->asnumber, b->asnumber);
 		empty = 0;
 	}
 
-	for(k = 0; k < 65536; k++) {
+	for (k = 0; k < 65536; k++) {
 
 		if (!b->asn32s[k])
 			continue;
 
-		for(i = 0; i < 8192; i++) {
-			for(j = 0; j <8;j++) {
+		for (i = 0; i < 8192; i++) {
+			for (j = 0; j <8;j++) {
 				if (b->asn32s[k][i] & (0x80>>j)) {
 
 					if (k * 65536 + i * 8 + j == b->asnumber)
 						continue;
 
 					if (!nc) {
-						fprintf(f,"ip as-path access-list %s permit"
-						    " ^%u(_[0-9]+)*_(%u", b->name?b->name:"NN",
-						    b->asnumber,k*65536+i*8+j);
-						empty=0;
+						fprintf(f, "ip as-path access-list %s permit"
+						    " ^%u(_[0-9]+)*_(%u",
+						    b->name ? b->name : "NN",
+						    b->asnumber, k * 65536 + i * 8 + j);
+						empty = 0;
 					} else {
-						fprintf(f,"|%u",k*65536+i*8+j);
-						empty=0;
+						fprintf(f,"|%u", k * 65536 + i * 8 + j);
+						empty = 0;
 					}
 
 					nc++;
@@ -149,9 +150,8 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 		fprintf(f,"ip as-path access-list %s permit ^(_%u)*$\n",
 		    b->name ? b->name : "NN",
 		    b->asnumber);
+		empty = 0;
 	}
-
-	empty = 0;
 
 	for (k = 0; k < 65536; k++) {
 
@@ -160,7 +160,6 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 
 		for (i = 0; i < 8192; i++) {
 			for (j = 0; j < 8; j++) {
-
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
 					if (k * 65536 + i * 8 + j == b->asnumber)
@@ -172,24 +171,24 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 						    b->name ? b->name : "NN",
 						    k * 65536 + i * 8 + j);
 						empty = 0;
+					} else {
+						fprintf(f,"|%u",k*65536+i*8+j);
+						empty=0;
 					}
-				} else {
-					fprintf(f,"|%u",k*65536+i*8+j);
-					empty=0;
+
+					nc++;
+
+					if (nc==b->aswidth) {
+						fprintf(f,")$\n");
+						nc = 0;
+					}
 				}
-			}
-
-			nc++;
-
-			if (nc==b->aswidth) {
-				fprintf(f,")$\n");
-				nc=0;
 			}
 		}
 	}
 
 	if (nc)
-		fprintf(f,")$\n");
+		fprintf(f, ")$\n");
 
 	if (empty)
 		fprintf(f,"ip as-path access-list %s deny .*\n",
@@ -882,7 +881,7 @@ bgpq4_print_json_aspath(FILE* f, struct bgpq_expander* b)
 
 	fprintf(f, "{\"%s\": [", b->name ? b->name : "NN");
 
-	for(k = 0; k < 65536; k++) {
+	for (k = 0; k < 65536; k++) {
 
 		if (!b->asn32s[k])
 			continue;
@@ -1040,7 +1039,7 @@ bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b)
 			continue;
 
 		for (i = 0; i < 8192; i++) {
-			for(j = 0; j < 8; j++) {
+			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 					fprintf(f, "%s%u",
 					    nc == 0 ? "\n\t" : " ",
@@ -1071,7 +1070,7 @@ bgpq4_print_openbgpd_aspath(FILE* f, struct bgpq_expander* b)
 			continue;
 
 		for (i = 0; i < 8192; i++) {
-			for(j = 0; j < 8; j++) {
+			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 					fprintf(f, "allow from AS %u AS %u\n",
 					    b->asnumber, k * 65536 + i * 8 + j);
