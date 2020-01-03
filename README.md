@@ -352,13 +352,15 @@ In order to create a distribution archive, run:
 
     make dist
 
+MAILING LIST
+------------
+
+Users and interested parties can subscribe to the BGPQ4 mailing list [bgpq4@tcp0.com](https://tcp0.com/cgi-bin/mailman/listinfo/bgpq4).
+
 SEE ALSO
 --------
 
-1. [Routing Arbiter](http://www.radb.net/)
-2. [Cisco documentation](http://www.cisco.com/en/US/prod/collateral/iosswrel/ps6537/ps6554/ps6599/data_sheet_C78-521821.html)
-     for information on Cisco implementation of ASN32.
-3. [JunOS prefix-lists limitation](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html)
+NLNOG's [BGP Filter Guide](http://bgpfilterguide.nlnog.net/)
 
 AUTHORS
 -------
