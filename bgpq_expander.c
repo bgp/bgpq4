@@ -929,7 +929,7 @@ bgpq_expand(struct bgpq_expander* b)
 	}
 
 	/* Test whether the server has support for the A query */
-	if (b->generation >= T_PREFIXLIST) {
+	if (b->generation >= T_PREFIXLIST && !STAILQ_EMPTY(&b->macroses)) {
 		char aret[128];
 		char aresp[] = "F Missing required set name for A query";
 		SX_DEBUG(debug_expander, "Testing support for A queries\n");
