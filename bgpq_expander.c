@@ -914,7 +914,7 @@ bgpq_expand(struct bgpq_expander* b)
 	SX_DEBUG(debug_expander, "Sending '!!' to server to request for the"
 	    "connection to remain open\n");
 	if ((ret = write(fd, "!!\n", 3)) != 3) {
-		sx_report(SX_ERROR,"Partial write to IRRd: %i bytes, %s\n",
+		sx_report(SX_ERROR, "Partial write of multiple command mode to IRRd: %i bytes, %s\n",
 		    ret, strerror(errno));
 		exit(1);
 	}
@@ -923,9 +923,24 @@ bgpq_expand(struct bgpq_expander* b)
 		SX_DEBUG(debug_expander, "b->identify: Sending '!n "
 		    PACKAGE_STRING "' to server.\n");
 		char ident[128];
-		snprintf(ident, sizeof(ident), "!n" PACKAGE_STRING "\n");
-		write(fd, ident, strlen(ident));
-		read(fd, ident, sizeof(ident));
+		int ilen = snprintf(ident, sizeof(ident), "!n" PACKAGE_STRING "\n");
+		if (ilen > 0) {
+			if ((ret = write(fd, ident, ilen)) != ilen) {
+				sx_report(SX_ERROR, "Partial write of identifier to IRRd: %i bytes, %s\n",
+				    ret, strerror(errno));
+				exit(1);
+			}
+			memset(ident, 0, sizeof(ident));
+			if (0 < read(fd, ident, sizeof(ident))) {
+				SX_DEBUG(debug_expander, "Got answer %s", ident);
+			} else {
+				sx_report(SX_ERROR, "ident - failed read from IRRd\n");
+				exit(1);
+			}
+		} else {
+			sx_report(SX_ERROR, "snprintf(ident) failed\n");
+			exit(1);
+		}
 	}
 
 	/* Test whether the server has support for the A query */
@@ -933,14 +948,23 @@ bgpq_expand(struct bgpq_expander* b)
 		char aret[128];
 		char aresp[] = "F Missing required set name for A query";
 		SX_DEBUG(debug_expander, "Testing support for A queries\n");
-		write(fd, "!a\n", 3);
+		if ((ret = write(fd, "!a\n", 3)) != 3) {
+			sx_report(SX_ERROR, "Partial write of '!a' test query to IRRd: %i bytes, %s\n",
+			    ret, strerror(errno));
+			exit(1);
+		}
 		memset(aret, 0, sizeof(aret));
-		read(fd, aret, sizeof(aret));
-		if (strncmp(aret, aresp, strlen(aresp)) == 0) {
-			SX_DEBUG(debug_expander, "Server supports A query\n");
-			aquery = 1;
-		} else
-			SX_DEBUG(debug_expander, "No support for A queries\n");
+		if (0 < read(fd, aret, sizeof(aret))) {
+			if (strncmp(aret, aresp, strlen(aresp)) == 0) {
+				SX_DEBUG(debug_expander, "Server supports A query\n");
+				aquery = 1;
+			} else {
+				SX_DEBUG(debug_expander, "No support for A queries\n");
+			}
+		} else {
+			sx_report(SX_ERROR, "'!a' query test - failed read from IRRd\n");
+			exit(1);
+		}
 	}
 
 	if (b->sources && b->sources[0] != 0) {
@@ -948,15 +972,28 @@ bgpq_expand(struct bgpq_expander* b)
 		if (slen < 128)
 			slen = 128;
 		char sources[slen];
-		snprintf(sources, sizeof(sources), "!s%s\n", b->sources);
-		SX_DEBUG(debug_expander, "Requesting sources %s", sources);
-		write(fd, sources, strlen(sources));
-		memset(sources, 0, slen);
-		read(fd, sources, slen);
-		SX_DEBUG(debug_expander,"Got answer %s", sources);
-		if (sources[0] != 'C') {
-			sx_report(SX_ERROR, "Invalid source(s) '%s': %s\n",
-			    b->sources, sources);
+		slen = snprintf(sources, sizeof(sources), "!s%s\n", b->sources);
+		if (slen > 0) {
+			SX_DEBUG(debug_expander, "Requesting sources %s", sources);
+			if ((ret = write(fd, sources, slen)) != slen) {
+				sx_report(SX_ERROR, "Partial write of sources to IRRd: %i bytes, %s\n",
+				    ret, strerror(errno));
+				exit(1);
+			}
+			memset(sources, 0, sizeof(sources));
+			if (0 < read(fd, sources, sizeof(sources))) {
+				SX_DEBUG(debug_expander, "Got answer %s", sources);
+				if (sources[0] != 'C') {
+					sx_report(SX_ERROR, "Invalid source(s) '%s': %s\n",
+					    b->sources, sources);
+					exit(1);
+				}
+			} else {
+				sx_report(SX_ERROR, "sources - failed read from IRRd\n");
+				exit(1);
+			}
+		} else {
+			sx_report(SX_ERROR, "snprintf(sources) failed\n");
 			exit(1);
 		}
 	}
@@ -1037,7 +1074,11 @@ bgpq_expand(struct bgpq_expander* b)
 		}
 	}
 
-	write(fd, "!q\n",3);
+	if ((ret = write(fd, "!q\n", 3)) != 3) {
+		sx_report(SX_ERROR, "Partial write of quit to IRRd: %i bytes, %s\n",
+		    ret, strerror(errno));
+		// not worth exiting due to this
+	}
 	if (pipelining) {
 		int fl = fcntl(fd, F_GETFL);
 		fl &= ~O_NONBLOCK;
