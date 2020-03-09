@@ -51,7 +51,7 @@ int sx_prefix_range_parse(struct sx_radix_tree* t, int af, int ml, char* text);
 int sx_prefix_fprint(FILE* f, struct sx_prefix* p);
 int sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb);
 int sx_prefix_snprintf_sep(struct sx_prefix* p, char* rbuffer, int srb, char*);
-int sx_prefix_snprintf_fmt(struct sx_prefix* p, char* rbuffer, int srb,
+void sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
 	const char* name, const char* fmt);
 int sx_prefix_jsnprintf(struct sx_prefix* p, char* rbuffer, int srb);
 struct sx_radix_tree* sx_radix_tree_new(int af);

@@ -1633,7 +1633,6 @@ struct fpcbdata {
 void
 bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
 {
-	char prefix[128];
 	struct fpcbdata* fpc = (struct fpcbdata*)ff;
 	FILE* f = fpc->f;
 	struct bgpq_expander* b = fpc->b;
@@ -1644,13 +1643,9 @@ bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
 	if (!f)
 		f = stdout;
 
-	memset(prefix, 0, sizeof(prefix));
-
-	sx_prefix_snprintf_fmt(n->prefix, prefix, sizeof(prefix),
+	sx_prefix_snprintf_fmt(n->prefix, f,
 	    b->name ? b->name : "NN",
 	    b->format);
-
-	fprintf(f, "%s", prefix);
 }
 
 

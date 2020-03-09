@@ -399,74 +399,81 @@ sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb)
 	return sx_prefix_snprintf_sep(p, rbuffer, srb, "/");
 }
 
-int
-sx_prefix_snprintf_fmt(struct sx_prefix* p, char* buffer, int size,
+void
+sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
     const char* name, const char* format)
 {
 	unsigned off = 0;
 	const char* c = format;
 	struct sx_prefix *q = sx_prefix_alloc(NULL);
+	char prefix[128];
 
 	while (*c) {
 		if(*c == '%') {
 			switch (*(c + 1)) {
 			case 'r':
 			case 'n':
-				inet_ntop(p->family, &p->addr, buffer+off, size-off);
-				off = strlen(buffer);
+				if (NULL != inet_ntop(p->family, &p->addr, prefix, sizeof(prefix))) {
+					fprintf(f, "%s", prefix);
+				} else {
+					sx_report(SX_ERROR, "inet_ntop failed\n");
+					return;
+				}
 				break;
 			case 'l':
-				off += snprintf(buffer + off, size - off,
-				    "%i", p->masklen);
+				fprintf(f, "%i", p->masklen);
 				break;
 			case '%':
-				buffer[off++] = '%';
+				fprintf(f, "%%");
 				break;
 			case 'N':
-				off += snprintf(buffer + off, size - off,
-				    "%s", name);
+				fprintf(f, "%s", name);
 				break;
 			case 'm':
 				sx_prefix_mask(p, q);
-				inet_ntop(p->family, &q->addr, buffer + off,
-				    size - off);
-				off = strlen(buffer);
+				if (NULL != inet_ntop(p->family, &q->addr, prefix, sizeof(prefix))) {
+					fprintf(f, "%s", prefix);
+				} else {
+					sx_report(SX_ERROR, "inet_ntop failed\n");
+					return;
+				}
 				break;
 			case 'i':
 				sx_prefix_imask(p, q);
-				inet_ntop(p->family, &q->addr, buffer + off,
-				    size - off);
-				off = strlen(buffer);
+				if (NULL != inet_ntop(p->family, &q->addr, prefix, sizeof(prefix))) {
+					fprintf(f, "%s", prefix);
+				} else {
+					sx_report(SX_ERROR, "inet_ntop failed\n");
+					return;
+				}
 				break;
 			default :
 				sx_report(SX_ERROR, "Unknown format char "
 				    "'%c'\n", *(c + 1));
-				return 0;
+				return;
 			}
 			c += 2;
 		} else if (*c == '\\') {
 			switch(*(c+1)) {
 			case 'n':
-				buffer[off++] = '\n';
+				fprintf(f, "\n");
 				break;
 			case 't':
-				buffer[off++] = '\t';
+				fprintf(f, "\t");
 				break;
 			case '\\':
-				buffer[off++] = '\\';
+				fprintf(f, "\\");
 				break;
 			default:
-				buffer[off++] = *(c + 1);
+				fprintf(f, "%c", *(c + 1));
 				break;
 			}
 			c += 2;
 		} else {
-			buffer[off++] = *c;
+			fprintf(f, "%c", *c);
 			c++;
 		}
 	}
-
-	return strlen(buffer);
 }
 
 int
