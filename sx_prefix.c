@@ -401,7 +401,8 @@ sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb)
 
 void
 sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
-    const char* name, const char* format)
+    const char* name, const char* format,
+    unsigned int aggregateLow, unsigned int aggregateHi)
 {
 	unsigned off = 0;
 	const char* c = format;
@@ -422,6 +423,12 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
 				break;
 			case 'l':
 				fprintf(f, "%i", p->masklen);
+				break;
+			case 'a':
+				fprintf(f, "%u", aggregateLow);
+				break;
+			case 'A':
+				fprintf(f, "%u", aggregateHi);
 				break;
 			case '%':
 				fprintf(f, "%%");

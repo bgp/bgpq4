@@ -52,7 +52,8 @@ int sx_prefix_fprint(FILE* f, struct sx_prefix* p);
 int sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb);
 int sx_prefix_snprintf_sep(struct sx_prefix* p, char* rbuffer, int srb, char*);
 void sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
-	const char* name, const char* fmt);
+	const char* name, const char* fmt,
+	unsigned int aggregateLow, unsigned int aggregateHi);
 int sx_prefix_jsnprintf(struct sx_prefix* p, char* rbuffer, int srb);
 struct sx_radix_tree* sx_radix_tree_new(int af);
 struct sx_radix_node* sx_radix_node_new(struct sx_prefix* prefix);

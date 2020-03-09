@@ -1638,14 +1638,34 @@ bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
 	struct bgpq_expander* b = fpc->b;
 
 	if (n->isGlue)
-		return;
+		goto checkSon;
 
 	if (!f)
 		f = stdout;
 
-	sx_prefix_snprintf_fmt(n->prefix, f,
-	    b->name ? b->name : "NN",
-	    b->format);
+	if (!n->isAggregate) {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->prefix->masklen,
+		    n->prefix->masklen);
+	} else if (n->aggregateLow > n->prefix->masklen) {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->aggregateLow,
+		    n->aggregateHi);
+	} else {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->prefix->masklen,
+		    n->aggregateHi);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_format_prefix(n->son, ff);
 }
 
 
