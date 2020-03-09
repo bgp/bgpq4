@@ -1673,10 +1673,13 @@ int
 bgpq4_print_format_prefixlist(FILE* f, struct bgpq_expander* b)
 {
 	struct fpcbdata ff = {.f=f, .b=b};
+	int len = strlen(b->format);
 
 	sx_radix_tree_foreach(b->tree, bgpq4_print_format_prefix, &ff);
 
-	if (strcmp(b->format + strlen(b->format - 2), "\n"))
+	// Add newline if format doesn't already end with one.
+	if (len < 2 ||
+	    !(b->format[len-2] == '\\' && b->format[len-1] == 'n'))
 		fprintf(f, "\n");
 
 	return 0;
