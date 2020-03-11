@@ -459,12 +459,6 @@ main(int argc, char* argv[])
 		sx_report(SX_FATAL, "Sorry, only prefix-lists supported in formatted "
 		    "output\n");
 
-	if (expander.vendor == V_FORMAT && (refine || refineLow)) {
-		sx_report(SX_FATAL, "Sorry, formatted output (-F <fmt>) in not "
-		    "compatible with -R/-r options\n");
-		exit(1);
-	}
-
 	if (expander.vendor == V_HUAWEI && expander.generation != T_ASPATH &&
 	    expander.generation != T_OASPATH && expander.generation != T_PREFIXLIST)
 		sx_report(SX_FATAL, "Sorry, only as-paths and prefix-lists supported "
@@ -483,12 +477,6 @@ main(int argc, char* argv[])
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) does not work in"
 		    " Juniper prefix-lists\nYou can try route-filters (-E) "
 		    "or route-filter-lists (-z) instead of prefix-lists\n.");
-		exit(1);
-	}
-
-	if(aggregate && expander.vendor == V_FORMAT) {
-		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not compatible with "
-			"formatted output (-F <fmt>)\n");
 		exit(1);
 	}
 

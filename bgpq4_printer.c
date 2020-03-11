@@ -1633,24 +1633,39 @@ struct fpcbdata {
 void
 bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
 {
-	char prefix[128];
 	struct fpcbdata* fpc = (struct fpcbdata*)ff;
 	FILE* f = fpc->f;
 	struct bgpq_expander* b = fpc->b;
 
 	if (n->isGlue)
-		return;
+		goto checkSon;
 
 	if (!f)
 		f = stdout;
 
-	memset(prefix, 0, sizeof(prefix));
+	if (!n->isAggregate) {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->prefix->masklen,
+		    n->prefix->masklen);
+	} else if (n->aggregateLow > n->prefix->masklen) {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->aggregateLow,
+		    n->aggregateHi);
+	} else {
+		sx_prefix_snprintf_fmt(n->prefix, f,
+		    b->name ? b->name : "NN",
+		    b->format,
+		    n->prefix->masklen,
+		    n->aggregateHi);
+	}
 
-	sx_prefix_snprintf_fmt(n->prefix, prefix, sizeof(prefix),
-	    b->name ? b->name : "NN",
-	    b->format);
-
-	fprintf(f, "%s", prefix);
+checkSon:
+	if (n->son)
+		bgpq4_print_format_prefix(n->son, ff);
 }
 
 
@@ -1658,10 +1673,13 @@ int
 bgpq4_print_format_prefixlist(FILE* f, struct bgpq_expander* b)
 {
 	struct fpcbdata ff = {.f=f, .b=b};
+	int len = strlen(b->format);
 
 	sx_radix_tree_foreach(b->tree, bgpq4_print_format_prefix, &ff);
 
-	if (strcmp(b->format + strlen(b->format - 2), "\n"))
+	// Add newline if format doesn't already end with one.
+	if (len < 2 ||
+	    !(b->format[len-2] == '\\' && b->format[len-1] == 'n'))
 		fprintf(f, "\n");
 
 	return 0;
