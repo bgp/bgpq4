@@ -1,5 +1,5 @@
 Name:           bgpq4
-Version:        0.0.5
+Version:        0.0.6
 Release:        0%{?dist}
 
 Group:          System/Utilities
@@ -36,6 +36,9 @@ make install
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Thu Mar 12 2020 Job Snijders <job@ntt.net> 0.0.6:
+- bugfixes (Thanks Chris Caputo!)
+
 * Wed Jan 01 2020 Job Snijders <job@ntt.net> 0.0.5:
 - bugfixes
 
