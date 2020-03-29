@@ -353,6 +353,21 @@ In order to create a distribution archive, run:
 
     make dist
 
+PACKAGE INSTALLATION
+--------------------
+
+In FreeBSD binary package can be installed using
+
+```shell
+pkg install bgpq4
+```
+
+Or from ports with `portmaster`
+
+```shell
+portmaster net-mgmt/bgpq4
+```
+
 MAILING LIST
 ------------
 
