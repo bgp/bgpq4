@@ -15,7 +15,7 @@ DESCRIPTION
 
 The bgpq4 utility used to generate configuration (prefix-lists,
 extended access-lists, policy-statement terms and as-path lists)
-based on RADB data.
+based on IRR routing data data.
 
 The options are as follows:
 
