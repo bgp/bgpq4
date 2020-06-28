@@ -1,7 +1,7 @@
 AC_INIT(bgpq4,0.0.6,job@ntt.net)
 AM_INIT_AUTOMAKE
 AC_PACKAGE_URL(https://github.com/bgp/bgpq4)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_SILENT_RULES([yes])
 
 AC_PROG_CC
