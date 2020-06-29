@@ -477,7 +477,7 @@ bgpq_selread(struct bgpq_expander* b, char* buffer, int size)
 {
 	fd_set rfd, wfd;
 	int ret;
-	struct timeval timeout = {10, 0};
+	struct timeval timeout = {30, 0};
 
 repeat:
 	FD_ZERO(&rfd);
