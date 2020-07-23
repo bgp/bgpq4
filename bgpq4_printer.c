@@ -953,7 +953,7 @@ bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 {
 	int nc=0, i, j, k, empty=1;
 	char buffer[2048];
-	snprintf(buffer, sizeof(buffer), "%s = [", b->name ? b->name : "NN");
+	snprintf(buffer, sizeof(buffer), "define %s = [", b->name ? b->name : "NN");
 
 	for (k = 0; k < 65536; k++) {
 
@@ -1592,7 +1592,7 @@ int
 bgpq4_print_bird_prefixlist(FILE* f, struct bgpq_expander* b)
 {
 	if (!sx_radix_tree_empty(b->tree)) {
-		fprintf(f,"%s = [",
+		fprintf(f,"define %s = [",
 		    b->name ? b->name : "NN");
 		sx_radix_tree_foreach(b->tree, bgpq4_print_bird_prefix, f);
 		fprintf(f, "\n];\n");
