@@ -368,6 +368,12 @@ Or from ports with `portmaster`
 portmaster net-mgmt/bgpq4
 ```
 
+On Arch Linux, BGPQ4 is [available in AUR](https://aur.archlinux.org/packages/bgpq4/):
+
+```shell
+yay -S bgpq4
+```
+
 MAILING LIST
 ------------
 
