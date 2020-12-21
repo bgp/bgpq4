@@ -1263,25 +1263,19 @@ bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
 
 	if (n->isAggregate) {
 		if (n->aggregateLow>n->prefix->masklen) {
-			fprintf(f,"%s prefix-list %s\n   %s permit %s ge %u le %u\n",
-			    n->prefix->family == AF_INET ? "ip" : "ipv6",
-			    bname ? bname : "NN", seqno, prefix,
-			    n->aggregateLow, n->aggregateHi);
+			fprintf(f,"   %s permit %s ge %u le %u\n",
+			    seqno, prefix, n->aggregateLow, n->aggregateHi);
 		} else {
-			fprintf(f,"%s prefix-list %s\n   %s permit %s le %u\n",
-			    n->prefix->family == AF_INET ? "ip" : "ipv6",
-			    bname?bname:"NN", seqno, prefix,
-			    n->aggregateHi);
+			fprintf(f,"   %s permit %s le %u\n",
+			    seqno, prefix, n->aggregateHi);
 		}
 	} else {
-		fprintf(f,"%s prefix-list %s\n   %s permit %s\n",
-		    n->prefix->family==AF_INET ? "ip" : "ipv6",
-		    bname ? bname : "NN", seqno, prefix);
+		fprintf(f,"   %s permit %s\n", seqno, prefix);
 	}
 
 checkSon:
 	if (n->son)
-		bgpq4_print_cprefix(n->son,ff);
+		bgpq4_print_eprefix(n->son,ff);
 }
 
 
@@ -1674,6 +1668,10 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 	seq = b->sequence;
 
 	fprintf(f, "no %s prefix-list %s\n",
+	    b->family == AF_INET ? "ip" : "ipv6",
+	    bname);
+
+	fprintf(f,"%s prefix-list %s\n",
 	    b->family == AF_INET ? "ip" : "ipv6",
 	    bname);
 
