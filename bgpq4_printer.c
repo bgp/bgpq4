@@ -1642,7 +1642,7 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 		sx_radix_tree_foreach(b->tree, bgpq4_print_cprefix, f);
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
-		fprintf(f, "%s prefix-list %s seq %s deny %s\n",
+		fprintf(f, "%s prefix-list %s seq %i deny %s\n",
 		    b->family==AF_INET ? "ip" : "ipv6",
 		    bname,
 		    seq,
