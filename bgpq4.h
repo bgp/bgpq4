@@ -21,7 +21,8 @@ typedef enum {
 	V_NOKIA,
 	V_HUAWEI,
 	V_MIKROTIK,
-	V_NOKIA_MD
+	V_NOKIA_MD,
+	V_ARISTA
 } bgpq_vendor_t;
 
 typedef enum {
@@ -29,7 +30,7 @@ typedef enum {
 	T_ASPATH,
 	T_OASPATH,
 	T_ASSET,
-	T_PREFIXLIST,	
+	T_PREFIXLIST,
 	T_EACL,
 	T_ROUTE_FILTER_LIST
 } bgpq_gen_t;

@@ -1860,6 +1860,8 @@ bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_huawei_prefixlist(f, b);
 	case V_MIKROTIK:
 		return bgpq4_print_mikrotik_prefixlist(f, b);
+	case V_ARISTA:
+		return bgpq4_print_cisco_prefixlist(f, b);
 	}
 
 	return 0;
@@ -1891,6 +1893,8 @@ bgpq4_print_eacl(FILE* f, struct bgpq_expander* b)
 		return sx_report(SX_FATAL, "unreachable point\n");
 	case V_HUAWEI:
 		return sx_report(SX_FATAL, "unreachable point\n");
+	case V_ARISTA:
+		return bgpq4_print_cisco_eacl(f, b);
 	}
 
 	return 0;
