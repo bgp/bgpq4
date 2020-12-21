@@ -1628,6 +1628,29 @@ bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
+int
+bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
+{
+	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
+
+	fprintf(f, "no %s prefix-list %s\n",
+	    b->family == AF_INET ? "ip" : "ipv6",
+	    bname);
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		sx_radix_tree_foreach(b->tree, bgpq4_print_cprefix, f);
+	} else {
+		fprintf(f, "! generated prefix-list %s is empty\n", bname);
+		fprintf(f, "%s prefix-list %s seq %s deny %s\n",
+		    b->family==AF_INET ? "ip" : "ipv6",
+		    bname,
+		    seq,
+		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
+	}
+
+	return 0;
+}
 
 struct fpcbdata {
 	FILE* f;
@@ -1865,7 +1888,7 @@ bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 	case V_MIKROTIK:
 		return bgpq4_print_mikrotik_prefixlist(f, b);
 	case V_ARISTA:
-		return bgpq4_print_cisco_prefixlist(f, b);
+		return bgpq4_print_arista_prefixlist(f, b);
 	}
 
 	return 0;
