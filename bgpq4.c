@@ -108,7 +108,7 @@ vendor_exclusive()
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei) -e (Arista) and -X (IOS XR) options are mutually"
+	    " -U (Huawei), -e (Arista) and -X (IOS XR) options are mutually"
 	    " exclusive\n");
 	exit(1);
 }
