@@ -516,7 +516,7 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 
-	if (expander.sequence && (expander.vendor != V_CISCO || expander.vendor != V_ARISTA)) {
+	if (expander.sequence && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
 		    " only for IOS and EOS\n");
 		exit(1);
