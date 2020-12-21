@@ -1671,15 +1671,15 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 	    b->family == AF_INET ? "ip" : "ipv6",
 	    bname);
 
-	fprintf(f,"%s prefix-list %s\n",
-	    b->family == AF_INET ? "ip" : "ipv6",
-	    bname);
-
 	if (!sx_radix_tree_empty(b->tree)) {
+		fprintf(f,"%s prefix-list %s\n",
+		    b->family == AF_INET ? "ip" : "ipv6",
+		    bname);
+
 		sx_radix_tree_foreach(b->tree, bgpq4_print_eprefix, f);
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
-		fprintf(f, "%s prefix-list %s seq %i deny %s\n",
+		fprintf(f, "%s prefix-list %s\n   seq %i deny %s\n",
 		    b->family==AF_INET ? "ip" : "ipv6",
 		    bname,
 		    seq,
