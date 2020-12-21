@@ -30,7 +30,7 @@ typedef enum {
 	T_ASPATH,
 	T_OASPATH,
 	T_ASSET,
-	T_PREFIXLIST,
+	T_PREFIXLIST,	
 	T_EACL,
 	T_ROUTE_FILTER_LIST
 } bgpq_gen_t;

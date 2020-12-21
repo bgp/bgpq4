@@ -163,7 +163,7 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 #endif
-
+	
 	bgpq_expander_init(&expander, af);
 
 	if (getenv("IRRD_SOURCES"))
