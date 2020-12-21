@@ -226,6 +226,7 @@ main(int argc, char* argv[])
 			if (expander.vendor)
 				vendor_exclusive();
 			expander.vendor = V_ARISTA;
+			expander.sequence = 1;
 			break;
 		case 'F':
 			if (expander.vendor)
