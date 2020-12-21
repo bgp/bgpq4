@@ -441,6 +441,8 @@ main(int argc, char* argv[])
 			} else if (expander.vendor == V_NOKIA ||
 			    expander.vendor == V_NOKIA_MD) {
 				expander.aswidth = 8;
+			} else if (expander.vendor == V_ARISTA) {
+				expander.aswidth = 5;
 			}
 		}
 	}
