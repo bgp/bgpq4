@@ -7,7 +7,7 @@ SYNOPSIS
 --------
 
 ```
-	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-46ABbDdJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
+	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-46ABbDdeJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
 ```
 
 DESCRIPTION
@@ -53,6 +53,10 @@ Enable some debugging output.
 Generate extended access-list (Cisco) or policy-statement term using
 route-filters (Juniper), [ip|ipv6]-prefix-list (Nokia) or prefix-filter
 (OpenBGPD)
+
+#### -e
+
+Generate output in Arista EOS format.
 
 #### -f `AS number`
 
