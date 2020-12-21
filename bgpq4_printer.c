@@ -1245,6 +1245,45 @@ checkSon:
 		bgpq4_print_hprefix(n->son, ff);
 }
 
+void
+bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
+{
+	char prefix[128], seqno[16] = "";
+	FILE* f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+
+	snprintf(seqno, sizeof(seqno), " seq %i", seq++);
+
+	if (n->isAggregate) {
+		if (n->aggregateLow>n->prefix->masklen) {
+			fprintf(f,"%s prefix-list %s%s\n   permit %s ge %u le %u\n",
+			    n->prefix->family == AF_INET ? "ip" : "ipv6",
+			    bname ? bname : "NN", seqno, prefix,
+			    n->aggregateLow, n->aggregateHi);
+		} else {
+			fprintf(f,"%s prefix-list %s%s\n   permit %s le %u\n",
+			    n->prefix->family == AF_INET ? "ip" : "ipv6",
+			    bname?bname:"NN", seqno, prefix,
+			    n->aggregateHi);
+		}
+	} else {
+		fprintf(f,"%s prefix-list %s%s\n   permit %s\n",
+		    n->prefix->family==AF_INET ? "ip" : "ipv6",
+		    bname ? bname : "NN", seqno, prefix);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_cprefix(n->son,ff);
+}
+
 
 void
 bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
@@ -1639,7 +1678,7 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 	    bname);
 
 	if (!sx_radix_tree_empty(b->tree)) {
-		sx_radix_tree_foreach(b->tree, bgpq4_print_cprefix, f);
+		sx_radix_tree_foreach(b->tree, bgpq4_print_eprefix, f);
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
 		fprintf(f, "%s prefix-list %s seq %i deny %s\n",
