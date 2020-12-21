@@ -772,6 +772,8 @@ bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_nokia_md_aspath(f, b);
 	case V_HUAWEI:
 		return bgpq4_print_huawei_aspath(f, b);
+	case V_ARISTA:
+		return bgpq4_print_cisco_aspath(f, b);
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
 	}
@@ -797,6 +799,8 @@ bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_nokia_md_oaspath(f, b);
 	case V_HUAWEI:
 		return bgpq4_print_huawei_oaspath(f, b);
+	case V_ARISTA:
+		return bgpq4_print_cisco_oaspath(f, b);
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
 	}
