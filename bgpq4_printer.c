@@ -772,6 +772,8 @@ bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_nokia_md_aspath(f, b);
 	case V_HUAWEI:
 		return bgpq4_print_huawei_aspath(f, b);
+	case V_ARISTA:
+		return bgpq4_print_cisco_aspath(f, b);
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
 	}
@@ -797,6 +799,8 @@ bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_nokia_md_oaspath(f, b);
 	case V_HUAWEI:
 		return bgpq4_print_huawei_oaspath(f, b);
+	case V_ARISTA:
+		return bgpq4_print_cisco_oaspath(f, b);
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
 	}
@@ -1241,6 +1245,39 @@ checkSon:
 		bgpq4_print_hprefix(n->son, ff);
 }
 
+void
+bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
+{
+	char prefix[128], seqno[16] = "";
+	FILE* f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+
+	snprintf(seqno, sizeof(seqno), " seq %i", seq++);
+
+	if (n->isAggregate) {
+		if (n->aggregateLow>n->prefix->masklen) {
+			fprintf(f,"   %s permit %s ge %u le %u\n",
+			    seqno, prefix, n->aggregateLow, n->aggregateHi);
+		} else {
+			fprintf(f,"   %s permit %s le %u\n",
+			    seqno, prefix, n->aggregateHi);
+		}
+	} else {
+		fprintf(f,"   %s permit %s\n", seqno, prefix);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_eprefix(n->son,ff);
+}
+
 
 void
 bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
@@ -1626,6 +1663,33 @@ bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
+int
+bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
+{
+	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
+
+	fprintf(f, "no %s prefix-list %s\n",
+	    b->family == AF_INET ? "ip" : "ipv6",
+	    bname);
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		fprintf(f,"%s prefix-list %s\n",
+		    b->family == AF_INET ? "ip" : "ipv6",
+		    bname);
+
+		sx_radix_tree_foreach(b->tree, bgpq4_print_eprefix, f);
+	} else {
+		fprintf(f, "! generated prefix-list %s is empty\n", bname);
+		fprintf(f, "%s prefix-list %s\n   seq %i deny %s\n",
+		    b->family==AF_INET ? "ip" : "ipv6",
+		    bname,
+		    seq,
+		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
+	}
+
+	return 0;
+}
 
 struct fpcbdata {
 	FILE* f;
@@ -1862,6 +1926,8 @@ bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 		return bgpq4_print_huawei_prefixlist(f, b);
 	case V_MIKROTIK:
 		return bgpq4_print_mikrotik_prefixlist(f, b);
+	case V_ARISTA:
+		return bgpq4_print_arista_prefixlist(f, b);
 	}
 
 	return 0;
@@ -1893,6 +1959,8 @@ bgpq4_print_eacl(FILE* f, struct bgpq_expander* b)
 		return sx_report(SX_FATAL, "unreachable point\n");
 	case V_HUAWEI:
 		return sx_report(SX_FATAL, "unreachable point\n");
+	case V_ARISTA:
+		return bgpq4_print_cisco_eacl(f, b);
 	}
 
 	return 0;

@@ -21,7 +21,8 @@ typedef enum {
 	V_NOKIA,
 	V_HUAWEI,
 	V_MIKROTIK,
-	V_NOKIA_MD
+	V_NOKIA_MD,
+	V_ARISTA
 } bgpq_vendor_t;
 
 typedef enum {

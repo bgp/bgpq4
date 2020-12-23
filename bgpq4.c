@@ -40,6 +40,7 @@ usage(int ecode)
 	printf(" -N        : Nokia SR OS (Classic CLI)\n");
 	printf(" -n        : Nokia SR OS (MD-CLI)\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
+	printf(" -e        : Arista EOS\n");
 	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
 
 	printf("\nInput filters:\n");
@@ -107,7 +108,8 @@ vendor_exclusive()
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei) and -X (IOS XR) options are mutually exclusive\n");
+	    " -U (Huawei), -e (Arista) and -X (IOS XR) options are mutually"
+	    " exclusive\n");
 	exit(1);
 }
 
@@ -167,7 +169,7 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"346a:AbBdDEF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
+	while ((c = getopt(argc,argv,"346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
 	    !=EOF) {
 	switch (c) {
         case '3':
@@ -219,6 +221,12 @@ main(int argc, char* argv[])
 			if (expander.generation)
 				exclusive();
 			expander.generation = T_EACL;
+			break;
+		case 'e':
+			if (expander.vendor)
+				vendor_exclusive();
+			expander.vendor = V_ARISTA;
+			expander.sequence = 1;
 			break;
 		case 'F':
 			if (expander.vendor)
@@ -420,6 +428,8 @@ main(int argc, char* argv[])
 			} else if (expander.vendor == V_NOKIA ||
 			    expander.vendor == V_NOKIA_MD) {
 				expander.aswidth = 8;
+			} else if (expander.vendor == V_ARISTA) {
+				expander.aswidth = 4;
 			}
 		} else if (expander.generation == T_OASPATH) {
 			if (expander.vendor == V_CISCO) {
@@ -431,6 +441,8 @@ main(int argc, char* argv[])
 			} else if (expander.vendor == V_NOKIA ||
 			    expander.vendor == V_NOKIA_MD) {
 				expander.aswidth = 8;
+			} else if (expander.vendor == V_ARISTA) {
+				expander.aswidth = 5;
 			}
 		}
 	}
@@ -507,9 +519,9 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 
-	if (expander.sequence && expander.vendor != V_CISCO) {
+	if (expander.sequence && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
-		    " only for IOS\n");
+		    " only for IOS and EOS\n");
 		exit(1);
 	}
 
