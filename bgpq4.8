@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Dec 1, 2019
+.Dd December 23, 2020
 .Dt BGPQ4 8
 .Os
 .Sh NAME
@@ -36,7 +36,7 @@
 .Oo
 .Fl f Ar asn |
 .Fl F Ar fmt |
-.Fl G Ar asn 
+.Fl G Ar asn
 .Fl t
 .Oc
 .Op Fl 46ABbDdJjNnsXU
@@ -50,15 +50,15 @@
 .Op EXCEPT OBJECTS
 .Sh DESCRIPTION
 The
-.Nm 
+.Nm
 utility used to generate configurations (prefix-lists, extended
 access-lists, policy-statement terms and as-path lists) based on RADB data.
 .Pp
-The options are as follows: 
+The options are as follows:
 .Bl -tag -width Ds
-.It Fl 4 
+.It Fl 4
 generate IPv4 prefix/access-lists (default).
-.It Fl 6 
+.It Fl 6
 generate IPv6 prefix/access-lists (IPv4 by default).
 .It Fl A
 try to aggregate prefix-lists as much as possible (not all output
@@ -89,14 +89,14 @@ generate config for Juniper (default: Cisco).
 generate output in JSON format (default: Cisco).
 .It Fl K
 generate config for Mikrotik (default: Cisco).
-.It Fl l Ar name 
+.It Fl l Ar name
 name of generated entry.
 .It Fl L Ar limit
 limit recursion depth when expanding as-sets.
 .It Fl m Ar len
-maximum prefix-length of accepted prefixes (default: 32 for IPv4 and 
+maximum prefix-length of accepted prefixes (default: 32 for IPv4 and
 128 for IPv6).
-.It Fl M Ar match 
+.It Fl M Ar match
 extra match conditions for Juniper route-filters.
 .It Fl n
 generate config for Nokia SR OS MD-CLI (Cisco IOS by default)
@@ -107,17 +107,17 @@ accept routes registered for private ASNs (default: disabled)
 .It Fl P
 generate prefix-list (default, backward compatibility).
 .It Fl r Ar len
-allow more specific routes starting with specified masklen too. 
+allow more specific routes starting with specified masklen too.
 .It Fl R Ar len
-allow more specific routes up to specified masklen too. 
+allow more specific routes up to specified masklen too.
 .It Fl s
 generate sequence numbers in IOS-style prefix-lists.
 .It Fl S Ar sources
 use specified sources only (recommended: RADB,RIPE,APNIC).
 .It Fl t
-generate as-sets for OpenBGPD (OpenBSD 6.4+), BIRD and JSON formats.
+generate as-sets for OpenBGPd, BIRD and JSON formats.
 .It Fl T
-disable pipelining (not recommended). 
+disable pipelining (not recommended).
 .It Fl W Ar len
 generate as-path strings of no more than len items (use 0 for inifinity).
 .It Fl U
@@ -126,15 +126,15 @@ generate config for Huawei devices (Cisco IOS by default)
 generate config for Cisco IOS XR devices (plain IOS by default).
 .It Fl z
 generate route-filter-lists (JunOS 16.2+).
-.It Ar OBJECTS 
+.It Ar OBJECTS
 means networks (in prefix format), autonomous systems, as-sets and route-sets.
 .It Ar EXCEPT OBJECTS
 those objects will be excluded from expansion.
 .El
 .Sh EXAMPLES
-Generating named juniper prefix-filter for AS20597: 
+Generating named juniper prefix-filter for AS20597:
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -Jl eltel AS20597
 policy-options {
 replace:
@@ -154,13 +154,13 @@ replace:
     217.170.80.0/20;
  }
 }
-.Re
+.Ed
 .fi
 .Pp
 For Cisco we can use aggregation (-A) flag to make this prefix-filter
-more compact: 
+more compact:
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -Al eltel AS20597
 no ip prefix-list eltel
 ip prefix-list eltel permit 81.9.0.0/20
@@ -174,15 +174,15 @@ ip prefix-list eltel permit 89.112.0.0/18 ge 19 le 19
 ip prefix-list eltel permit 89.112.4.0/22
 ip prefix-list eltel permit 89.112.64.0/19
 ip prefix-list eltel permit 217.170.64.0/19 ge 20 le 20
-.Re
+.Ed
 .fi
 - you see, prefixes 89.112.0.0/19 and 89.112.32.0/19 now aggregated
-into single entry 89.112.0.0/18 ge 19 le 19. 
+into single entry 89.112.0.0/18 ge 19 le 19.
 .Pp
 Well, for Juniper we can generate even more interesting policy-options,
-using -M <extra match conditions>, -R <len> and hierarchical names: 
+using -M <extra match conditions>, -R <len> and hierarchical names:
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
 policy-options {
  policy-statement eltel {
@@ -203,25 +203,25 @@ replace:
   }
  }
 }
-.Re
+.Ed
 .fi
 generated policy-option term now allows all specifics with prefix-length
-between /29 and /32 for eltel networks if they match with special community 
+between /29 and /32 for eltel networks if they match with special community
 blackhole (defined elsewhere in configuration).
 .Pp
-Of course, this version supports IPv6 (-6): 
+Of course, this version supports IPv6 (-6):
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -6l as-retn-6 AS-RETN6
 no ipv6 prefix-list as-retn-6
 ipv6 prefix-list as-retn-6 permit 2001:7fb:fe00::/48
 ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
 [....]
-.Re
+.Ed
 .fi
 and assumes your device supports 32-bit ASNs
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -Jf 112 AS-SPACENET
 policy-options {
 replace:
@@ -232,22 +232,21 @@ replace:
   as-path a3 "^112(.)*(35052|41720|43628|44450|196611)$";
  }
 }
-.Re
+.Ed
 .fi
 see `AS196611` in the end of the list ? That's a 32-bit ASN.
-.Pp
 .Sh USER-DEFINED FORMAT
 If you want to generate configuration not for routers, but for some
 other programs/systems, you may use user-defined formatting, like in
 example below:
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
 ipfw add pass all from 62.244.0.0/18 to any
 ipfw add pass all from 91.219.29.0/24 to any
 ipfw add pass all from 91.219.30.0/24 to any
 ipfw add pass all from 193.193.192.0/19 to any
-.Re
+.Ed
 .fi
 .Pp
 Recognized format characters: %n - network, %l - mask length,
@@ -258,17 +257,17 @@ Please note that no new lines inserted automatically after each sentence,
 you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
 .nf
-.Rs
+.Bd -literal
 $ bgpq4 -6F "%n/%l; " as-eltel
 2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
-.Re
+.Ed
 .fi
 .Sh DIAGNOSTICS
-When everything is OK, 
+When everything is OK,
 .Nm
-generates access-list to standard output and exits with status == 0. 
-In case of errors they are printed to stderr and program exits with 
-non-zero status. 
+generates access-list to standard output and exits with status == 0.
+In case of errors they are printed to stderr and program exits with
+non-zero status.
 .Sh SEE ALSO
 .Sy https://github.com/bgp/bgpq4
 BGPQ4 on Github.
