@@ -1552,9 +1552,10 @@ bgpq4_print_cisco_prefixlist(FILE* f, struct bgpq_expander* b)
 		sx_radix_tree_foreach(b->tree, bgpq4_print_cprefix, f);
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
-		fprintf(f, "%s prefix-list %s deny %s\n",
+		fprintf(f, "%s prefix-list %s%s deny %s\n",
 		    b->family==AF_INET ? "ip" : "ipv6",
 		    bname,
+		    seq ? " seq 1" : "",
 		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
 	}
 
@@ -1615,9 +1616,10 @@ bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
 	if (!sx_radix_tree_empty(b->tree)) {
 		sx_radix_tree_foreach(b->tree, bgpq4_print_hprefix, f);
 	} else {
-		fprintf(f, "ip %s-prefix %s deny %s\n",
+		fprintf(f, "ip %s-prefix %s%s deny %s\n",
 		    b->family==AF_INET ? "ip" : "ipv6",
 		    bname,
+		    seq ? " seq 1" : "",
 		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
 	}
 
