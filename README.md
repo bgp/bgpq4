@@ -394,7 +394,7 @@ and contributions from many others.
 Project
 -------
 
-BGPQ4 is maintained by Job Snijders `<job@ntt.net>`.
+BGPQ4 is maintained by Job Snijders `<job@sobornost.net>`.
 
 [https://github.com/bgp/bgpq4](https://github.com/bgp/bgpq4)
 

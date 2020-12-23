@@ -90,7 +90,7 @@ version()
 	printf(PACKAGE_NAME " - a versatile utility to generate BGP filters\n"
 	    "version: " PACKAGE_VERSION "\n"
 	    "website: https://github.com/bgp/bgpq4\n"
-	    "maintainer: Job Snijders <job@ntt.net>\n");
+	    "maintainer: Job Snijders <job@sobornost.net>\n");
 	exit(0);
 }
 

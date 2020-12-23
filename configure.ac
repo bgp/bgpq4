@@ -1,4 +1,4 @@
-AC_INIT(bgpq4,0.0.6,job@ntt.net)
+AC_INIT(bgpq4,0.0.6,job@sobornost.net)
 AM_INIT_AUTOMAKE
 AC_PACKAGE_URL(https://github.com/bgp/bgpq4)
 AC_CONFIG_HEADERS([config.h])
