@@ -477,7 +477,6 @@ bgpq_selread(struct bgpq_expander* b, char* buffer, int size)
 {
 	fd_set rfd, wfd;
 	int ret;
-	struct timeval timeout = {30, 0};
 
 repeat:
 	FD_ZERO(&rfd);
@@ -487,10 +486,10 @@ repeat:
 	if (!STAILQ_EMPTY(&b->wq))
 		FD_SET(b->fd, &wfd);
 
-	ret = select(b->fd + 1, &rfd, &wfd, NULL, &timeout);
+	ret = select(b->fd + 1, &rfd, &wfd, NULL, NULL);
 
 	if (ret == 0)
-		sx_report(SX_FATAL, "select timeout\n");
+		sx_report(SX_FATAL, "select failed\n");
 	else if (ret == -1 && errno == EINTR)
 		goto repeat;
 	else if (ret == -1)
@@ -876,13 +875,11 @@ bgpq_expand(struct bgpq_expander* b)
 		    sizeof(struct linger))) {
 			sx_report(SX_ERROR,"Unable to set linger on socket: "
 			    "%s\n", strerror(errno));
-			shutdown(fd, SHUT_RDWR);
 			close(fd);
 			exit(1);
 		}
 		err = connect(fd, rp->ai_addr, rp->ai_addrlen);
 		if (err) {
-			shutdown(fd, SHUT_RDWR);
 			close(fd);
 			fd = -1;
 			continue;
@@ -892,7 +889,6 @@ bgpq_expand(struct bgpq_expander* b)
 			SX_DEBUG(debug_expander, "Acquired sendbuf of %i "
 			    "bytes\n", err);
 		} else {
-			shutdown(fd, SHUT_RDWR);
 			close(fd);
 			fd = -1;
 			continue;
@@ -1084,7 +1080,6 @@ bgpq_expand(struct bgpq_expander* b)
 		fl &= ~O_NONBLOCK;
 		fcntl(fd, F_SETFL, fl);
 	}
-	shutdown(fd, SHUT_RDWR);
 	close(fd);
 
 	return 1;
