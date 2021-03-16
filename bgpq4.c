@@ -451,10 +451,10 @@ main(int argc, char* argv[])
 		expander.generation = T_PREFIXLIST;
 	}
 
-	if (expander.generation != (T_PREFIXLIST & T_ASPATH & T_OASPATH) &&
-	    expander.vendor == V_CISCO_XR) {
+	if (expander.vendor == V_CISCO_XR && expander.generation != T_PREFIXLIST &&
+	    expander.generation != T_ASPATH && expander.generation != T_OASPATH) {
 		sx_report(SX_FATAL, "Sorry, only prefix-sets and as-paths "
-			"supported for IOS XR\n");
+		    "supported for IOS XR\n");
 	}
 	if (expander.vendor == V_BIRD && expander.generation != T_PREFIXLIST &&
 		expander.generation != T_ASPATH && expander.generation != T_ASSET) {
