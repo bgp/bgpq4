@@ -27,9 +27,6 @@ struct blah {
 AC_DEFINE([HAVE_STAILQ_IN_SYS_QUEUE], [1], [sys/queue.h have STAILQ_])],
 [AC_MSG_RESULT(no)])
 
-
-AC_CHECK_PROGS([MARKDOWN], [markdown_py markdown2 markdown], [echo])
-
 AC_CHECK_FUNCS(strlcpy)
 AC_CHECK_FUNCS(pledge)
 
@@ -37,4 +34,3 @@ AC_CHECK_LIB(socket,socket)
 AC_CHECK_LIB(nsl,getaddrinfo)
 
 AC_OUTPUT(Makefile)
-
