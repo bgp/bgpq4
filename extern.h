@@ -58,6 +58,7 @@ typedef enum {
 	V_FORMAT,
 	V_NOKIA,
 	V_HUAWEI,
+	V_HUAWEI_XPL,
 	V_MIKROTIK,
 	V_NOKIA_MD,
 	V_ARISTA

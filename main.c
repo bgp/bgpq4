@@ -59,6 +59,7 @@ usage(int ecode)
 	printf(" no option : Cisco IOS Classic (default)\n");
 	printf(" -X        : Cisco IOS XR\n");
 	printf(" -U        : Huawei\n");
+	printf(" -u        : Huawei XPL\n");
 	printf(" -j        : JSON\n");
 	printf(" -J        : Juniper Junos\n");
 	printf(" -K        : MikroTik RouterOS\n");
@@ -134,8 +135,8 @@ vendor_exclusive(void)
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei), -e (Arista) and -X (IOS XR) options are mutually"
-	    " exclusive\n");
+	    " -U (Huawei), -u (Huawei XPL), -e (Arista) and -X (IOS XR) options "
+	    " are mutually exclusive\n");
 	exit(1);
 }
 

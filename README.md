@@ -163,6 +163,12 @@ The options are as follows:
 
 > generate config for Huawei devices (Cisco IOS by default)
 
+**-u**
+
+> generate output in Huawei XPL format.
+
+#### -W `length`
+
 **-X**
 
 > generate config for Cisco IOS XR devices (plain IOS by default).
