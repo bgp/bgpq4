@@ -145,6 +145,10 @@ Disable pipelining (not recommended).
 
 Generate output in Huawei format.
 
+#### -u
+
+Generate output in Huawei XPL format.
+
 #### -W `length`
 
 Generate as-path strings of a given length maximum (0 for infinity).

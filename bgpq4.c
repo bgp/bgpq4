@@ -33,6 +33,7 @@ usage(int ecode)
 	printf(" no option : Cisco IOS Classic (default)\n");
 	printf(" -X        : Cisco IOS XR\n");
 	printf(" -U        : Huawei\n");
+	printf(" -u        : Huawei XPL\n");
 	printf(" -j        : JSON\n");
 	printf(" -J        : Juniper Junos\n");
 	printf(" -K        : MikroTik RouterOS\n");
@@ -108,8 +109,8 @@ vendor_exclusive()
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei), -e (Arista) and -X (IOS XR) options are mutually"
-	    " exclusive\n");
+	    " -U (Huawei), -u (Huawei XPL), -e (Arista) and -X (IOS XR) options "
+	    " are mutually exclusive\n");
 	exit(1);
 }
 
@@ -169,7 +170,7 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
+	while ((c = getopt(argc,argv,"346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UuwXsvz"))
 	    !=EOF) {
 	switch (c) {
         case '3':
@@ -380,6 +381,11 @@ main(int argc, char* argv[])
 				exclusive();
 			expander.vendor = V_HUAWEI;
 			break;
+		case 'u':
+			if (expander.vendor)
+				exclusive();
+			expander.vendor = V_HUAWEI_XPL;
+			break;
 		case 'W':
 			expander.aswidth = atoi(optarg);
 			if (expander.aswidth < 0) {
@@ -475,6 +481,11 @@ main(int argc, char* argv[])
 	    expander.generation != T_OASPATH && expander.generation != T_PREFIXLIST)
 		sx_report(SX_FATAL, "Sorry, only as-paths and prefix-lists supported "
 		    "for Huawei output\n");
+
+	if (expander.vendor == V_HUAWEI_XPL && expander.generation != T_ASPATH &&
+	    expander.generation != T_OASPATH && expander.generation != T_PREFIXLIST)
+		sx_report(SX_FATAL, "Sorry, only as-paths and prefix-lists supported "
+		    "for Huawei XPL output\n");
 
 	if (expander.generation == T_ROUTE_FILTER_LIST && expander.vendor != V_JUNIPER)
 		sx_report(SX_FATAL, "Route-filter-lists (-z) supported for Juniper (-J)"
