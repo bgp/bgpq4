@@ -528,7 +528,7 @@ bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
 	if (b->asn32s[b->asnumber / 65536] &&
 	    b->asn32s[b->asnumber / 65535][(b->asnumber % 65536) / 8] &
 	    (0x80 >> (b->asnumber % 8))) {
-		fprintf(f, "ip as-path-filter %s permit ^%u(%u)*$\n",
+		fprintf(f, "ip as-path-filter %s permit ^%u(_%u)*$\n",
 		    b->name ? b->name : "NN", b->asnumber, b->asnumber);
 		empty=0;
 	}
@@ -547,7 +547,7 @@ bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
 						continue;
 
 					if (!nc) {
-						fprintf(f, "ip as-path-filter %s permit ^%u([0-9]+)*"
+						fprintf(f, "ip as-path-filter %s permit ^%u(_[0-9]+)*"
 						    "_(%u",
 						    b->name ? b->name : "NN",
 						    b->asnumber,
@@ -590,7 +590,7 @@ bgpq4_print_huawei_oaspath(FILE* f, struct bgpq_expander* b)
 	if (b->asn32s[b->asnumber / 65536] &&
 	     b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
 	     (0x80 >> (b->asnumber % 8))) {
-		fprintf(f,"ip as-path-filter %s permit (_%u)*$\n",
+		fprintf(f,"ip as-path-filter %s permit ^(_%u)*$\n",
 		    b->name ? b->name : "NN", b->asnumber);
 		empty = 0;
 	}
