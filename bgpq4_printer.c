@@ -590,7 +590,7 @@ bgpq4_print_huawei_oaspath(FILE* f, struct bgpq_expander* b)
 	if (b->asn32s[b->asnumber / 65536] &&
 	     b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
 	     (0x80 >> (b->asnumber % 8))) {
-		fprintf(f,"ip as-path-filter %s permit (_%u)*$\n",
+		fprintf(f,"ip as-path-filter %s permit ^(_%u)*$\n",
 		    b->name ? b->name : "NN", b->asnumber);
 		empty = 0;
 	}
