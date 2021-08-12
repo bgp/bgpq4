@@ -169,7 +169,7 @@ sx_prefix_parse(struct sx_prefix* p, int af, char* text)
 		if (masklen == -1)
 			p->masklen = 32;
 		else {
-			if(masklen < 0 || masklen > 32) {
+			if (masklen < 0 || masklen > 32) {
 				p->masklen = 32;
 			} else {
 				p->masklen = masklen;
@@ -410,7 +410,7 @@ sx_prefix_snprintf_fmt(struct sx_prefix* p, FILE* f,
 	char prefix[128];
 
 	while (*c) {
-		if(*c == '%') {
+		if (*c == '%') {
 			switch (*(c + 1)) {
 			case 'r':
 			case 'n':
@@ -603,14 +603,14 @@ next:
 			if (node->parent->r == node) {
 				node->parent->r = node->l;
 				node->l->parent = node->parent;
-			} else if(node->parent->l==node) {
+			} else if (node->parent->l==node) {
 				node->parent->l=node->l;
 				node->l->parent=node->parent;
 			} else {
 				sx_report(SX_ERROR,"Unlinking node which is not descendant "
 					"of its parent\n");
 			}
-		} else if(tree->head==node) {
+		} else if (tree->head==node) {
 			tree->head=node->l;
 			node->l->parent=NULL;
 		} else {
@@ -621,7 +621,7 @@ next:
 	} else {
 		/* the only case - node does not have descendants */
 		if (node->parent) {
-			if(node->parent->l == node)
+			if (node->parent->l == node)
 				node->parent->l = NULL;
 			else if (node->parent->r == node)
 				node->parent->r=NULL;
@@ -840,9 +840,11 @@ sx_radix_node_foreach(struct sx_radix_node* node,
 
 int
 sx_radix_tree_foreach(struct sx_radix_tree* tree,
-	void (*func)(struct sx_radix_node*, void*), void* udata)
+    void (*func)(struct sx_radix_node*, void*), void* udata)
 {
-	if(!func || !tree || !tree->head) return 0;
+	if (!func || !tree || !tree->head)
+		return 0;
+
 	sx_radix_node_foreach(tree->head,func,udata);
 	return 0;
 }
@@ -850,12 +852,12 @@ sx_radix_tree_foreach(struct sx_radix_tree* tree,
 int
 sx_radix_node_aggregate(struct sx_radix_node* node)
 {
-	if(node->l)
+	if (node->l)
 		sx_radix_node_aggregate(node->l);
-	if(node->r)
+	if (node->r)
 		sx_radix_node_aggregate(node->r);
 
-	if(debug_aggregation) {
+	if (debug_aggregation) {
 		printf("Aggregating on node: ");
 		sx_prefix_fprint(stdout,node->prefix);
 		printf(" %s%s%u,%u\n", node->isGlue?"Glue ":"",

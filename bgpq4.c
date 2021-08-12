@@ -122,15 +122,15 @@ parseasnumber(struct bgpq_expander* expander, char* optarg)
 		sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 		exit(1);
 	}
-	if(eon && *eon == '.') {
+	if (eon && *eon == '.') {
 		/* -f 3.3, for example */
 		uint32_t loas = strtoul(eon+1, &eon, 10);
-		if(expander->asnumber > 65535) {
+		if (expander->asnumber > 65535) {
 			/* should prevent incorrect numbers like 65537.1 */
 			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 			exit(1);
 		}
-		if(loas < 1 || loas > 65535) {
+		if (loas < 1 || loas > 65535) {
 			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
 			exit(1);
 		}
@@ -414,99 +414,114 @@ main(int argc, char* argv[])
 	argv += optind;
 
 	if (!widthSet) {
-		if (expander.generation==T_ASPATH) {
-			if (expander.vendor == V_CISCO) {
+		if (expander.generation == T_ASPATH) {
+			int vendor = expander.vendor;
+			switch (vendor) {
+			case V_ARISTA:
+			case V_CISCO:
+			case V_MIKROTIK:
 				expander.aswidth = 4;
-			} else if (expander.vendor == V_CISCO_XR) {
+			case V_CISCO_XR:
 				expander.aswidth = 6;
-			} else if (expander.vendor == V_JUNIPER) {
+			case V_JUNIPER:
+			case V_NOKIA:
+			case V_NOKIA_MD:
 				expander.aswidth = 8;
-			} else if (expander.vendor == V_MIKROTIK) {
-				expander.aswidth = 4;
-			} else if (expander.vendor == V_BIRD) {
+			case V_BIRD:
 				expander.aswidth = 10;
-			} else if (expander.vendor == V_NOKIA ||
-			    expander.vendor == V_NOKIA_MD) {
-				expander.aswidth = 8;
-			} else if (expander.vendor == V_ARISTA) {
-				expander.aswidth = 4;
 			}
 		} else if (expander.generation == T_OASPATH) {
-			if (expander.vendor == V_CISCO) {
+			int vendor = expander.vendor;
+			switch (vendor) {
+			case V_ARISTA:
+			case V_CISCO:
 				expander.aswidth = 5;
-			} else if (expander.vendor == V_CISCO_XR) {
+			case V_CISCO_XR:
 				expander.aswidth = 7;
-			} else if (expander.vendor==V_JUNIPER) {
+			case V_JUNIPER:
+			case V_NOKIA:
+			case V_NOKIA_MD:
 				expander.aswidth = 8;
-			} else if (expander.vendor == V_NOKIA ||
-			    expander.vendor == V_NOKIA_MD) {
-				expander.aswidth = 8;
-			} else if (expander.vendor == V_ARISTA) {
-				expander.aswidth = 5;
 			}
 		}
 	}
 
-	if (!expander.generation) {
+	if (!expander.generation)
 		expander.generation = T_PREFIXLIST;
-	}
 
-	if (expander.vendor == V_CISCO_XR && expander.generation != T_PREFIXLIST &&
-	    expander.generation != T_ASPATH && expander.generation != T_OASPATH) {
+	if (expander.vendor == V_CISCO_XR
+	    && expander.generation != T_PREFIXLIST
+	    && expander.generation != T_ASPATH
+	    && expander.generation != T_OASPATH) {
 		sx_report(SX_FATAL, "Sorry, only prefix-sets and as-paths "
 		    "supported for IOS XR\n");
 	}
-	if (expander.vendor == V_BIRD && expander.generation != T_PREFIXLIST &&
-		expander.generation != T_ASPATH && expander.generation != T_ASSET) {
+	if (expander.vendor == V_BIRD
+	    && expander.generation != T_PREFIXLIST
+	    && expander.generation != T_ASPATH
+	    && expander.generation != T_ASSET) {
 		sx_report(SX_FATAL, "Sorry, only prefix-lists and as-paths/as-sets "
 		    "supported for BIRD output\n");
 	}
-	if (expander.vendor == V_JSON && expander.generation != T_PREFIXLIST &&
-		expander.generation != T_ASPATH && expander.generation != T_ASSET) {
+	if (expander.vendor == V_JSON
+	    && expander.generation != T_PREFIXLIST
+	    && expander.generation != T_ASPATH
+	    && expander.generation != T_ASSET) {
 		sx_report(SX_FATAL, "Sorry, only prefix-lists and as-paths/as-sets "
 		    "supported for JSON output\n");
 	}
 
-	if (expander.vendor == V_FORMAT && expander.generation != T_PREFIXLIST)
+	if (expander.vendor == V_FORMAT
+	    && expander.generation != T_PREFIXLIST)
 		sx_report(SX_FATAL, "Sorry, only prefix-lists supported in formatted "
 		    "output\n");
 
-	if (expander.vendor == V_HUAWEI && expander.generation != T_ASPATH &&
-	    expander.generation != T_OASPATH && expander.generation != T_PREFIXLIST)
+	if (expander.vendor == V_HUAWEI
+	    && expander.generation != T_ASPATH
+	    && expander.generation != T_OASPATH
+	    && expander.generation != T_PREFIXLIST)
 		sx_report(SX_FATAL, "Sorry, only as-paths and prefix-lists supported "
 		    "for Huawei output\n");
 
-	if (expander.generation == T_ROUTE_FILTER_LIST && expander.vendor != V_JUNIPER)
+	if (expander.generation == T_ROUTE_FILTER_LIST
+	    && expander.vendor != V_JUNIPER)
 		sx_report(SX_FATAL, "Route-filter-lists (-z) supported for Juniper (-J)"
 		    " output only\n");
 
-	if (expander.generation == T_ASSET && expander.vendor != V_JSON &&
-	    expander.vendor != V_OPENBGPD && expander.vendor != V_BIRD)
+	if (expander.generation == T_ASSET
+	    && expander.vendor != V_JSON
+	    && expander.vendor != V_OPENBGPD
+	    && expander.vendor != V_BIRD)
 		sx_report(SX_FATAL, "As-Sets (-t) supported for JSON (-j), OpenBGPD "
 		    "(-B) and BIRD (-b) output only\n");
 
-	if (aggregate && expander.vendor == V_JUNIPER && expander.generation == T_PREFIXLIST) {
+	if (aggregate
+	    && expander.vendor == V_JUNIPER
+	    && expander.generation == T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) does not work in"
 		    " Juniper prefix-lists\nYou can try route-filters (-E) "
 		    "or route-filter-lists (-z) instead of prefix-lists\n.");
 		exit(1);
 	}
 
-	if (aggregate && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	if (aggregate
+	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
 	}
 
-	if (refine && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	if (refine
+	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-R) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
 		exit(1);
 	}
 
-	if (refineLow && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	if (refineLow
+	     && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
 	     && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-r) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
@@ -519,7 +534,8 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 
-	if (expander.sequence && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
+	if (expander.sequence
+	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
 		    " only for IOS and EOS\n");
 		exit(1);
@@ -538,10 +554,9 @@ main(int argc, char* argv[])
 			refine = 128;
 	}
 
-	if (refineLow && refineLow > refine) {
+	if (refineLow && refineLow > refine)
 		sx_report(SX_FATAL, "Incompatible values for -r %u and -R %u\n",
 		    refineLow, refine);
-	}
 
 	if (refine || refineLow) {
 		if (expander.family == AF_INET6 && refine > 128) {
@@ -573,13 +588,12 @@ main(int argc, char* argv[])
 		}
 
 		if (expander.generation < T_PREFIXLIST) {
-			if (refine) {
+			if (refine)
 				sx_report(SX_FATAL, "Sorry, more-specific filter (-R %u) "
 				    "supported only with prefix-list generation\n", refine);
-			} else {
+			else
 				sx_report(SX_FATAL, "Sorry, more-specific filter (-r %u) "
 				    "supported only with prefix-list generation\n", refineLow);
-			}
 		}
 	}
 
@@ -597,11 +611,10 @@ main(int argc, char* argv[])
 			 */
 			expander.maxlen = maxlen;
 		}
-	} else if (expander.family == AF_INET) {
+	} else if (expander.family == AF_INET)
 		expander.maxlen = 32;
-	} else if (expander.family == AF_INET6) {
+	else if (expander.family == AF_INET6)
 		expander.maxlen = 128;
-	}
 
 	if (expander.generation == T_EACL && expander.vendor == V_CISCO
 	    && expander.family == AF_INET6) {

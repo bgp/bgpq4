@@ -24,7 +24,6 @@ int bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b);
 int
 bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
 {
-
 	int nc = 0, i, j, k, empty = 1;
 
 	fprintf(f, "no ip as-path access-list %s\n", b->name ? b->name : "NN");
@@ -113,7 +112,7 @@ bgpq4_print_cisco_xr_aspath(FILE* f, struct bgpq_expander* b)
 						    comma ? "," : "",
 						    b->asnumber,
 						    k * 65536 + i * 8 + j);
-						comma=1;
+						comma = 1;
 					} else {
 						fprintf(f, "|%u",
 						    k * 65536 + i * 8 + j);
@@ -173,12 +172,12 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 						empty = 0;
 					} else {
 						fprintf(f,"|%u",k*65536+i*8+j);
-						empty=0;
+						empty = 0;
 					}
 
 					nc++;
 
-					if (nc==b->aswidth) {
+					if (nc == b->aswidth) {
 						fprintf(f,")$\n");
 						nc = 0;
 					}
@@ -236,7 +235,7 @@ bgpq4_print_cisco_xr_oaspath(FILE* f, struct bgpq_expander* b)
 					nc++;
 					if (nc == b->aswidth) {
 						fprintf(f,")$'");
-						nc=0;
+						nc = 0;
 					}
 				}
 			}
@@ -374,7 +373,7 @@ bgpq4_print_openbgpd_oaspath(FILE* f, struct bgpq_expander* b)
 {
 	int i, j, k, lineNo = 0;
 
-	for (k=0; k<65536; k++) {
+	for (k = 0; k < 65536; k++) {
 
 		if (!b->asn32s[k])
 			continue;
@@ -400,7 +399,7 @@ bgpq4_print_openbgpd_oaspath(FILE* f, struct bgpq_expander* b)
 int
 bgpq4_print_nokia_aspath(FILE* f, struct bgpq_expander* b)
 {
-	int nc = 0, lineNo=1, i, j, k;
+	int nc = 0, lineNo = 1, i, j, k;
 
 	fprintf(f, "configure router policy-options\n"
 	    "begin\nno as-path-group \"%s\"\n",
@@ -530,15 +529,15 @@ bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
 	    (0x80 >> (b->asnumber % 8))) {
 		fprintf(f, "ip as-path-filter %s permit ^%u(_%u)*$\n",
 		    b->name ? b->name : "NN", b->asnumber, b->asnumber);
-		empty=0;
+		empty = 0;
 	}
 
-	for (k=0; k<65536; k++) {
+	for (k = 0; k < 65536; k++) {
 
 		if (!b->asn32s[k])
 			continue;
 
-		for (i=0; i < 8192; i++) {
+		for (i = 0; i < 8192; i++) {
 			for (j = 0; j < 8 ; j++) {
 
 				if (b->asn32s[k][i] & (0x80 >> j)) {
@@ -841,7 +840,7 @@ bgpq4_print_jprefix(struct sx_radix_node* n, void* ff)
 	fprintf(f,"    %s;\n", prefix);
 }
 
-static int   needscomma=0;
+static int   needscomma = 0;
 
 void
 bgpq4_print_json_prefix(struct sx_radix_node* n, void* ff)
@@ -931,7 +930,7 @@ bgpq4_print_bird_prefix(struct sx_radix_node* n, void* ff)
 		goto checkSon;
 
 	if (!f)
-		f=stdout;
+		f = stdout;
 
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
@@ -955,7 +954,7 @@ checkSon:
 int
 bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 {
-	int nc=0, i, j, k, empty=1;
+	int nc = 0, i, j, k, empty = 1;
 	char buffer[2048];
 	snprintf(buffer, sizeof(buffer), "%s = [", b->name ? b->name : "NN");
 
@@ -1160,7 +1159,7 @@ bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
 		}
 	} else {
 		fprintf(f,"%s prefix-list %s%s permit %s\n",
-		    n->prefix->family==AF_INET ? "ip" : "ipv6",
+		    (n->prefix->family == AF_INET) ? "ip" : "ipv6",
 		    bname ? bname : "NN", seqno, prefix);
 	}
 
@@ -1321,13 +1320,13 @@ bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
 		wildaddr = wildaddr &(~wild2addr);
 
 		if (masklen == 32)
-			mask=0xfffffffful;
+			mask = 0xfffffffful;
 
 		else
 			mask = 0xfffffffful & (0xfffffffful << (32 - masklen));
 
 		if (n->aggregateHi == 32)
-			wild2addr=0;
+			wild2addr = 0;
 		else
 			wild2addr = 0xfffffffful >> n->aggregateHi;
 
@@ -1450,7 +1449,7 @@ bgpq4_print_nokia_md_prefix(struct sx_radix_node* n, void* ff)
 		goto checkSon;
 
 	if (!f)
-		f=stdout;
+		f = stdout;
 
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
@@ -1590,10 +1589,10 @@ bgpq4_print_cisco_prefixlist(FILE* f, struct bgpq_expander* b)
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
 		fprintf(f, "%s prefix-list %s%s deny %s\n",
-		    b->family==AF_INET ? "ip" : "ipv6",
+		    (b->family == AF_INET) ? "ip" : "ipv6",
 		    bname,
 		    seq ? " seq 1" : "",
-		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
+		    (b->family == AF_INET) ? "0.0.0.0/0" : "::/0");
 	}
 
 	return 0;
@@ -1648,16 +1647,16 @@ bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
 	seq = b->sequence;
 
 	fprintf(f,"undo ip %s-prefix %s\n",
-		b->family==AF_INET ? "ip" : "ipv6", bname);
+		(b->family == AF_INET) ? "ip" : "ipv6", bname);
 
 	if (!sx_radix_tree_empty(b->tree)) {
 		sx_radix_tree_foreach(b->tree, bgpq4_print_hprefix, f);
 	} else {
 		fprintf(f, "ip %s-prefix %s%s deny %s\n",
-		    b->family==AF_INET ? "ip" : "ipv6",
+		    (b->family == AF_INET) ? "ip" : "ipv6",
 		    bname,
 		    seq ? " seq 1" : "",
-		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
+		    (b->family == AF_INET) ? "0.0.0.0/0" : "::/0");
 	}
 
 	return 0;
@@ -1682,10 +1681,10 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 	} else {
 		fprintf(f, "! generated prefix-list %s is empty\n", bname);
 		fprintf(f, "%s prefix-list %s\n   seq %i deny %s\n",
-		    b->family==AF_INET ? "ip" : "ipv6",
+		    (b->family == AF_INET) ? "ip" : "ipv6",
 		    bname,
 		    seq,
-		    b->family==AF_INET ? "0.0.0.0/0" : "::/0");
+		    (b->family == AF_INET) ? "0.0.0.0/0" : "::/0");
 	}
 
 	return 0;
@@ -1754,7 +1753,7 @@ bgpq4_print_format_prefixlist(FILE* f, struct bgpq_expander* b)
 int
 bgpq4_print_nokia_prefixlist(FILE* f, struct bgpq_expander* b)
 {
-	bname=b->name ? b->name : "NN";
+	bname = b->name ? b->name : "NN";
 	fprintf(f,"configure router policy-options\nbegin\nno prefix-list \"%s\"\n",
 		bname);
 	fprintf(f,"prefix-list \"%s\"\n", bname);
@@ -1787,7 +1786,7 @@ bgpq4_print_nokia_ipprefixlist(FILE* f, struct bgpq_expander* b)
 	bname = b->name ? b->name : "NN";
 
 	fprintf(f, "configure filter match-list\nno %s-prefix-list \"%s\"\n",
-	    b->tree->family==AF_INET ? "ip" : "ipv6", bname);
+	    (b->tree->family == AF_INET) ? "ip" : "ipv6", bname);
 
 	fprintf(f, "%s-prefix-list \"%s\" create\n",
 	    b->tree->family == AF_INET ? "ip":"ipv6", bname);
