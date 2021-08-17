@@ -221,7 +221,7 @@ bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)
 		    " masklen %u\n", prefix, p->masklen, b->maxlen);
 		return 0;
 	}
-	sx_radix_tree_insert(b->tree,p);
+	sx_radix_tree_insert(b->tree, p);
 
         if (p)
 		sx_prefix_destroy(p);
@@ -436,7 +436,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
 		asn1 = asn % 65536;
 		asn0 = asn / 65536;
 		if (!b->asn32s[asn0] ||
-			!(b->asn32s[asn0][asn1/8] & (0x80 >> (asn1 % 8)))) {
+		    !(b->asn32s[asn0][asn1/8] & (0x80 >> (asn1 % 8)))) {
 			sx_report(SX_NOTICE, "strange, invalidating inactive "
 			    "asn %lu(%s)\n", asn, q);
 		} else {
@@ -702,7 +702,7 @@ bgpq_expand_irrd(struct bgpq_expander* b,
 	int ret, off = 0;
 	struct bgpq_request *req;
 
-	va_start(ap,fmt);
+	va_start(ap, fmt);
 	vsnprintf(request, sizeof(request), fmt, ap);
 	va_end(ap);
 
@@ -750,7 +750,7 @@ repeat:
 
 		if (eon && *eon != '\n') {
 			sx_report(SX_ERROR,"A-code finised with wrong char "
-			    "'%c' (%s)\n", *eon,response);
+			    "'%c' (%s)\n", *eon, response);
 			exit(1);
 		}
 
@@ -865,7 +865,7 @@ bgpq_expand(struct bgpq_expander* b)
 	for (rp=res; rp; rp = rp->ai_next) {
 		fd = socket(rp->ai_family, rp->ai_socktype, 0);
 		if (fd == -1) {
-			if (errno==EPROTONOSUPPORT || errno==EAFNOSUPPORT)
+			if (errno == EPROTONOSUPPORT || errno == EAFNOSUPPORT)
 				continue;
 			sx_report(SX_ERROR,"Unable to create socket: %s\n",
 			    strerror(errno));
@@ -1008,7 +1008,7 @@ bgpq_expand(struct bgpq_expander* b)
 				bgpq_expand_irrd(b, bgpq_expanded_macro, b,
 				    "!i%s,1\n", mc->text);
 		} else {
-			bgpq_expander_add_already(b,mc->text);
+			bgpq_expander_add_already(b, mc->text);
 			if (pipelining)
 				bgpq_pipeline(b, bgpq_expanded_macro_limit,
 				    NULL, "!i%s\n", mc->text);

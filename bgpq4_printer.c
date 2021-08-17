@@ -812,11 +812,11 @@ bgpq4_print_asset(FILE* f, struct bgpq_expander* b)
 {
 	switch (b->vendor) {
 	case V_JSON:
-		return bgpq4_print_json_aspath(f,b);
+		return bgpq4_print_json_aspath(f, b);
 	case V_OPENBGPD:
-		return bgpq4_print_openbgpd_asset(f,b);
+		return bgpq4_print_openbgpd_asset(f, b);
 	case V_BIRD:
-		return bgpq4_print_bird_aspath(f,b);
+		return bgpq4_print_bird_aspath(f, b);
 	default:
 		sx_report(SX_FATAL, "as-sets (-t) supported for JSON, "
 		    "OpenBGPD, and BIRD only\n");
@@ -1103,7 +1103,7 @@ bgpq4_print_jrfilter(struct sx_radix_node* n, void* ff)
 	if (!f)
 		f = stdout;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	if (!n->isAggregate) {
 		fprintf(f, "    %s%s exact;\n",
@@ -1140,7 +1140,7 @@ bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
 	if (n->isGlue)
 		goto checkSon;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	if (seq)
 		snprintf(seqno, sizeof(seqno), " seq %i", seq++);
@@ -1165,7 +1165,7 @@ bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
 
 checkSon:
 	if (n->son)
-		bgpq4_print_cprefix(n->son,ff);
+		bgpq4_print_cprefix(n->son, ff);
 }
 
 void
@@ -1180,7 +1180,7 @@ bgpq4_print_cprefixxr(struct sx_radix_node* n, void* ff)
 	if (n->isGlue)
 		goto checkSon;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	if (n->isAggregate) {
 		if (n->aggregateLow>n->prefix->masklen) {
@@ -1256,7 +1256,7 @@ bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
 	if (n->isGlue)
 		goto checkSon;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	snprintf(seqno, sizeof(seqno), " seq %i", seq++);
 
@@ -1274,7 +1274,7 @@ bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
 
 checkSon:
 	if (n->son)
-		bgpq4_print_eprefix(n->son,ff);
+		bgpq4_print_eprefix(n->son, ff);
 }
 
 
@@ -1398,7 +1398,7 @@ bgpq4_print_nokia_md_ipfilter(struct sx_radix_node* n, void* ff)
 	if (!f)
 		f = stdout;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	fprintf(f, "    prefix %s { }\n", prefix);
 
@@ -1419,7 +1419,7 @@ bgpq4_print_nokia_prefix(struct sx_radix_node* n, void* ff)
 	if (!f)
 		f = stdout;
 
-	sx_prefix_snprintf(n->prefix,prefix,sizeof(prefix));
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	if (!n->isAggregate) {
 		fprintf(f, "    prefix %s exact\n", prefix);
@@ -1757,7 +1757,7 @@ bgpq4_print_nokia_prefixlist(FILE* f, struct bgpq_expander* b)
 	fprintf(f,"configure router policy-options\nbegin\nno prefix-list \"%s\"\n",
 		bname);
 	fprintf(f,"prefix-list \"%s\"\n", bname);
-	sx_radix_tree_foreach(b->tree,bgpq4_print_nokia_prefix,f);
+	sx_radix_tree_foreach(b->tree, bgpq4_print_nokia_prefix, f);
 	fprintf(f,"exit\ncommit\n");
 	return 0;
 }
@@ -1882,7 +1882,7 @@ bgpq4_print_kprefix(struct sx_radix_node* n, void* ff)
 
 checkSon:
 	if (n->son)
-		bgpq4_print_kprefix(n->son,ff);
+		bgpq4_print_kprefix(n->son, ff);
 }
 
 int
@@ -1976,7 +1976,7 @@ bgpq4_print_juniper_route_filter_list(FILE* f, struct bgpq_expander* b)
 		    b->tree->family == AF_INET ? "0.0.0.0" : "::");
 	} else {
 		jrfilter_prefixed = 0;
-		sx_radix_tree_foreach(b->tree,bgpq4_print_jrfilter,f);
+		sx_radix_tree_foreach(b->tree, bgpq4_print_jrfilter, f);
 	}
 
 	fprintf(f, "  }\n}\n");

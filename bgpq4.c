@@ -169,7 +169,8 @@ main(int argc, char* argv[])
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
-	while ((c = getopt(argc,argv,"346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
+	while ((c = getopt(argc, argv,
+	    "346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
 	    !=EOF) {
 	switch (c) {
         case '3':
@@ -647,11 +648,11 @@ main(int argc, char* argv[])
 		if (!strcmp(argv[0], "EXCEPT")) {
 			exceptmode = 1;
 		} else if (exceptmode) {
-			bgpq_expander_add_stop(&expander,argv[0]);
+			bgpq_expander_add_stop(&expander, argv[0]);
 		} else if (!strncasecmp(argv[0], "AS-", 3)) {
-			bgpq_expander_add_asset(&expander,argv[0]);
+			bgpq_expander_add_asset(&expander, argv[0]);
 		} else if (!strncasecmp(argv[0], "RS-", 3)) {
-			bgpq_expander_add_rset(&expander,argv[0]);
+			bgpq_expander_add_rset(&expander, argv[0]);
 		} else if (!strncasecmp(argv[0], "AS", 2)) {
 			char* c;
 			if ((c = strchr(argv[0], ':'))) {
@@ -664,7 +665,7 @@ main(int argc, char* argv[])
 					    " object %s\n", argv[0]);
 				}
 			} else {
-				bgpq_expander_add_as(&expander,argv[0]);
+				bgpq_expander_add_as(&expander, argv[0]);
 			}
 		} else {
 			char* c = strchr(argv[0], '^');

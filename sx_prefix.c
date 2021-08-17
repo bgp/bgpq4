@@ -12,7 +12,7 @@
 #include "sx_prefix.h"
 #include "sx_report.h"
 
-int debug_aggregation=0;
+int debug_aggregation = 0;
 extern int debug_expander;
 
 struct sx_prefix*
@@ -62,7 +62,7 @@ sx_prefix_adjust_masklen(struct sx_prefix* p)
 		return; /* mask is all ones */
 
 	for (i = nbytes -1; i > p->masklen / 8; i--) {
-		p->addr.addrs[i]=0;
+		p->addr.addrs[i] = 0;
 	}
 
 	for (i = 1; i <= 8 - p->masklen % 8; i++) {
@@ -827,7 +827,7 @@ int
 sx_radix_node_foreach(struct sx_radix_node* node,
     void (*func)(struct sx_radix_node*, void*), void* udata)
 {
-	func(node,udata);
+	func(node, udata);
 
 	if (node->l)
 		sx_radix_node_foreach(node->l, func, udata);
@@ -845,7 +845,7 @@ sx_radix_tree_foreach(struct sx_radix_tree* tree,
 	if (!func || !tree || !tree->head)
 		return 0;
 
-	sx_radix_node_foreach(tree->head,func,udata);
+	sx_radix_node_foreach(tree->head, func, udata);
 	return 0;
 }
 
@@ -859,7 +859,7 @@ sx_radix_node_aggregate(struct sx_radix_node* node)
 
 	if (debug_aggregation) {
 		printf("Aggregating on node: ");
-		sx_prefix_fprint(stdout,node->prefix);
+		sx_prefix_fprint(stdout, node->prefix);
 		printf(" %s%s%u,%u\n", node->isGlue?"Glue ":"",
 			node->isAggregate?"Aggregate ":"",node->aggregateLow,
 			node->aggregateHi);
@@ -1095,7 +1095,7 @@ setGlueFrom(struct sx_radix_node* node, void* udata)
 	unsigned refine = *(unsigned*)udata;
 
 	if (node && node->prefix->masklen <= refine)
-		node->isGlue=1;
+		node->isGlue = 1;
 }
 
 static int
