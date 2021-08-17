@@ -1308,7 +1308,7 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 {
 	char 	 prefix[128];
 	FILE	*f = (FILE*)ff;
-	char* c;
+	char	*c;
 	uint32_t netmask = 0xfffffffful;
 
 	if (!f)
@@ -1365,7 +1365,7 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 			fprintf(f, " permit ip %s ",
 			    inet_ntoa(n->prefix->addr.addr));
 			fprintf(f, "%s ",
-			    inet_ntoa(*(struct in_addr*) & wildaddr));
+			    inet_ntoa(*(struct in_addr*)&wildaddr));
 		} else {
 			fprintf(f, " permit ip host %s ",
 			    inet_ntoa(n->prefix->addr.addr));
@@ -1373,16 +1373,16 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 
 		if (wildmask) {
 			fprintf(f, "%s ",
-			    inet_ntoa(*(struct in_addr*) & mask));
+			    inet_ntoa(*(struct in_addr*)&mask));
 			fprintf(f, "%s\n",
-			    inet_ntoa(*(struct in_addr*) & wildmask));
+			    inet_ntoa(*(struct in_addr*)&wildmask));
 		} else {
 			fprintf(f, "host %s\n",
-			    inet_ntoa(*(struct in_addr*) & mask));
+			    inet_ntoa(*(struct in_addr*)&mask));
 		}
 	} else {
 		fprintf(f, " permit ip host %s host %s\n", prefix,
-		    inet_ntoa(*(struct in_addr*) & netmask));
+		    inet_ntoa(*(struct in_addr*)&netmask));
 	}
 
 checkSon:

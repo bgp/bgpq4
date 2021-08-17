@@ -290,7 +290,7 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 {
 	char			*d = strchr(text, '^');
 	struct sx_prefix	*p;
-	unsigned long		 min, max;
+	unsigned long		 min, max = 0;
 
 	p = sx_prefix_alloc(NULL);
 
@@ -367,7 +367,7 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 	return 1;
 }
 
-struct sx_prefix*
+struct sx_prefix *
 sx_prefix_new(int af, char *text)
 {
 	struct sx_prefix *p = NULL;

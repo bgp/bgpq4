@@ -112,7 +112,7 @@ usage(int ecode)
 }
 
 static void
-version()
+version(void)
 {
 	printf(PACKAGE_NAME " - a versatile utility to generate BGP filters\n"
 	    "version: " PACKAGE_VERSION "\n"
@@ -122,7 +122,7 @@ version()
 }
 
 static void
-exclusive()
+exclusive(void)
 {
 	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, and -t are mutually "
 	    "exclusive\n");
@@ -130,7 +130,7 @@ exclusive()
 }
 
 static void
-vendor_exclusive()
+vendor_exclusive(void)
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
