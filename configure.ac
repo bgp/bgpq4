@@ -19,8 +19,6 @@ AM_CONDITIONAL([HAVE_STRLCPY], [test "x$ac_cv_func_strlcpy" = xyes])
 
 AC_CHECK_HEADERS([sys/cdefs.h sys/queue.h sys/tree.h sys/select.h])
 
-AC_MSG_CHECKING([for STAILQ_ interface in queue.h])
-
 AC_CHECK_FUNCS(strlcpy)
 AC_CHECK_FUNCS(pledge)
 
