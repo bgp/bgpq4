@@ -1,10 +1,10 @@
+SUBDIRS = include compat
+ACLOCAL_AMFLAGS = -I m4
+
 AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS += -I$(top_srcdir)/compat
 
 AUTOMAKE_OPTIONS=foreign subdir-objects
-
-SUBDIRS = include compat
-
-ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS=bgpq4
 
