@@ -1306,10 +1306,12 @@ checkSon:
 static void
 bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 {
-	char 	 prefix[128];
-	FILE	*f = (FILE*)ff;
-	char	*c;
-	uint32_t netmask = 0xfffffffful;
+	char 	 	 prefix[128];
+	FILE		*f = (FILE*)ff;
+	char		*c;
+	struct in_addr	 netmask;
+	
+	netmask.s_addr = 0xfffffffful;
 
 	if (!f)
 		f = stdout;
@@ -1324,65 +1326,64 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 	if (c)
 		*c = 0;
 
-	if (n->prefix->masklen == 32) {
-		netmask = 0;
-	} else {
-	 	netmask <<= (32 - n->prefix->masklen);
-		netmask &= 0xfffffffful;
+	if (n->prefix->masklen == 32)
+		netmask.s_addr = 0;
+	else {
+	 	netmask.s_addr <<= (32 - n->prefix->masklen);
+		netmask.s_addr &= 0xfffffffful;
 	}
-	netmask = htonl(netmask);
+
+	netmask.s_addr = htonl(netmask.s_addr);
 
 	if (n->isAggregate) {
-		unsigned long mask = 0xfffffffful, wildaddr, wild2addr, wildmask;
-		int masklen = n->aggregateLow;
-		wildaddr = 0xfffffffful >> n->prefix->masklen;
+		struct in_addr	mask, wildaddr, wild2addr, wildmask;
+		int		masklen = n->aggregateLow;
 
-		if (n->aggregateHi == 32) {
-			wild2addr = 0;
-		} else {
-			wild2addr = 0xfffffffful >> n->aggregateHi;
-		}
-		wildaddr = wildaddr &(~wild2addr);
-
-		if (masklen == 32)
-			mask = 0xfffffffful;
-
-		else
-			mask = 0xfffffffful & (0xfffffffful << (32 - masklen));
+		mask.s_addr = 0xfffffffful;
+		wildaddr.s_addr = 0xfffffffful >> n->prefix->masklen;
 
 		if (n->aggregateHi == 32)
-			wild2addr = 0;
+			wild2addr.s_addr = 0;
 		else
-			wild2addr = 0xfffffffful >> n->aggregateHi;
+			wild2addr.s_addr = 0xfffffffful >> n->aggregateHi;
 
-		wildmask = (0xfffffffful >> n->aggregateLow) & (~wild2addr);
+		wildaddr.s_addr = wildaddr.s_addr & (~wild2addr.s_addr);
 
-		mask = htonl(mask);
-		wildaddr = htonl(wildaddr);
-		wildmask = htonl(wildmask);
+		if (masklen == 32)
+			mask.s_addr = 0xfffffffful;
+		else
+			mask.s_addr = 0xfffffffful & (0xfffffffful << (32 - masklen));
 
-		if (wildaddr) {
-			fprintf(f, " permit ip %s ",
+		if (n->aggregateHi == 32)
+			wild2addr.s_addr = 0;
+		else
+			wild2addr.s_addr = 0xfffffffful >> n->aggregateHi;
+
+		wildmask.s_addr = (0xfffffffful >> n->aggregateLow)
+		    & (~wild2addr.s_addr);
+
+		mask.s_addr = htonl(mask.s_addr);
+		wildaddr.s_addr = htonl(wildaddr.s_addr);
+		wildmask.s_addr = htonl(wildmask.s_addr);
+
+		if (wildaddr.s_addr) {
+			fprintf(f, "permit ip %s ",
 			    inet_ntoa(n->prefix->addr.addr));
-			fprintf(f, "%s ",
-			    inet_ntoa(*(struct in_addr*)&wildaddr));
+			fprintf(f, "%s ", inet_ntoa(wildaddr));
 		} else {
-			fprintf(f, " permit ip host %s ",
+			fprintf(f, "permit ip host %s ",
 			    inet_ntoa(n->prefix->addr.addr));
 		}
 
-		if (wildmask) {
-			fprintf(f, "%s ",
-			    inet_ntoa(*(struct in_addr*)&mask));
-			fprintf(f, "%s\n",
-			    inet_ntoa(*(struct in_addr*)&wildmask));
-		} else {
-			fprintf(f, "host %s\n",
-			    inet_ntoa(*(struct in_addr*)&mask));
+		if (wildmask.s_addr)
+			fprintf(f, "%s %s\n", inet_ntoa(mask),
+			    inet_ntoa(wildmask));
+		else {
+			fprintf(f, "host %s\n", inet_ntoa(mask));
 		}
 	} else {
-		fprintf(f, " permit ip host %s host %s\n", prefix,
-		    inet_ntoa(*(struct in_addr*)&netmask));
+		fprintf(f, "permit ip host %s host %s\n", prefix,
+		    inet_ntoa(netmask));
 	}
 
 checkSon:
