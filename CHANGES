@@ -1,6 +1,7 @@
-0.0.7 (2021-08-17)
-    - reorganize automake files and vendored libs
+0.0.8 (2021-08-17)
+    - Reorganize automake files and includes
     - Normalize code to adhere to KNF
+    - Fix all compiler warnings
 
 0.0.6 (2020-03-12):
     - Bugfixes - Thanks Chris Caputo!
