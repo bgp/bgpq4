@@ -7,7 +7,7 @@ AM_CPPFLAGS += -I$(top_srcdir)/compat
 AUTOMAKE_OPTIONS=foreign subdir-objects
 
 bin_PROGRAMS=bgpq4
-man_MANS=bgpq4.8
+dist_man8_MANS=bgpq4.8
 
 bgpq4_LDADD = $(PLATFORM_LDADD) $(PROG_LDADD)
 bgpq4_LDADD += $(top_builddir)/compat/libcompat.la
