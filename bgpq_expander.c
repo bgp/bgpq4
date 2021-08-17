@@ -910,8 +910,8 @@ bgpq_expand(struct bgpq_expander* b)
 	SX_DEBUG(debug_expander, "Sending '!!' to server to request for the"
 	    "connection to remain open\n");
 	if ((ret = write(fd, "!!\n", 3)) != 3) {
-		sx_report(SX_ERROR, "Partial write of multiple command mode to IRRd: %i bytes, %s\n",
-		    ret, strerror(errno));
+		sx_report(SX_ERROR, "Partial write of multiple command mode "
+		    "to IRRd: %i bytes, %s\n", ret, strerror(errno));
 		exit(1);
 	}
 
@@ -922,7 +922,8 @@ bgpq_expand(struct bgpq_expander* b)
 		int ilen = snprintf(ident, sizeof(ident), "!n" PACKAGE_STRING "\n");
 		if (ilen > 0) {
 			if ((ret = write(fd, ident, ilen)) != ilen) {
-				sx_report(SX_ERROR, "Partial write of identifier to IRRd: %i bytes, %s\n",
+				sx_report(SX_ERROR, "Partial write of "
+				    "identifier to IRRd: %i bytes, %s\n",
 				    ret, strerror(errno));
 				exit(1);
 			}
@@ -930,7 +931,7 @@ bgpq_expand(struct bgpq_expander* b)
 			if (0 < read(fd, ident, sizeof(ident))) {
 				SX_DEBUG(debug_expander, "Got answer %s", ident);
 			} else {
-				sx_report(SX_ERROR, "ident - failed read from IRRd\n");
+				sx_report(SX_ERROR, "ident, failed read from IRRd\n");
 				exit(1);
 			}
 		} else {
@@ -945,8 +946,8 @@ bgpq_expand(struct bgpq_expander* b)
 		char aresp[] = "F Missing required set name for A query";
 		SX_DEBUG(debug_expander, "Testing support for A queries\n");
 		if ((ret = write(fd, "!a\n", 3)) != 3) {
-			sx_report(SX_ERROR, "Partial write of '!a' test query to IRRd: %i bytes, %s\n",
-			    ret, strerror(errno));
+			sx_report(SX_ERROR, "Partial write of '!a' test query "
+			    "to IRRd: %i bytes, %s\n", ret, strerror(errno));
 			exit(1);
 		}
 		memset(aret, 0, sizeof(aret));
@@ -955,10 +956,10 @@ bgpq_expand(struct bgpq_expander* b)
 				SX_DEBUG(debug_expander, "Server supports A query\n");
 				aquery = 1;
 			} else {
-				SX_DEBUG(debug_expander, "No support for A queries\n");
+				SX_DEBUG(debug_expander, "No support for A query\n");
 			}
 		} else {
-			sx_report(SX_ERROR, "'!a' query test - failed read from IRRd\n");
+			sx_report(SX_ERROR, "A query test failed read from IRRd\n");
 			exit(1);
 		}
 	}
@@ -972,20 +973,20 @@ bgpq_expand(struct bgpq_expander* b)
 		if (slen > 0) {
 			SX_DEBUG(debug_expander, "Requesting sources %s", sources);
 			if ((ret = write(fd, sources, slen)) != slen) {
-				sx_report(SX_ERROR, "Partial write of sources to IRRd: %i bytes, %s\n",
-				    ret, strerror(errno));
+				sx_report(SX_ERROR, "Partial write of sources to "
+				    "IRRd: %i bytes, %s\n", ret, strerror(errno));
 				exit(1);
 			}
 			memset(sources, 0, sizeof(sources));
 			if (0 < read(fd, sources, sizeof(sources))) {
 				SX_DEBUG(debug_expander, "Got answer %s", sources);
 				if (sources[0] != 'C') {
-					sx_report(SX_ERROR, "Invalid source(s) '%s': %s\n",
-					    b->sources, sources);
+					sx_report(SX_ERROR, "Invalid source(s) "
+					    "'%s': %s\n", b->sources, sources);
 					exit(1);
 				}
 			} else {
-				sx_report(SX_ERROR, "sources - failed read from IRRd\n");
+				sx_report(SX_ERROR, "failed to read sources\n");
 				exit(1);
 			}
 		} else {
