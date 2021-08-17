@@ -1,15 +1,13 @@
 AUTOMAKE_OPTIONS=foreign subdir-objects
 
-SUBDIRS = include
+SUBDIRS = include compat
 
 bin_PROGRAMS=bgpq4
-
-COMPAT_SOURCES=compat/strlcpy.c
 
 bgpq4_SOURCES=bgpq4.c bgpq4.h config.h bgpq4_printer.c bgpq_expander.c \
     expander_freeall.c expander_freeall.h sx_maxsockbuf.c \
     sx_maxsockbuf.h sx_prefix.c sx_prefix.h sx_report.c sx_report.h \
-    sx_slentry.c sx_slentry.h sys_queue.h $(COMPAT_SOURCES)
+    sx_slentry.c sx_slentry.h
 
 dist_man8_MANS=bgpq4.8
 

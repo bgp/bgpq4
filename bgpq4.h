@@ -1,11 +1,7 @@
 #ifndef BGPQ4_H_
 #define BGPQ4_H_
 
-#if HAVE_SYS_QUEUE_H && HAVE_STAILQ_IN_SYS_QUEUE
 #include <sys/queue.h>
-#else
-#include "sys_queue.h"
-#endif
 
 #include "sx_prefix.h"
 #include "sx_slentry.h"
