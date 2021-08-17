@@ -57,7 +57,7 @@ tentry_cmp(struct sx_tentry *a, struct sx_tentry *b)
 	return strcasecmp(a->text, b->text);
 }
 
-RB_GENERATE_STATIC(tentree, sx_tentry, entry, tentry_cmp);
+RB_GENERATE_STATIC(tentree, sx_tentry, entries, tentry_cmp);
 
 int
 bgpq_expander_init(struct bgpq_expander *b, int af)
@@ -122,7 +122,7 @@ bgpq_expander_add_asset(struct bgpq_expander *b, char *as)
 
 	le = sx_slentry_new(as);
 
-	STAILQ_INSERT_TAIL(&b->macroses, le, next);
+	STAILQ_INSERT_TAIL(&b->macroses, le, entries);
 
 	return 1;
 }
@@ -140,7 +140,7 @@ bgpq_expander_add_rset(struct bgpq_expander *b, char *rs)
 	if (!le)
 		return 0;
 
-	STAILQ_INSERT_TAIL(&b->rsets, le, next);
+	STAILQ_INSERT_TAIL(&b->rsets, le, entries);
 
 	return 1;
 }
@@ -472,9 +472,9 @@ static void
 bgpq_write(struct bgpq_expander *b)
 {
 	while(!STAILQ_EMPTY(&b->wq)) {
-		struct bgpq_request* req = STAILQ_FIRST(&b->wq);
+		struct bgpq_request *req = STAILQ_FIRST(&b->wq);
 
-		int ret = write(b->fd, req->request+req->offset,
+		int ret = write(b->fd, req->request + req->offset,
 		    req->size-req->offset);
 
 		if (ret < 0) {
@@ -1023,7 +1023,7 @@ bgpq_expand(struct bgpq_expander *b)
 	if (pipelining)
 		fcntl(fd, F_SETFL, O_NONBLOCK|(fcntl(fd, F_GETFL)));
 
-	STAILQ_FOREACH(mc, &b->macroses, next) {
+	STAILQ_FOREACH(mc, &b->macroses, entries) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
 			if (aquery)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
@@ -1053,7 +1053,7 @@ bgpq_expand(struct bgpq_expander *b)
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		uint32_t i, j, k;
-		STAILQ_FOREACH(mc, &b->rsets, next) {
+		STAILQ_FOREACH(mc, &b->rsets, entries) {
 			if (b->family == AF_INET)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix,
 				    NULL, "!i%s,1\n", mc->text);
@@ -1158,6 +1158,12 @@ expander_freeall(struct bgpq_expander *expander) {
 	//  free(expander->name);
 	//}
 	// printf("freeing asn32s\n");
+
+	while (!STAILQ_EMPTY(&expander->macroses)) {
+		struct sx_slentry *n1 = STAILQ_FIRST(&expander->macroses);
+		STAILQ_REMOVE_HEAD(&expander->macroses, entries);
+		free(n1);
+	}
 
 	for (int i = 0; i < 65536; i++) {
 		if (expander->asn32s[i] != NULL) {

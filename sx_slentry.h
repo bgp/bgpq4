@@ -31,14 +31,14 @@
 #include <sys/tree.h>
 
 struct sx_slentry {
-	STAILQ_ENTRY(sx_slentry) next;
+	STAILQ_ENTRY(sx_slentry) entries;
 	char*  text;
 };
 
 struct sx_slentry* sx_slentry_new(char* text);
 
 struct sx_tentry {
-	RB_ENTRY(sx_tentry) entry;
+	RB_ENTRY(sx_tentry) entries;
 	char* text;
 };
 

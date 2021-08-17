@@ -60,9 +60,10 @@ struct bgpq_request {
 	STAILQ_ENTRY(bgpq_request) next;
 	char		*request;
 	int 	 	 size, offset;
-	int	 	 (*callback)(char*, struct bgpq_expander*, struct bgpq_request*);
 	void		*udata;
 	unsigned int	 depth;
+	int	 	 (*callback)(char *, struct bgpq_expander *,
+			    struct bgpq_request *);
 };
 
 struct bgpq_expander {
@@ -93,22 +94,22 @@ struct bgpq_expander {
 	int			 fd;
 };
 
-int bgpq_expander_init(struct bgpq_expander* b, int af);
-int bgpq_expander_add_asset(struct bgpq_expander* b, char* set);
-int bgpq_expander_add_rset(struct bgpq_expander* b, char* set);
-int bgpq_expander_add_as(struct bgpq_expander* b, char* as);
-int bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix);
-int bgpq_expander_add_prefix_range(struct bgpq_expander* b, char* prefix);
-int bgpq_expander_add_stop(struct bgpq_expander* b, char* object);
+int bgpq_expander_init(struct bgpq_expander *b, int af);
+int bgpq_expander_add_asset(struct bgpq_expander *b, char *set);
+int bgpq_expander_add_rset(struct bgpq_expander *b, char *set);
+int bgpq_expander_add_as(struct bgpq_expander *b, char *as);
+int bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix);
+int bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix);
+int bgpq_expander_add_stop(struct bgpq_expander *b, char *object);
 
-int bgpq_expand(struct bgpq_expander* b);
+int bgpq_expand(struct bgpq_expander *b);
 
-int bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_eacl(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_aspath(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_asset(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_route_filter_list(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_eacl(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_aspath(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_asset(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b);
 
 void sx_radix_node_freeall(struct sx_radix_node *n);
 void sx_radix_tree_freeall(struct sx_radix_tree *t);
