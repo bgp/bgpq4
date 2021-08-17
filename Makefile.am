@@ -17,7 +17,9 @@ EXTRA_DIST=bootstrap README.md CHANGES COPYRIGHT bgpq4.spec
 
 MAINTAINERCLEANFILES=configure aclocal.m4 compile \
                      install-sh missing Makefile.in depcomp \
-                     stamp-h1 config.h.in
+                     stamp-h1 config.h.in compat/Makefile.in \
+		     config.guess config.sub include/Makefile.in \
+		     ltmain.sh m4/
 
 maintainer-clean-local:
 	-rm -rf autom4te.cache config.h.in~
