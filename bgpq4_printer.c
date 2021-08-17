@@ -1375,10 +1375,10 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 			    inet_ntoa(n->prefix->addr.addr));
 		}
 
-		if (wildmask.s_addr)
-			fprintf(f, "%s %s\n", inet_ntoa(mask),
-			    inet_ntoa(wildmask));
-		else {
+		if (wildmask.s_addr) {
+			fprintf(f, "%s ", inet_ntoa(mask));
+			fprintf(f, "%s\n", inet_ntoa(wildmask));
+		} else {
 			fprintf(f, "host %s\n", inet_ntoa(mask));
 		}
 	} else {
