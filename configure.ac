@@ -107,6 +107,7 @@ AC_CHECK_LIB(nsl,getaddrinfo)
 
 AC_CHECK_HEADERS([sys/cdefs.h sys/queue.h sys/tree.h sys/select.h])
 
+AM_CONDITIONAL([HAVE_PLEDGE], [test "x$ac_cv_func_pledge" = xyes])
 AM_CONDITIONAL([HAVE_STRLCPY], [test "x$ac_cv_func_strlcpy" = xyes])
 
 AC_CONFIG_FILES([
