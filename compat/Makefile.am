@@ -6,7 +6,9 @@ noinst_LTLIBRARIES = libcompat.la libcompatnoopt.la
 libcompatnoopt_la_CFLAGS = -O0
 libcompatnoopt_la_SOURCES =
 
+# other compatibility functions
 libcompat_la_SOURCES =
+libcompat_la_LIBADD = $(PLATFORM_LDADD)
 
 if !HAVE_STRLCPY
 libcompat_la_SOURCES += strlcpy.c
