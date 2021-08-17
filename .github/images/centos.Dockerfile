@@ -4,7 +4,7 @@ FROM $image
 # Install dependencies
 RUN yum update -y
 RUN yum groupinstall -y 'Development Tools'
-RUN yum install -y autoconf automake findutils
+RUN yum install -y autoconf automake findutils libtool
 
 # Add source code
 ADD . /src
