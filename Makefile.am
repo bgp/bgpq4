@@ -11,7 +11,6 @@ man_MANS=bgpq4.8
 
 bgpq4_LDADD = $(PLATFORM_LDADD) $(PROG_LDADD)
 bgpq4_LDADD += $(top_builddir)/compat/libcompat.la
-bgpq4_LDADD += $(top_builddir)/compat/libcompatnoopt.la
 
 bgpq4_SOURCES=bgpq4.c bgpq4.h config.h bgpq4_printer.c bgpq_expander.c \
     expander_freeall.c sx_maxsockbuf.c \

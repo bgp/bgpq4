@@ -1,12 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = libcompat.la libcompatnoopt.la
+noinst_LTLIBRARIES = libcompat.la
 
-# compatibility functions that need to be built without optimizations
-libcompatnoopt_la_CFLAGS = -O0
-libcompatnoopt_la_SOURCES =
-
-# other compatibility functions
 libcompat_la_SOURCES =
 libcompat_la_LIBADD = $(PLATFORM_LDADD)
 
