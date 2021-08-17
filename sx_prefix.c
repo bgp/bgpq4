@@ -1239,14 +1239,12 @@ main() {
 	sx_prefix_fprint(stdout, p);
 	printf("\n");
 
-#define SX_TEST_EBITS(a,b,susp) n = sx_prefix_eqbits(sx_prefix_new(0,a)),\
-		sx_prefix_new(0,b))); \
-		if (n != susp) \
-			printf("FAILED: %s eqbits %s=%i, not %i\n", a, b, n,
-			     susp);\
-		else
-			printf("OK, %s eqbits %s = %i, as suspected\n", a, b,
-			    n);
+#define SX_TEST_EBITS(a, b, susp) \
+	n = sx_prefix_eqbits(sx_prefix_new(0, a), sx_prefix_new(0, b)); \
+	if (n != susp) \
+		printf("FAILED: %s eqbits %s=%i, not %i\n", a, b, n, susp); \
+	else \
+		printf("OK, %s eqbits %s = %i, as suspected\n", a, b, n);
 	SX_TEST_EBITS("192.168.0.0/24", "192.168.1.0/24", 23);
 	SX_TEST_EBITS("192.168.0.0/32", "192.168.0.1/32", 31);
 #if SX_LIBPTREE_IPV6
