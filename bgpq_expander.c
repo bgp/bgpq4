@@ -57,15 +57,15 @@ int pipelining = 1;
 int expand_special_asn = 0;
 
 static inline int
-tentry_cmp(struct sx_tentry* a, struct sx_tentry* b)
+tentry_cmp(struct sx_tentry *a, struct sx_tentry *b)
 {
 	return strcasecmp(a->text, b->text);
 }
 
-RB_GENERATE(tentree, sx_tentry, entry, tentry_cmp);
+RB_GENERATE_STATIC(tentree, sx_tentry, entry, tentry_cmp);
 
 int
-bgpq_expander_init(struct bgpq_expander* b, int af)
+bgpq_expander_init(struct bgpq_expander *b, int af)
 {
 	if (!af)
 		af = AF_INET;
@@ -118,9 +118,9 @@ fixups:
 }
 
 int
-bgpq_expander_add_asset(struct bgpq_expander* b, char* as)
+bgpq_expander_add_asset(struct bgpq_expander *b, char *as)
 {
-	struct sx_slentry* le;
+	struct sx_slentry	*le;
 
 	if (!b || !as)
 		return 0;
@@ -133,9 +133,9 @@ bgpq_expander_add_asset(struct bgpq_expander* b, char* as)
 }
 
 int
-bgpq_expander_add_rset(struct bgpq_expander* b, char* rs)
+bgpq_expander_add_rset(struct bgpq_expander *b, char *rs)
 {
-	struct sx_slentry* le;
+	struct sx_slentry	*le;
 
 	if (!b || !rs)
 		return 0;
@@ -150,10 +150,11 @@ bgpq_expander_add_rset(struct bgpq_expander* b, char* rs)
 	return 1;
 }
 
-int
-bgpq_expander_add_already(struct bgpq_expander* b, char* rs)
+static int
+bgpq_expander_add_already(struct bgpq_expander *b, char *rs)
 {
-	struct sx_tentry* le, lkey;
+	struct sx_tentry	*le, lkey;
+
 	lkey.text = rs;
 
 	if (RB_FIND(tentree, &b->already, &lkey))
@@ -167,9 +168,10 @@ bgpq_expander_add_already(struct bgpq_expander* b, char* rs)
 }
 
 int
-bgpq_expander_add_stop(struct bgpq_expander* b, char* rs)
+bgpq_expander_add_stop(struct bgpq_expander *b, char *rs)
 {
-	struct sx_tentry* le, lkey;
+	struct sx_tentry	*le, lkey;
+
 	lkey.text = rs;
 
 	if (RB_FIND(tentree, &b->stoplist, &lkey))
@@ -183,11 +185,11 @@ bgpq_expander_add_stop(struct bgpq_expander* b, char* rs)
 }
 
 int
-bgpq_expander_add_as(struct bgpq_expander* b, char* as)
+bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 {
-	char* eoa;
-	uint32_t asn1 = 0, asn2 = 0;
-	uint32_t asno = 0;
+	char		*eoa;
+	uint32_t	 asn1 = 0, asn2 = 0;
+	uint32_t	 asno = 0;
 
 	if (!b || !as)
 		return 0;
@@ -230,9 +232,10 @@ bgpq_expander_add_as(struct bgpq_expander* b, char* as)
 }
 
 int
-bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)
+bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix)
 {
 	struct sx_prefix *p = sx_prefix_alloc(NULL);
+
 	if (!sx_prefix_parse(p, 0, prefix)) {
 		sx_report(SX_ERROR, "Unable to parse prefix %s\n", prefix);
 		return 0;
@@ -255,30 +258,30 @@ bgpq_expander_add_prefix(struct bgpq_expander* b, char* prefix)
 }
 
 int
-bgpq_expander_add_prefix_range(struct bgpq_expander* b, char* prefix)
+bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 {
 	return sx_prefix_range_parse(b->tree, b->family, b->maxlen, prefix);
 }
 
-int
-bgpq_expanded_macro(char* as, struct bgpq_expander* ex,
-    struct bgpq_request* req)
+static int
+bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
+    struct bgpq_request *req)
 {
 	bgpq_expander_add_as(ex, as);
 
 	return 1;
 }
 
-struct bgpq_request* bgpq_pipeline(struct bgpq_expander* b,
-	int (*callback)(char*, struct bgpq_expander* b, struct bgpq_request* req),
-	void* udata, char* fmt, ...);
-int bgpq_expand_irrd(struct bgpq_expander* b,
-    int (*callback)(char*, struct bgpq_expander* b, struct bgpq_request* req),
-     void* udata, char* fmt, ...);
+struct bgpq_request *bgpq_pipeline(struct bgpq_expander *b,
+	int (*callback)(char*, struct bgpq_expander *b, struct bgpq_request *req),
+	void *udata, char *fmt, ...);
+int bgpq_expand_irrd(struct bgpq_expander *b,
+    int (*callback)(char*, struct bgpq_expander *b, struct bgpq_request *req),
+     void *udata, char *fmt, ...);
 
-int
-bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
-    struct bgpq_request* req)
+static int
+bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
+    struct bgpq_request *req)
 {
 	if (!strncasecmp(as, "AS-", 3) || strchr(as, '-') || strchr(as, ':')) {
 		struct sx_tentry tkey = { .text = as };
@@ -300,7 +303,7 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 		    req->depth + 1 < b->maxdepth)) {
 			bgpq_expander_add_already(b, as);
 			if (pipelining) {
-				struct bgpq_request* req1 = bgpq_pipeline(b,
+				struct bgpq_request *req1 = bgpq_pipeline(b,
 				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
 				    as);
 				req1->depth = req->depth+1;
@@ -341,11 +344,11 @@ bgpq_expanded_macro_limit(char* as, struct bgpq_expander* b,
 	return 1;
 }
 
-int
-bgpq_expanded_prefix(char* as, struct bgpq_expander* ex,
-    struct bgpq_request* req __attribute__((unused)))
+static int
+bgpq_expanded_prefix(char *as, struct bgpq_expander *ex,
+    struct bgpq_request *req __attribute__((unused)))
 {
-	char* d = strchr(as, '^');
+	char *d = strchr(as, '^');
 
 	if (!d)
 		bgpq_expander_add_prefix(ex, as);
@@ -355,11 +358,11 @@ bgpq_expanded_prefix(char* as, struct bgpq_expander* ex,
 	return 1;
 }
 
-int
-bgpq_expanded_v6prefix(char* prefix, struct bgpq_expander* ex,
+static int
+bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander * ex,
     struct bgpq_request* req)
 {
-	char* d = strchr(prefix, '^');
+	char *d = strchr(prefix, '^');
 
 	if (!d)
 		bgpq_expander_add_prefix(ex, prefix);
@@ -369,10 +372,10 @@ bgpq_expanded_v6prefix(char* prefix, struct bgpq_expander* ex,
 	return 1;
 }
 
-int bgpq_pipeline_dequeue(int fd, struct bgpq_expander* b);
+int bgpq_pipeline_dequeue(int fd, struct bgpq_expander *b);
 
 static struct bgpq_request*
-bgpq_request_alloc(char* request, int (*callback)(char*, struct bgpq_expander*,
+bgpq_request_alloc(char *request, int (*callback)(char*, struct bgpq_expander*,
     struct bgpq_request*), void* udata)
 {
 	struct bgpq_request* bp = malloc(sizeof(struct bgpq_request));
@@ -400,9 +403,9 @@ bgpq_request_free(struct bgpq_request* req)
 }
 
 struct bgpq_request*
-bgpq_pipeline(struct bgpq_expander* b,
+bgpq_pipeline(struct bgpq_expander *b,
     int (*callback)(char*, struct bgpq_expander*, struct bgpq_request*),
-    void* udata, char* fmt, ...)
+    void* udata, char *fmt, ...)
 {
 	char request[128];
 	int ret;
@@ -447,10 +450,10 @@ bgpq_pipeline(struct bgpq_expander* b,
 }
 
 static void
-bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
+bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 {
 	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
-		char* eptr;
+		char *eptr;
 		unsigned long asn = strtoul(q+4, &eptr, 10), asn0, asn1 = 0;
 		if (!asn || asn == ULONG_MAX || asn >= 4294967295
 		    || (eptr && *eptr != '\n')) {
@@ -471,7 +474,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander* b, const char* q)
 }
 
 static void
-bgpq_write(struct bgpq_expander* b)
+bgpq_write(struct bgpq_expander *b)
 {
 	while(!STAILQ_EMPTY(&b->wq)) {
 		struct bgpq_request* req = STAILQ_FIRST(&b->wq);
@@ -498,7 +501,7 @@ bgpq_write(struct bgpq_expander* b)
 }
 
 static int
-bgpq_selread(struct bgpq_expander* b, char* buffer, int size)
+bgpq_selread(struct bgpq_expander *b, char *buffer, int size)
 {
 	fd_set rfd, wfd;
 	int ret;
@@ -530,8 +533,8 @@ repeat:
 	goto repeat;
 }
 
-int
-bgpq_read(struct bgpq_expander* b)
+static int
+bgpq_read(struct bgpq_expander *b)
 {
 	static char response[256];
 	static int off = 0;
@@ -544,7 +547,7 @@ bgpq_read(struct bgpq_expander* b)
 		SX_DEBUG(debug_expander > 2, "waiting for answer to %s,"
 		    "init %i '%.*s'\n", req->request, off, off, response);
 		int ret = 0;
-		char* cres;
+		char *cres;
 
 		if ((cres=strchr(response, '\n')) != NULL)
 			goto have;
@@ -569,10 +572,10 @@ have:
 		    response);
 
 		if (response[0] == 'A') {
-			char* eon, *c;
-			unsigned long togot = strtoul(response+1,&eon,10);
-			char* recvbuffer = malloc(togot+2);
-			int offset = 0;
+			char		*eon, *c;
+			unsigned long	 offset = 0;
+			unsigned long 	 togot = strtoul(response + 1, &eon, 10);
+			char 		*recvbuffer = malloc(togot + 2);
 
 			if (!recvbuffer) {
 				sx_report(SX_FATAL, "error allocating %lu "
@@ -588,7 +591,7 @@ have:
 				exit(1);
 			}
 
-			if (off - ((eon + 1) - response) > togot) {
+			if ((unsigned)(off - ((eon + 1) - response)) > togot) {
 				// full response and more data is already in buffer
 				memcpy(recvbuffer, eon + 1, togot);
 				offset = togot;
@@ -606,9 +609,9 @@ have:
 				off = 0;
 			}
 
-			SX_DEBUG(debug_expander>5,
+			SX_DEBUG(debug_expander > 5,
 			    "starting read with ready '%.*s', waiting for "
-			    "%lu\n", offset, recvbuffer, togot-offset);
+			    "%lu\n", (int)offset, recvbuffer, togot - offset);
 
 			if (off > 0)
 				goto have3;
@@ -617,7 +620,7 @@ have:
 
 reread:
 
-			ret = bgpq_selread(b, recvbuffer + offset, togot-offset);
+			ret = bgpq_selread(b, recvbuffer + offset, togot - offset);
 			if (ret < 0) {
 				if (errno == EAGAIN)
 					goto reread;
@@ -718,14 +721,15 @@ have3:
 }
 
 int
-bgpq_expand_irrd(struct bgpq_expander* b,
+bgpq_expand_irrd(struct bgpq_expander *b,
     int (*callback)(char*, struct bgpq_expander*, struct bgpq_request* ),
-    void* udata, char* fmt, ...)
+    void* udata, char *fmt, ...)
 {
-	char request[128], response[128];
-	va_list ap;
-	int ret, off = 0;
-	struct bgpq_request *req;
+	char			 request[128], response[128];
+	va_list			 ap;
+	size_t			 ret;
+	int			 off = 0;
+	struct bgpq_request	*req;
 
 	va_start(ap, fmt);
 	vsnprintf(request, sizeof(request), fmt, ap);
@@ -737,7 +741,7 @@ bgpq_expand_irrd(struct bgpq_expander* b,
 
 	ret=write(b->fd, request, strlen(request));
 	if (ret != strlen(request)) {
-		sx_report(SX_FATAL,"Partial write to IRRd, only %i bytes "
+		sx_report(SX_FATAL,"Partial write to IRRd, only %lu bytes "
 		    "written: %s\n", ret, strerror(errno));
 		exit(1);
 	}
@@ -763,10 +767,10 @@ repeat:
 	    "'%s'\n", (unsigned long)strlen(response), response);
 
 	if (response[0] == 'A') {
-		char* eon, *c;
-		long togot = strtoul(response+1, &eon, 10);
-		char *recvbuffer = malloc(togot + 2);
-		int offset = 0;
+		char	*eon, *c;
+		long 	 togot = strtoul(response+1, &eon, 10);
+		char 	*recvbuffer = malloc(togot + 2);
+		int 	 offset = 0;
 
 		if (!recvbuffer) {
 			sx_report(SX_FATAL, "Error allocating %lu bytes: %s\n",
@@ -866,12 +870,13 @@ have3:
 }
 
 int
-bgpq_expand(struct bgpq_expander* b)
+bgpq_expand(struct bgpq_expander *b)
 {
-	int fd = -1, err, ret, aquery = 0;
-	struct sx_slentry* mc;
-	struct addrinfo hints, *res=NULL, *rp;
-	struct linger sl;
+	int			 fd = -1, err, ret, aquery = 0;
+	struct sx_slentry	*mc;
+	struct addrinfo 	 hints, *res = NULL, *rp;
+	struct linger		 sl;
+
 	sl.l_onoff = 1;
 	sl.l_linger = 5;
 

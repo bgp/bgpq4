@@ -34,7 +34,7 @@
 
 typedef struct sx_prefix { 
 	int family; 
-	int masklen; 
+	unsigned int masklen; 
 	union { 
 		struct in_addr  addr; 
 		struct in6_addr addr6; 
@@ -43,19 +43,19 @@ typedef struct sx_prefix {
 } sx_prefix_t;
 
 typedef struct sx_radix_node { 
-	struct sx_radix_node* parent, *l, *r, *son;
-	void* payload;
-	unsigned int isGlue:1;
-	unsigned int isAggregated:1;
-	unsigned int isAggregate:1;
-	unsigned int aggregateLow;
-	unsigned int aggregateHi;
-	struct sx_prefix *prefix;
+	struct sx_radix_node	*parent, *l, *r, *son;
+	void			*payload;
+	unsigned int 		 isGlue:1;
+	unsigned int 		 isAggregated:1;
+	unsigned int 		 isAggregate:1;
+	unsigned int 		 aggregateLow;
+	unsigned int 		 aggregateHi;
+	struct sx_prefix	*prefix;
 } sx_radix_node_t;
 
 typedef struct sx_radix_tree { 
-	int family;
-	struct sx_radix_node* head;
+	int 			 family;
+	struct sx_radix_node	*head;
 } sx_radix_tree_t;
 
 /* most common operations with the tree is to: lookup/insert/unlink */
@@ -73,7 +73,7 @@ void sx_radix_node_destroy(struct sx_radix_node* p);
 void sx_prefix_adjust_masklen(struct sx_prefix* p);
 struct sx_prefix* sx_prefix_new(int af, char* text);
 int sx_prefix_parse(struct sx_prefix* p, int af, char* text);
-int sx_prefix_range_parse(struct sx_radix_tree* t, int af, int ml, char* text);
+int sx_prefix_range_parse(struct sx_radix_tree* t, int af, unsigned int ml, char* text);
 int sx_prefix_fprint(FILE* f, struct sx_prefix* p);
 int sx_prefix_snprintf(struct sx_prefix* p, char* rbuffer, int srb);
 int sx_prefix_snprintf_sep(struct sx_prefix* p, char* rbuffer, int srb, char*);

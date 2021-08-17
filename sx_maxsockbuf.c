@@ -36,6 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "extern.h"
 #include "sx_report.h"
 
 #ifndef SX_MAXSOCKBUF_MAX

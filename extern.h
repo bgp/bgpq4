@@ -58,40 +58,40 @@ struct bgpq_expander;
 
 struct bgpq_request {
 	STAILQ_ENTRY(bgpq_request) next;
-	char* request;
-	int size, offset;
-	int (*callback)(char*, struct bgpq_expander*, struct bgpq_request*);
-	void *udata;
-	unsigned depth;
+	char		*request;
+	int 	 	 size, offset;
+	int	 	 (*callback)(char*, struct bgpq_expander*, struct bgpq_request*);
+	void		*udata;
+	unsigned int	 depth;
 };
 
 struct bgpq_expander {
-	struct sx_radix_tree* tree;
+	struct sx_radix_tree	*tree;
 	STAILQ_HEAD(sx_slentries, sx_slentry) macroses, rsets;
 	RB_HEAD(tentree, sx_tentry) already, stoplist;
-	int family;
-	char* sources;
-	uint32_t asnumber;
-	int aswidth;
-	char* name;
-	bgpq_vendor_t vendor;
-	bgpq_gen_t    generation;
-	int identify;
-	int sequence;
-	int maxdepth;
-	int validate_asns;
-	unsigned char* asn32s[65536];
-	struct bgpq_prequest* firstpipe, *lastpipe;
-	int piped;
-	char* match;
-	char* server;
-	char* port;
-	char* format;
-	unsigned maxlen;
+	int			 family;
+	char			*sources;
+	uint32_t		 asnumber;
+	int			 aswidth;
+	char			*name;
+	bgpq_vendor_t		 vendor;
+	bgpq_gen_t		 generation;
+	int			 identify;
+	int			 sequence;
+	unsigned int		 maxdepth;
+	unsigned int		 cdepth;
+	int			 validate_asns;
+	unsigned char 		*asn32s[65536];
+	struct bgpq_prequest	*firstpipe, *lastpipe;
+	int 			 piped;
+	char			*match;
+	char			*server;
+	char			*port;
+	char			*format;
+	unsigned int		 maxlen;
 	STAILQ_HEAD(bgpq_requests, bgpq_request) wq, rq;
-	int fd, cdepth;
+	int			 fd;
 };
-
 
 int bgpq_expander_init(struct bgpq_expander* b, int af);
 int bgpq_expander_add_asset(struct bgpq_expander* b, char* set);
