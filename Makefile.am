@@ -12,9 +12,10 @@ dist_man8_MANS=bgpq4.8
 bgpq4_LDADD = $(PLATFORM_LDADD) $(PROG_LDADD)
 bgpq4_LDADD += $(top_builddir)/compat/libcompat.la
 
-bgpq4_SOURCES=main.c extern.h bgpq4_printer.c bgpq_expander.c \
-    expander_freeall.c sx_maxsockbuf.c \
-    sx_prefix.c sx_prefix.h sx_report.c sx_report.h \
+bgpq4_SOURCES=main.c extern.h printer.c expander.c \
+    sx_maxsockbuf.c \
+    sx_prefix.c sx_prefix.h \
+    sx_report.c sx_report.h \
     sx_slentry.c sx_slentry.h
 
 
