@@ -49,7 +49,7 @@ extern int debug_aggregation;
 extern int pipelining;
 extern int expand_special_asn;
 
-int
+static int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
@@ -111,7 +111,7 @@ usage(int ecode)
 	exit(ecode);
 }
 
-void
+static void
 version()
 {
 	printf(PACKAGE_NAME " - a versatile utility to generate BGP filters\n"
@@ -121,7 +121,7 @@ version()
 	exit(0);
 }
 
-void
+static void
 exclusive()
 {
 	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, and -t are mutually "
@@ -129,7 +129,7 @@ exclusive()
 	exit(1);
 }
 
-void
+static void
 vendor_exclusive()
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
@@ -139,36 +139,37 @@ vendor_exclusive()
 	exit(1);
 }
 
-int
-parseasnumber(struct bgpq_expander* expander, char* optarg)
+static int
+parseasnumber(struct bgpq_expander *expander, char *asnstr)
 {
-	char* eon=NULL;
-	expander->asnumber=strtoul(optarg,&eon, 10);
+	char	*eon = NULL;
+
+	expander->asnumber = strtoul(asnstr, &eon, 10);
 	if (expander->asnumber < 1 || expander->asnumber > (65535ul * 65535)) {
-		sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
+		sx_report(SX_FATAL, "Invalid AS number: %s\n", asnstr);
 		exit(1);
 	}
 	if (eon && *eon == '.') {
 		/* -f 3.3, for example */
-		uint32_t loas = strtoul(eon+1, &eon, 10);
+		uint32_t loas = strtoul(eon + 1, &eon, 10);
 		if (expander->asnumber > 65535) {
 			/* should prevent incorrect numbers like 65537.1 */
-			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
+			sx_report(SX_FATAL,"Invalid AS number: %s\n", asnstr);
 			exit(1);
 		}
 		if (loas < 1 || loas > 65535) {
-			sx_report(SX_FATAL,"Invalid AS number: %s\n", optarg);
+			sx_report(SX_FATAL,"Invalid AS number: %s\n", asnstr);
 			exit(1);
 		}
 		if (eon && *eon) {
 			sx_report(SX_FATAL,"Invalid symbol in AS number: "
-			    "%c (%s)\n", *eon, optarg);
+			    "%c (%s)\n", *eon, asnstr);
 			exit(1);
 		}
 		expander->asnumber=(expander->asnumber << 16) + loas;
 	} else if (eon && *eon) {
 		sx_report(SX_FATAL,"Invalid symbol in AS number: %c (%s)\n",
-			*eon, optarg);
+			*eon, asnstr);
 		exit(1);
 	}
 	return 0;
@@ -338,44 +339,44 @@ main(int argc, char* argv[])
 			break;
 		case 'M':
 			{
-			char* c, *d;
+			char *mc, *md;
 			expander.match = strdup(optarg);
-			c = d = expander.match;
-			while (*c) {
-				if (*c == '\\') {
-					if (*(c+1) == '\n') {
-						*d = '\n';
-						d++;
-						c += 2;
-					} else if (*(c + 1) == 'r') {
-						*d = '\r';
-						d++;
-						c += 2;
-					} else if (*(c + 1) == 't') {
-						*d = '\t';
-						d++;
-						c += 2;
-					} else if (*(c + 1) == '\\') {
-						*d = '\\';
-						d++;
-						c += 2;
+			mc = md = expander.match;
+			while (*mc) {
+				if (*mc == '\\') {
+					if (*(mc+1) == '\n') {
+						*md = '\n';
+						md++;
+						mc += 2;
+					} else if (*(mc + 1) == 'r') {
+						*md = '\r';
+						md++;
+						mc += 2;
+					} else if (*(mc + 1) == 't') {
+						*md = '\t';
+						md++;
+						mc += 2;
+					} else if (*(mc + 1) == '\\') {
+						*md = '\\';
+						md++;
+						mc += 2;
 					} else {
 						sx_report(SX_FATAL, "Unsupported"
 						    " escape \%c (0x%2.2x) in "
 						    "'%s'\n",
-						    isprint(*c) ? *c : 20,
-						    *c, optarg);
+						    isprint(*mc) ? *mc : 20,
+						    *mc, optarg);
 						exit(1);
 					}
 				} else {
-					if (c != d) {
-						*d = *c;
+					if (mc != md) {
+						*md = *mc;
 					}
-					d++;
-					c++;
+					md++;
+					mc++;
 				}
 			}
-			*d = 0;
+			*md = 0;
 			}
 			break;
 		case 'N':
@@ -680,11 +681,11 @@ main(int argc, char* argv[])
 		} else if (!strncasecmp(argv[0], "RS-", 3)) {
 			bgpq_expander_add_rset(&expander, argv[0]);
 		} else if (!strncasecmp(argv[0], "AS", 2)) {
-			char* c;
-			if ((c = strchr(argv[0], ':'))) {
-				if (!strncasecmp(c + 1, "AS-", 3)) {
+			char *ec;
+			if ((ec = strchr(argv[0], ':'))) {
+				if (!strncasecmp(ec + 1, "AS-", 3)) {
 					bgpq_expander_add_asset(&expander, argv[0]);
-				} else if (!strncasecmp(c + 1, "RS-", 3)) {
+				} else if (!strncasecmp(ec + 1, "RS-", 3)) {
 					bgpq_expander_add_rset(&expander, argv[0]);
 				} else {
 					SX_DEBUG(debug_expander,"Unknown sub-as"
@@ -694,12 +695,12 @@ main(int argc, char* argv[])
 				bgpq_expander_add_as(&expander, argv[0]);
 			}
 		} else {
-			char* c = strchr(argv[0], '^');
-			if (!c && !bgpq_expander_add_prefix(&expander, argv[0])) {
+			char *ec = strchr(argv[0], '^');
+			if (!ec && !bgpq_expander_add_prefix(&expander, argv[0])) {
 				sx_report(SX_ERROR, "Unable to add prefix %s "
 				    "(bad prefix or address-family)\n", argv[0]);
 				exit(1);
-			} else if (c && !bgpq_expander_add_prefix_range(&expander, argv[0])){
+			} else if (ec && !bgpq_expander_add_prefix_range(&expander, argv[0])) {
 				sx_report(SX_ERROR, "Unable to add prefix-range "
 				    "%s (bad range or address-family)\n",
 				    argv[0]);

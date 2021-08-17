@@ -43,13 +43,13 @@
 
 extern int debug_expander;
 
-int bgpq4_print_json_aspath(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_openbgpd_aspath(FILE* f, struct bgpq_expander* b);
-int bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b);
+int bgpq4_print_json_aspath(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_bird_aspath(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_openbgpd_aspath(FILE *f, struct bgpq_expander *b);
+int bgpq4_print_openbgpd_asset(FILE *f, struct bgpq_expander *b);
 
-int
-bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, empty = 1;
 
@@ -69,10 +69,10 @@ bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
 			continue;
 
 		for (i = 0; i < 8192; i++) {
-			for (j = 0; j <8;j++) {
+			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80>>j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -107,8 +107,8 @@ bgpq4_print_cisco_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_cisco_xr_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_xr_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, comma = 0;
 
@@ -131,7 +131,7 @@ bgpq4_print_cisco_xr_aspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -163,8 +163,8 @@ bgpq4_print_cisco_xr_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, empty = 1;
 
@@ -188,7 +188,7 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -223,8 +223,8 @@ bgpq4_print_cisco_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_cisco_xr_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_xr_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, comma = 0;
 
@@ -247,7 +247,7 @@ bgpq4_print_cisco_xr_oaspath(FILE* f, struct bgpq_expander* b)
 
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -277,8 +277,8 @@ bgpq4_print_cisco_xr_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_juniper_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_juniper_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 0, i, j, k;
 
@@ -302,7 +302,7 @@ bgpq4_print_juniper_aspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -336,8 +336,8 @@ bgpq4_print_juniper_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_juniper_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_juniper_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 0, i, j, k;
 
@@ -361,7 +361,7 @@ bgpq4_print_juniper_oaspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -395,8 +395,8 @@ bgpq4_print_juniper_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_openbgpd_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_openbgpd_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int i, j, k, lineNo = 0;
 
@@ -423,8 +423,8 @@ bgpq4_print_openbgpd_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 1, i, j, k;
 
@@ -451,7 +451,7 @@ bgpq4_print_nokia_aspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -483,8 +483,8 @@ bgpq4_print_nokia_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_md_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_md_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 1, i, j, k;
 
@@ -510,7 +510,7 @@ bgpq4_print_nokia_md_aspath(FILE* f, struct bgpq_expander* b)
 
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -542,9 +542,8 @@ bgpq4_print_nokia_md_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-
-int
-bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_huawei_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, empty = 1;
 
@@ -569,7 +568,7 @@ bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
 
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -605,8 +604,8 @@ bgpq4_print_huawei_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_huawei_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_huawei_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k, empty = 1;
 
@@ -631,7 +630,7 @@ bgpq4_print_huawei_oaspath(FILE* f, struct bgpq_expander* b)
 
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -663,8 +662,8 @@ bgpq4_print_huawei_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 1, i, j, k;
 
@@ -689,7 +688,7 @@ bgpq4_print_nokia_oaspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -718,8 +717,8 @@ bgpq4_print_nokia_oaspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_md_oaspath(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_md_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, lineNo = 1, i, j, k;
 
@@ -744,7 +743,7 @@ bgpq4_print_nokia_md_oaspath(FILE* f, struct bgpq_expander* b)
 			for (j = 0; j < 8; j++) {
 				if (b->asn32s[k][i] & (0x80 >> j)) {
 
-					if (k * 65536 + i * 8 + j == b->asnumber)
+					if ((unsigned)(k * 65536 + i * 8 + j) == b->asnumber)
 						continue;
 
 					if (!nc) {
@@ -777,7 +776,7 @@ bgpq4_print_nokia_md_oaspath(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_aspath(FILE *f, struct bgpq_expander *b)
 {
 	switch (b->vendor) {
 	case V_JUNIPER:
@@ -808,7 +807,7 @@ bgpq4_print_aspath(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	switch (b->vendor) {
 	case V_JUNIPER:
@@ -835,7 +834,7 @@ bgpq4_print_oaspath(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_asset(FILE* f, struct bgpq_expander* b)
+bgpq4_print_asset(FILE *f, struct bgpq_expander *b)
 {
 	switch (b->vendor) {
 	case V_JSON:
@@ -851,11 +850,11 @@ bgpq4_print_asset(FILE* f, struct bgpq_expander* b)
 	}
 }
 
-void
-bgpq4_print_jprefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_jprefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		return;
@@ -869,11 +868,11 @@ bgpq4_print_jprefix(struct sx_radix_node* n, void* ff)
 
 static int   needscomma = 0;
 
-void
-bgpq4_print_json_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_json_prefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char	prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -905,7 +904,7 @@ checkSon:
 }
 
 int
-bgpq4_print_json_aspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_json_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int nc = 0, i, j, k;
 
@@ -947,11 +946,11 @@ bgpq4_print_json_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-void
-bgpq4_print_bird_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_bird_prefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1025,11 +1024,11 @@ bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-void
-bgpq4_print_openbgpd_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_openbgpd_prefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1057,7 +1056,7 @@ checkSon:
 }
 
 int
-bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b)
+bgpq4_print_openbgpd_asset(FILE *f, struct bgpq_expander *b)
 {
 	int i, j, k, nc = 0;
 
@@ -1090,7 +1089,7 @@ bgpq4_print_openbgpd_asset(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_openbgpd_aspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_openbgpd_aspath(FILE *f, struct bgpq_expander *b)
 {
 	int i, j, k, lineNo = 0;
 
@@ -1118,11 +1117,11 @@ bgpq4_print_openbgpd_aspath(FILE* f, struct bgpq_expander* b)
 
 static int jrfilter_prefixed = 1;
 
-void
-bgpq4_print_jrfilter(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_jrfilter(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1136,7 +1135,7 @@ bgpq4_print_jrfilter(struct sx_radix_node* n, void* ff)
 		fprintf(f, "    %s%s exact;\n",
 		    jrfilter_prefixed ? "route-filter " : "", prefix);
 	} else {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"    %s%s prefix-length-range /%u-/%u;\n",
 			    jrfilter_prefixed ? "route-filter " : "",
 			    prefix, n->aggregateLow, n->aggregateHi);
@@ -1155,11 +1154,11 @@ checkSon:
 static char* bname = NULL;
 static int   seq = 0;
 
-void
-bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_cprefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128], seqno[16] = "";
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128], seqno[16] = "";
+	FILE	*f = (FILE*)ff;
 
 	if (!f)
 		f = stdout;
@@ -1173,7 +1172,7 @@ bgpq4_print_cprefix(struct sx_radix_node* n, void* ff)
 		snprintf(seqno, sizeof(seqno), " seq %i", seq++);
 
 	if (n->isAggregate) {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"%s prefix-list %s%s permit %s ge %u le %u\n",
 			    n->prefix->family == AF_INET ? "ip" : "ipv6",
 			    bname ? bname : "NN", seqno, prefix,
@@ -1195,11 +1194,11 @@ checkSon:
 		bgpq4_print_cprefix(n->son, ff);
 }
 
-void
-bgpq4_print_cprefixxr(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_cprefixxr(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (!f)
 		f = stdout;
@@ -1210,7 +1209,7 @@ bgpq4_print_cprefixxr(struct sx_radix_node* n, void* ff)
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
 	if (n->isAggregate) {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"%s%s ge %u le %u",
 			    needscomma ? ",\n " : " ",
 			    prefix, n->aggregateLow, n->aggregateHi);
@@ -1232,11 +1231,11 @@ checkSon:
 		bgpq4_print_cprefixxr(n->son, ff);
 }
 
-void
-bgpq4_print_hprefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_hprefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (!f)
 		f = stdout;
@@ -1247,7 +1246,7 @@ bgpq4_print_hprefix(struct sx_radix_node* n, void* ff)
 	sx_prefix_snprintf_sep(n->prefix, prefix, sizeof(prefix), " ");
 
 	if (n->isAggregate) {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"ip %s-prefix %s permit %s greater-equal %u "
 			    "less-equal %u\n",
 			    n->prefix->family == AF_INET ? "ip" : "ipv6",
@@ -1271,11 +1270,11 @@ checkSon:
 		bgpq4_print_hprefix(n->son, ff);
 }
 
-void
-bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_eprefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128], seqno[16] = "";
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128], seqno[16] = "";
+	FILE	*f = (FILE*)ff;
 
 	if (!f)
 		f = stdout;
@@ -1288,7 +1287,7 @@ bgpq4_print_eprefix(struct sx_radix_node* n, void* ff)
 	snprintf(seqno, sizeof(seqno), " seq %i", seq++);
 
 	if (n->isAggregate) {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"   %s permit %s ge %u le %u\n",
 			    seqno, prefix, n->aggregateLow, n->aggregateHi);
 		} else {
@@ -1304,12 +1303,11 @@ checkSon:
 		bgpq4_print_eprefix(n->son, ff);
 }
 
-
-void
-bgpq4_print_ceacl(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 	char* c;
 	uint32_t netmask = 0xfffffffful;
 
@@ -1392,11 +1390,11 @@ checkSon:
 		bgpq4_print_ceacl(n->son, ff);
 }
 
-void
-bgpq4_print_nokia_ipfilter(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_nokia_ipfilter(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1413,11 +1411,11 @@ checkSon:
 		bgpq4_print_nokia_ipfilter(n->son, ff);
 }
 
-void
-bgpq4_print_nokia_md_ipfilter(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_nokia_md_ipfilter(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1434,11 +1432,11 @@ checkSon:
 		bgpq4_print_nokia_md_ipfilter(n->son, ff);
 }
 
-void
-bgpq4_print_nokia_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_nokia_prefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1451,7 +1449,7 @@ bgpq4_print_nokia_prefix(struct sx_radix_node* n, void* ff)
 	if (!n->isAggregate) {
 		fprintf(f, "    prefix %s exact\n", prefix);
 	} else {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"    prefix %s prefix-length-range %u-%u\n",
 			    prefix, n->aggregateLow, n->aggregateHi);
 		} else {
@@ -1466,11 +1464,11 @@ checkSon:
 
 }
 
-void
-bgpq4_print_nokia_md_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_nokia_md_prefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1483,7 +1481,7 @@ bgpq4_print_nokia_md_prefix(struct sx_radix_node* n, void* ff)
 	if (!n->isAggregate) {
 		fprintf(f, "    prefix %s type exact {\n    }\n", prefix);
 	} else {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"    prefix %s type range {\n"
 			    "        start-length %u\n"
 			    "        end-length %u\n    }\n",
@@ -1501,8 +1499,8 @@ checkSon:
 
 }
 
-int
-bgpq4_print_juniper_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_juniper_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	fprintf(f, "policy-options {\nreplace:\n prefix-list %s {\n",
 	    b->name ? b->name : "NN");
@@ -1514,10 +1512,10 @@ bgpq4_print_juniper_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_juniper_routefilter(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_juniper_routefilter(FILE *f, struct bgpq_expander *b)
 {
-	char* c = NULL;
+	char	*c = NULL;
 
 	if (b->name && (c = strchr(b->name,'/'))) {
 		*c = 0;
@@ -1551,8 +1549,8 @@ bgpq4_print_juniper_routefilter(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_openbgpd_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_openbgpd_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1586,8 +1584,8 @@ bgpq4_print_openbgpd_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_openbgpd_prefixset(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_openbgpd_prefixset(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1601,8 +1599,8 @@ bgpq4_print_openbgpd_prefixset(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_cisco_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 	seq = b->sequence;
@@ -1625,8 +1623,8 @@ bgpq4_print_cisco_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_ciscoxr_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_ciscoxr_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1639,8 +1637,8 @@ bgpq4_print_ciscoxr_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_json_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_json_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	fprintf(f, "{ \"%s\": [",
 		b->name ? b->name : "NN");
@@ -1652,8 +1650,8 @@ bgpq4_print_json_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_bird_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_bird_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	if (!sx_radix_tree_empty(b->tree)) {
 		fprintf(f,"%s = [",
@@ -1667,8 +1665,8 @@ bgpq4_print_bird_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_huawei_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 	seq = b->sequence;
@@ -1689,8 +1687,8 @@ bgpq4_print_huawei_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_arista_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 	seq = b->sequence;
@@ -1718,16 +1716,16 @@ bgpq4_print_arista_prefixlist(FILE* f, struct bgpq_expander* b)
 }
 
 struct fpcbdata {
-	FILE* f;
-	struct bgpq_expander* b;
+	FILE			*f;
+	struct bgpq_expander	*b;
 };
 
-void
-bgpq4_print_format_prefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_format_prefix(struct sx_radix_node *n, void *ff)
 {
-	struct fpcbdata* fpc = (struct fpcbdata*)ff;
-	FILE* f = fpc->f;
-	struct bgpq_expander* b = fpc->b;
+	struct fpcbdata		*fpc = (struct fpcbdata*)ff;
+	FILE			*f = fpc->f;
+	struct bgpq_expander	*b = fpc->b;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1760,9 +1758,8 @@ checkSon:
 		bgpq4_print_format_prefix(n->son, ff);
 }
 
-
-int
-bgpq4_print_format_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_format_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	struct fpcbdata ff = {.f=f, .b=b};
 	int len = strlen(b->format);
@@ -1777,8 +1774,8 @@ bgpq4_print_format_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 	fprintf(f,"configure router policy-options\nbegin\nno prefix-list \"%s\"\n",
@@ -1789,8 +1786,8 @@ bgpq4_print_nokia_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_cisco_eacl(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_cisco_eacl(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1807,8 +1804,8 @@ bgpq4_print_cisco_eacl(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_ipprefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_ipprefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1829,8 +1826,8 @@ bgpq4_print_nokia_ipprefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_md_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_md_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1852,8 +1849,8 @@ bgpq4_print_nokia_md_prefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_nokia_md_ipprefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_nokia_md_ipprefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1871,11 +1868,11 @@ bgpq4_print_nokia_md_ipprefixlist(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-void
-bgpq4_print_kprefix(struct sx_radix_node* n, void* ff)
+static void
+bgpq4_print_kprefix(struct sx_radix_node *n, void *ff)
 {
-	char prefix[128];
-	FILE* f = (FILE*)ff;
+	char	 prefix[128];
+	FILE	*f = (FILE*)ff;
 
 	if (!f)
 		f = stdout;
@@ -1886,7 +1883,7 @@ bgpq4_print_kprefix(struct sx_radix_node* n, void* ff)
 	sx_prefix_snprintf_sep(n->prefix, prefix, sizeof(prefix), "/");
 
 	if (n->isAggregate) {
-		if (n->aggregateLow>n->prefix->masklen) {
+		if (n->aggregateLow > n->prefix->masklen) {
 			fprintf(f,"/routing filter add action=accept chain=\""
 			    "%s-%s\" prefix=%s prefix-length=%d-%d\n",
 			    bname ? bname : "NN",
@@ -1912,8 +1909,8 @@ checkSon:
 		bgpq4_print_kprefix(n->son, ff);
 }
 
-int
-bgpq4_print_mikrotik_prefixlist(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_mikrotik_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
@@ -1927,7 +1924,7 @@ bgpq4_print_mikrotik_prefixlist(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
+bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	switch (b->vendor) {
 	case V_JUNIPER:
@@ -1960,7 +1957,7 @@ bgpq4_print_prefixlist(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_eacl(FILE* f, struct bgpq_expander* b)
+bgpq4_print_eacl(FILE *f, struct bgpq_expander *b)
 {
 	switch (b->vendor) {
 	case V_JUNIPER:
@@ -1992,8 +1989,8 @@ bgpq4_print_eacl(FILE* f, struct bgpq_expander* b)
 	return 0;
 }
 
-int
-bgpq4_print_juniper_route_filter_list(FILE* f, struct bgpq_expander* b)
+static int
+bgpq4_print_juniper_route_filter_list(FILE *f, struct bgpq_expander *b)
 {
 	fprintf(f, "policy-options {\nreplace:\n  route-filter-list %s {\n",
 	    b->name ? b->name : "NN");
@@ -2012,7 +2009,7 @@ bgpq4_print_juniper_route_filter_list(FILE* f, struct bgpq_expander* b)
 }
 
 int
-bgpq4_print_route_filter_list(FILE* f, struct bgpq_expander* b)
+bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b)
 {
 	switch(b->vendor) {
 	case V_JUNIPER:
