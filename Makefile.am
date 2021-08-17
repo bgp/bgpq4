@@ -2,6 +2,8 @@ AUTOMAKE_OPTIONS=foreign subdir-objects
 
 SUBDIRS = include compat
 
+ACLOCAL_AMFLAGS = -I m4
+
 bin_PROGRAMS=bgpq4
 
 bgpq4_SOURCES=bgpq4.c bgpq4.h config.h bgpq4_printer.c bgpq_expander.c \

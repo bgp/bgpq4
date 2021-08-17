@@ -6,6 +6,8 @@ noinst_LTLIBRARIES = libcompat.la libcompatnoopt.la
 libcompatnoopt_la_CFLAGS = -O0
 libcompatnoopt_la_SOURCES =
 
+libcompat_la_SOURCES =
+
 if !HAVE_STRLCPY
 libcompat_la_SOURCES += strlcpy.c
 endif

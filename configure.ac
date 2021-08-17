@@ -1,5 +1,8 @@
 AC_INIT(bgpq4,0.0.7,job@sobornost.net)
 AM_INIT_AUTOMAKE
+
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_PACKAGE_URL(https://github.com/bgp/bgpq4)
 AC_CONFIG_HEADERS([config.h])
 AM_SILENT_RULES([yes])
@@ -8,7 +11,11 @@ AC_PROG_CC
 CC=cc
 CFLAGS="${CFLAGS} -std=gnu11"
 
+AC_PROG_LIBTOOL
+
 AC_PROG_INSTALL
+
+AM_CONDITIONAL([HAVE_STRLCPY], [test "x$ac_cv_func_strlcpy" = xyes])
 
 AC_CHECK_HEADERS([sys/cdefs.h sys/queue.h sys/tree.h sys/select.h])
 
