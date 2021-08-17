@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "bgpq4.h"
+#include "extern.h"
 #include "sx_report.h"
 
 int debug_expander = 0;

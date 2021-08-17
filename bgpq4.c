@@ -41,7 +41,7 @@
 #include <strings.h>
 #include <unistd.h>
 
-#include "bgpq4.h"
+#include "extern.h"
 #include "sx_report.h"
 
 extern int debug_expander;

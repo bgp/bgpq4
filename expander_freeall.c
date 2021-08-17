@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <bgpq4.h>
+#include "extern.h"
 
 void
 sx_radix_node_freeall(struct sx_radix_node *n) {

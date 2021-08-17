@@ -38,7 +38,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "bgpq4.h"
+#include "extern.h"
 #include "sx_report.h"
 
 extern int debug_expander;
