@@ -1,3 +1,5 @@
+AM_CPPFLAGS = -I$(top_srcdir)/include
+
 AUTOMAKE_OPTIONS=foreign subdir-objects
 
 SUBDIRS = include compat
