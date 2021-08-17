@@ -33,4 +33,9 @@ AC_CHECK_FUNCS(pledge)
 AC_CHECK_LIB(socket,socket)
 AC_CHECK_LIB(nsl,getaddrinfo)
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([
+	Makefile
+	include/Makefile
+])
+
+AC_OUTPUT
