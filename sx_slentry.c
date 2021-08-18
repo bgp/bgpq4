@@ -40,8 +40,7 @@ sx_slentry_new(char *t)
 
 	memset(e, 0, sizeof(struct sx_slentry));
 
-	if (t)
-		e->text = strdup(t);
+	e->text = strdup(t);
 
 	return e;
 }
@@ -55,6 +54,7 @@ sx_tentry_new(char *t)
 		return NULL;
 
 	memset(te, 0, sizeof(struct sx_tentry));
+
 	te->text = strdup(t);
 
 	return te;

@@ -1162,6 +1162,14 @@ expander_freeall(struct bgpq_expander *expander) {
 	while (!STAILQ_EMPTY(&expander->macroses)) {
 		struct sx_slentry *n1 = STAILQ_FIRST(&expander->macroses);
 		STAILQ_REMOVE_HEAD(&expander->macroses, entries);
+		free(n1->text);
+		free(n1);
+	}
+
+	while (!STAILQ_EMPTY(&expander->rsets)) {
+		struct sx_slentry *n1 = STAILQ_FIRST(&expander->rsets);
+		STAILQ_REMOVE_HEAD(&expander->rsets, entries);
+		free(n1->text);
 		free(n1);
 	}
 
