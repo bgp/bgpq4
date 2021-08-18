@@ -332,11 +332,6 @@ Linux can be tuned in the following way:
     sysctl -w net.ipv4.tcp_rmem="4096 87380 2097152"
     sysctl -w net.ipv4.tcp_wmem="4096 65536 2097152"
 
-Please note that generated prefix-lists may not fit your router's
-limitations. For example, JunOS supports only 85,325 prefixes in 
-each prefix-list [4](http://www.juniper.net/techpubs/en_US/junos11.4/topics/reference/configuration-statement/prefix-list-edit-policy-options.html). 
-
-
 BUILDING
 --------
 
