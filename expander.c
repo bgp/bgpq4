@@ -283,13 +283,13 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 		struct sx_tentry tkey = { .text = as };
 
 		if (RB_FIND(tentree, &b->already, &tkey)) {
-			SX_DEBUG(debug_expander>2, "%s is already expanding, "
+			SX_DEBUG(debug_expander > 2, "%s is already expanding, "
 			    "ignore\n", as);
 			return 0;
 		}
 
 		if (RB_FIND(tentree, &b->stoplist, &tkey)) {
-			SX_DEBUG(debug_expander>2, "%s is in the stoplist, "
+			SX_DEBUG(debug_expander > 2, "%s is in the stoplist, "
 			    "ignore\n", as);
 			return 0;
 		}
@@ -310,7 +310,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 				b->cdepth--;
 			}
 		} else {
-			SX_DEBUG(debug_expander>2, "ignoring %s at depth %i\n",
+			SX_DEBUG(debug_expander > 2, "ignoring %s at depth %i\n",
 			    as,
 			    b->cdepth ? (b->cdepth + 1) : (req->depth + 1));
 		}
@@ -632,7 +632,7 @@ reread:
 				    recvbuffer + offset);
 			offset += ret;
 			if (offset < togot) {
-				SX_DEBUG(debug_expander>5, "expected %lu, got "
+				SX_DEBUG(debug_expander > 5, "expected %lu, got "
 				    "%lu expanding %s", togot,
 				    strlen(recvbuffer), req->request);
 				goto reread;
@@ -828,7 +828,7 @@ have3:
 		if (!strchr(response, '\n'))
 			goto reread2;
 
-		SX_DEBUG(debug_expander>2,"expander: final reply of %lu bytes,"
+		SX_DEBUG(debug_expander > 2,"expander: final reply of %lu bytes,"
 		    " %.*sreturn code %.*s",
 		    (unsigned long)strlen(recvbuffer), offset, recvbuffer, off,
 		    response);
