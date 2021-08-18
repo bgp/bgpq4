@@ -25,9 +25,23 @@
  */
 
 #include <sys/queue.h>
+#include <sys/tree.h>
 
 #include "sx_prefix.h"
-#include "sx_slentry.h"
+
+struct sx_slentry {
+	STAILQ_ENTRY(sx_slentry) entries;
+	char*  text;
+};
+
+struct sx_slentry* sx_slentry_new(char* text);
+
+struct sx_tentry {
+	RB_ENTRY(sx_tentry) entries;
+	char* text;
+};
+
+struct sx_tentry* sx_tentry_new(char* text);
 
 typedef enum {
 	V_CISCO = 0,

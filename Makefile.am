@@ -16,7 +16,7 @@ bgpq4_SOURCES=main.c extern.h printer.c expander.c \
     sx_maxsockbuf.c \
     sx_prefix.c sx_prefix.h \
     sx_report.c sx_report.h \
-    sx_slentry.c sx_slentry.h
+    sx_slentry.c
 
 
 EXTRA_DIST=bootstrap README.md CHANGES bgpq4.spec

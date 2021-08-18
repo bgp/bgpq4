@@ -28,7 +28,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "sx_slentry.h"
+#include "extern.h"
 
 struct sx_slentry *
 sx_slentry_new(char *t)
