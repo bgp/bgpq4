@@ -40,18 +40,18 @@
 #include "sx_report.h"
 
 #ifndef SX_MAXSOCKBUF_MAX
-#define SX_MAXSOCKBUF_MAX (2*1024*1024)
+#define SX_MAXSOCKBUF_MAX (2 * 1024 * 1024)
 #endif
 
 int
 sx_maxsockbuf(int s, int dir)
 { 
-	int optval = 0, voptval;
-	int hiconf = -1, loconf = -1;
-	unsigned int voptlen;
-	int phase = 0, iterations = 0;
+	int		optval = 0, voptval;
+	int		hiconf = -1, loconf = -1;
+	unsigned int	voptlen;
+	int		phase = 0, iterations = 0;
 
-	if (s<0) { 
+	if (s < 0) { 
 		sx_report(SX_FATAL,"Unable to maximize sockbuf on invalid "
 		    "socket %i\n", s);
 		exit(1);
