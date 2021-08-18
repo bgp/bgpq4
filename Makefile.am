@@ -19,7 +19,7 @@ bgpq4_SOURCES=main.c extern.h printer.c expander.c \
     sx_slentry.c
 
 
-EXTRA_DIST=bootstrap README.md CHANGES bgpq4.spec
+EXTRA_DIST=bootstrap README.md CHANGES
 
 MAINTAINERCLEANFILES=configure aclocal.m4 compile \
                      install-sh missing Makefile.in depcomp \
