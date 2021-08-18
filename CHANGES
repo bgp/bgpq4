@@ -1,3 +1,6 @@
+0.0.9 (2021-08-18)
+    - Fix various memory errors
+
 0.0.8 (2021-08-17)
     - Reorganize automake files and includes
     - Normalize code to adhere to KNF
