@@ -1146,6 +1146,7 @@ bgpq_prequest_freeall(struct bgpq_prequest *bpr) {
 
 void
 expander_freeall(struct bgpq_expander *expander) {
+	struct sx_tentry	*var, *nxt;
 
 	// printf("starting to free all\n");
 	// seg fault here
@@ -1171,6 +1172,20 @@ expander_freeall(struct bgpq_expander *expander) {
 		STAILQ_REMOVE_HEAD(&expander->rsets, entries);
 		free(n1->text);
 		free(n1);
+	}
+
+	for (var = RB_MIN(tentree, &expander->already); var != NULL; var = nxt) {
+		nxt = RB_NEXT(tentree, &expander->already, var);
+		RB_REMOVE(tentree, &expander->already, var);
+		free(var->text);
+		free(var);
+	}
+
+	for (var = RB_MIN(tentree, &expander->stoplist); var != NULL; var = nxt) {
+		nxt = RB_NEXT(tentree, &expander->stoplist, var);
+		RB_REMOVE(tentree, &expander->stoplist, var);
+		free(var->text);
+		free(var);
 	}
 
 	for (int i = 0; i < 65536; i++) {
