@@ -1148,18 +1148,6 @@ void
 expander_freeall(struct bgpq_expander *expander) {
 	struct sx_tentry	*var, *nxt;
 
-	// printf("starting to free all\n");
-	// seg fault here
-	// if (expander->sources != NULL) {
-	//  printf("freeing soruces\n");
-	//  free(expander->sources);
-	//}
-	//  if (expander->name != NULL) {
-	//  printf("freeing name\n");
-	//  free(expander->name);
-	//}
-	// printf("freeing asn32s\n");
-
 	while (!STAILQ_EMPTY(&expander->macroses)) {
 		struct sx_slentry *n1 = STAILQ_FIRST(&expander->macroses);
 		STAILQ_REMOVE_HEAD(&expander->macroses, entries);
@@ -1194,27 +1182,8 @@ expander_freeall(struct bgpq_expander *expander) {
 		}
 	}
 
-	// if (expander->match != NULL) {
-	// printf("freeing match\n");
-	//  free(expander->match);
-	//}
-	//if (expander->server != NULL) {
-	//  printf("freeing server\n");
-	//  free(expander->server);
-	//}
-	//if (expander->port != NULL) {
-	//   printf("freeing port\n");
-	//   free(expander->port);
-	//}
-	//if (expander->format != NULL) {
-	//  printf("freeing format\n");
-	//  free(expander->format);
-	//}
-
 	sx_radix_tree_freeall(expander->tree);
 
 	bgpq_prequest_freeall(expander->firstpipe);
 	bgpq_prequest_freeall(expander->lastpipe);
-
-	// printf("finished freeing all\n");
 }
