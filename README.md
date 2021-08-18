@@ -3,6 +3,9 @@ NAME
 
 `bgpq4` - bgp filtering automation tool
 
+The `bgpq4` utility queries IRRd and then generates IRR and/or RPKI based
+filters formatted for a wide assortment of BGP implementations.
+
 SYNOPSIS
 --------
 
@@ -376,6 +379,12 @@ On Arch Linux, BGPQ4 is [available in AUR](https://aur.archlinux.org/packages/bg
 
 ```shell
 yay -S bgpq4
+```
+
+On OpenBSD:
+
+```shell
+pkg_add bgpq4
 ```
 
 MAILING LIST
