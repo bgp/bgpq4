@@ -268,11 +268,12 @@ bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
 }
 
 struct bgpq_request *bgpq_pipeline(struct bgpq_expander *b,
-	int (*callback)(char*, struct bgpq_expander *b, struct bgpq_request *req),
-	void *udata, char *fmt, ...);
+    int (*callback)(char *, struct bgpq_expander *b, struct bgpq_request *req),
+    void *udata, char *fmt, ...);
+
 int bgpq_expand_irrd(struct bgpq_expander *b,
     int (*callback)(char*, struct bgpq_expander *b, struct bgpq_request *req),
-     void *udata, char *fmt, ...);
+    void *udata, char *fmt, ...);
 
 static int
 bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
@@ -354,8 +355,8 @@ bgpq_expanded_prefix(char *as, struct bgpq_expander *ex,
 }
 
 static int
-bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander * ex,
-    struct bgpq_request* req)
+bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander *ex,
+    struct bgpq_request *req)
 {
 	char *d = strchr(prefix, '^');
 
@@ -369,11 +370,11 @@ bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander * ex,
 
 int bgpq_pipeline_dequeue(int fd, struct bgpq_expander *b);
 
-static struct bgpq_request*
-bgpq_request_alloc(char *request, int (*callback)(char*, struct bgpq_expander*,
-    struct bgpq_request*), void* udata)
+static struct bgpq_request *
+bgpq_request_alloc(char *request, int (*callback)(char *, struct bgpq_expander *,
+    struct bgpq_request *), void *udata)
 {
-	struct bgpq_request* bp = malloc(sizeof(struct bgpq_request));
+	struct bgpq_request *bp = malloc(sizeof(struct bgpq_request));
 
 	if (!bp)
 		return NULL;
@@ -389,7 +390,7 @@ bgpq_request_alloc(char *request, int (*callback)(char*, struct bgpq_expander*,
 }
 
 static void
-bgpq_request_free(struct bgpq_request* req)
+bgpq_request_free(struct bgpq_request *req)
 {
 	if (req->request)
 		free(req->request);
@@ -397,15 +398,15 @@ bgpq_request_free(struct bgpq_request* req)
 	free(req);
 }
 
-struct bgpq_request*
+struct bgpq_request *
 bgpq_pipeline(struct bgpq_expander *b,
-    int (*callback)(char*, struct bgpq_expander*, struct bgpq_request*),
-    void* udata, char *fmt, ...)
+    int (*callback)(char *, struct bgpq_expander *, struct bgpq_request *),
+    void *udata, char *fmt, ...)
 {
-	char request[128];
-	int ret;
-	struct bgpq_request* bp = NULL;
-	va_list ap;
+	char			 request[128];
+	int			 ret;
+	struct bgpq_request	*bp = NULL;
+	va_list			 ap;
 
 	va_start(ap, fmt);
 	vsnprintf(request, sizeof(request), fmt, ap);
@@ -538,11 +539,12 @@ bgpq_read(struct bgpq_expander *b)
 		bgpq_write(b);
 
 	while(!STAILQ_EMPTY(&b->rq)) {
-		struct bgpq_request* req = STAILQ_FIRST(&b->rq);
+		int			 ret = 0;
+		char			*cres;
+		struct bgpq_request	*req = STAILQ_FIRST(&b->rq);
+
 		SX_DEBUG(debug_expander > 2, "waiting for answer to %s,"
 		    "init %i '%.*s'\n", req->request, off, off, response);
-		int ret = 0;
-		char *cres;
 
 		if ((cres=strchr(response, '\n')) != NULL)
 			goto have;
@@ -717,8 +719,8 @@ have3:
 
 int
 bgpq_expand_irrd(struct bgpq_expander *b,
-    int (*callback)(char*, struct bgpq_expander*, struct bgpq_request* ),
-    void* udata, char *fmt, ...)
+    int (*callback)(char *, struct bgpq_expander *, struct bgpq_request *),
+    void *udata, char *fmt, ...)
 {
 	char			 request[128], response[128];
 	va_list			 ap;
@@ -1061,7 +1063,7 @@ bgpq_expand(struct bgpq_expander *b)
 				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
 				    NULL, "!i%s,1\n", mc->text);
 		}
-		for (k=0; k < sizeof(b->asn32s) / sizeof(unsigned char*); k++) {
+		for (k=0; k < sizeof(b->asn32s) / sizeof(unsigned char *); k++) {
 			if (!b->asn32s[k])
 				continue;
 			for (i=0; i<8192; i++) {
