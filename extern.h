@@ -29,19 +29,19 @@
 
 #include "sx_prefix.h"
 
-struct sx_slentry {
-	STAILQ_ENTRY(sx_slentry) entries;
-	char*  text;
+struct slentry {
+	STAILQ_ENTRY(slentry)	 entries;
+	char			*text;
 };
 
-struct sx_slentry* sx_slentry_new(char* text);
+struct slentry		*sx_slentry_new(char *text);
 
 struct sx_tentry {
-	RB_ENTRY(sx_tentry) entries;
-	char* text;
+	RB_ENTRY(sx_tentry)	 entries;
+	char			*text;
 };
 
-struct sx_tentry* sx_tentry_new(char* text);
+struct sx_tentry	*sx_tentry_new(char *text);
 
 typedef enum {
 	V_CISCO = 0,
@@ -70,42 +70,42 @@ typedef enum {
 
 struct bgpq_expander;
 
-struct bgpq_request {
-	STAILQ_ENTRY(bgpq_request) next;
-	char		*request;
-	int 	 	 size, offset;
-	void		*udata;
-	unsigned int	 depth;
-	int	 	 (*callback)(char *, struct bgpq_expander *,
-			    struct bgpq_request *);
+struct request {
+	STAILQ_ENTRY(request)	 next;
+	char			*request;
+	int 	 	 	 size, offset;
+	void			*udata;
+	unsigned int	 	 depth;
+	int	 	 	 (*callback)(char *, struct bgpq_expander *,
+				    struct request *);
 };
 
 struct bgpq_expander {
-	struct sx_radix_tree	*tree;
-	STAILQ_HEAD(sx_slentries, sx_slentry) macroses, rsets;
-	RB_HEAD(tentree, sx_tentry) already, stoplist;
-	int			 family;
-	char			*sources;
-	uint32_t		 asnumber;
-	int			 aswidth;
-	char			*name;
-	bgpq_vendor_t		 vendor;
-	bgpq_gen_t		 generation;
-	int			 identify;
-	int			 sequence;
-	unsigned int		 maxdepth;
-	unsigned int		 cdepth;
-	int			 validate_asns;
-	unsigned char 		*asn32s[65536];
-	struct bgpq_prequest	*firstpipe, *lastpipe;
-	int 			 piped;
-	char			*match;
-	char			*server;
-	char			*port;
-	char			*format;
-	unsigned int		 maxlen;
-	STAILQ_HEAD(bgpq_requests, bgpq_request) wq, rq;
-	int			 fd;
+	struct sx_radix_tree	 	*tree;
+	int			 	 family;
+	char				*sources;
+	uint32_t		 	 asnumber;
+	int			 	 aswidth;
+	char				*name;
+	bgpq_vendor_t		 	 vendor;
+	bgpq_gen_t		 	 generation;
+	int			 	 identify;
+	int			 	 sequence;
+	unsigned int		 	 maxdepth;
+	unsigned int		 	 cdepth;
+	int			 	 validate_asns;
+	struct bgpq_prequest		*firstpipe, *lastpipe;
+	int 			 	 piped;
+	char				*match;
+	char				*server;
+	char				*port;
+	char				*format;
+	unsigned int		 	 maxlen;
+	int			 	 fd;
+	unsigned char 			*asn32s[65536];
+	STAILQ_HEAD(requests, request)	 wq, rq;
+	STAILQ_HEAD(slentries, slentry)	 macroses, rsets;
+	RB_HEAD(tentree, sx_tentry)	 already, stoplist;
 };
 
 int bgpq_expander_init(struct bgpq_expander *b, int af);
@@ -134,5 +134,5 @@ void expander_freeall(struct bgpq_expander *expander);
 int sx_maxsockbuf(int s, int dir);
 
 #ifndef HAVE_STRLCPY
-size_t strlcpy(char* dst, const char* src, size_t size);
+size_t strlcpy(char *dst, const char *src, size_t size);
 #endif

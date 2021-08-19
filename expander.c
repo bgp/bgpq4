@@ -116,7 +116,7 @@ fixups:
 int
 bgpq_expander_add_asset(struct bgpq_expander *b, char *as)
 {
-	struct sx_slentry	*le;
+	struct slentry	*le;
 
 	if (!b || !as)
 		return 0;
@@ -131,7 +131,7 @@ bgpq_expander_add_asset(struct bgpq_expander *b, char *as)
 int
 bgpq_expander_add_rset(struct bgpq_expander *b, char *rs)
 {
-	struct sx_slentry	*le;
+	struct slentry	*le;
 
 	if (!b || !rs)
 		return 0;
@@ -261,24 +261,24 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 
 static int
 bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
-    struct bgpq_request *req)
+    struct request *req)
 {
 	bgpq_expander_add_as(ex, as);
 
 	return 1;
 }
 
-struct bgpq_request *bgpq_pipeline(struct bgpq_expander *b,
-    int (*callback)(char *, struct bgpq_expander *b, struct bgpq_request *req),
+struct request *bgpq_pipeline(struct bgpq_expander *b,
+    int (*callback)(char *, struct bgpq_expander *b, struct request *req),
     void *udata, char *fmt, ...);
 
 int bgpq_expand_irrd(struct bgpq_expander *b,
-    int (*callback)(char*, struct bgpq_expander *b, struct bgpq_request *req),
+    int (*callback)(char*, struct bgpq_expander *b, struct request *req),
     void *udata, char *fmt, ...);
 
 static int
 bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
-    struct bgpq_request *req)
+    struct request *req)
 {
 	if (!strncasecmp(as, "AS-", 3) || strchr(as, '-') || strchr(as, ':')) {
 		struct sx_tentry tkey = { .text = as };
@@ -300,7 +300,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 		    req->depth + 1 < b->maxdepth)) {
 			bgpq_expander_add_already(b, as);
 			if (pipelining) {
-				struct bgpq_request *req1 = bgpq_pipeline(b,
+				struct request *req1 = bgpq_pipeline(b,
 				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
 				        as);
 				req1->depth = req->depth + 1;
@@ -343,7 +343,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 
 static int
 bgpq_expanded_prefix(char *as, struct bgpq_expander *ex,
-    struct bgpq_request *req __attribute__((unused)))
+    struct request *req __attribute__((unused)))
 {
 	char *d = strchr(as, '^');
 
@@ -357,7 +357,7 @@ bgpq_expanded_prefix(char *as, struct bgpq_expander *ex,
 
 static int
 bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander *ex,
-    struct bgpq_request *req)
+    struct request *req)
 {
 	char *d = strchr(prefix, '^');
 
@@ -371,16 +371,16 @@ bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander *ex,
 
 int bgpq_pipeline_dequeue(int fd, struct bgpq_expander *b);
 
-static struct bgpq_request *
-bgpq_request_alloc(char *request, int (*callback)(char *, struct bgpq_expander *,
-    struct bgpq_request *), void *udata)
+static struct request *
+request_alloc(char *request, int (*callback)(char *, struct bgpq_expander *,
+    struct request *), void *udata)
 {
-	struct bgpq_request *bp = malloc(sizeof(struct bgpq_request));
+	struct request *bp = malloc(sizeof(struct request));
 
 	if (!bp)
 		return NULL;
 
-	memset(bp, 0, sizeof(struct bgpq_request));
+	memset(bp, 0, sizeof(struct request));
 	bp->request = strdup(request);
 	bp->offset = 0;
 	bp->size = strlen(bp->request);
@@ -391,7 +391,7 @@ bgpq_request_alloc(char *request, int (*callback)(char *, struct bgpq_expander *
 }
 
 static void
-bgpq_request_free(struct bgpq_request *req)
+request_free(struct request *req)
 {
 	if (req->request)
 		free(req->request);
@@ -399,14 +399,14 @@ bgpq_request_free(struct bgpq_request *req)
 	free(req);
 }
 
-struct bgpq_request *
+struct request *
 bgpq_pipeline(struct bgpq_expander *b,
-    int (*callback)(char *, struct bgpq_expander *, struct bgpq_request *),
+    int (*callback)(char *, struct bgpq_expander *, struct request *),
     void *udata, char *fmt, ...)
 {
 	char			 request[128];
 	int			 ret;
-	struct bgpq_request	*bp = NULL;
+	struct request	*bp = NULL;
 	va_list			 ap;
 
 	va_start(ap, fmt);
@@ -415,11 +415,11 @@ bgpq_pipeline(struct bgpq_expander *b,
 
 	SX_DEBUG(debug_expander,"expander: sending %s", request);
 
-	bp = bgpq_request_alloc(request, callback, udata);
+	bp = request_alloc(request, callback, udata);
 
 	if (!bp) {
 		sx_report(SX_FATAL,"Unable to allocate %lu bytes: %s\n",
-		    (unsigned long)sizeof(struct bgpq_request),
+		    (unsigned long)sizeof(struct request),
 		    strerror(errno));
 		exit(1);
 	}
@@ -487,7 +487,7 @@ static void
 bgpq_write(struct bgpq_expander *b)
 {
 	while(!STAILQ_EMPTY(&b->wq)) {
-		struct bgpq_request *req = STAILQ_FIRST(&b->wq);
+		struct request *req = STAILQ_FIRST(&b->wq);
 
 		int ret = write(b->fd, req->request + req->offset,
 		    req->size-req->offset);
@@ -555,7 +555,7 @@ bgpq_read(struct bgpq_expander *b)
 	while(!STAILQ_EMPTY(&b->rq)) {
 		int			 ret = 0;
 		char			*cres;
-		struct bgpq_request	*req = STAILQ_FIRST(&b->rq);
+		struct request	*req = STAILQ_FIRST(&b->rq);
 
 		SX_DEBUG(debug_expander > 2, "waiting for answer to %s,"
 		    "init %i '%.*s'\n", req->request, off, off, response);
@@ -725,7 +725,7 @@ have3:
 		STAILQ_REMOVE_HEAD(&b->rq, next);
 		b->piped--;
 
-		bgpq_request_free(req);
+		request_free(req);
 	}
 
 	return 0;
@@ -733,20 +733,20 @@ have3:
 
 int
 bgpq_expand_irrd(struct bgpq_expander *b,
-    int (*callback)(char *, struct bgpq_expander *, struct bgpq_request *),
+    int (*callback)(char *, struct bgpq_expander *, struct request *),
     void *udata, char *fmt, ...)
 {
 	char			 request[128], response[128];
 	va_list			 ap;
 	ssize_t			 ret;
 	int			 off = 0;
-	struct bgpq_request	*req;
+	struct request	*req;
 
 	va_start(ap, fmt);
 	vsnprintf(request, sizeof(request), fmt, ap);
 	va_end(ap);
 
-	req = bgpq_request_alloc(request, callback, udata);
+	req = request_alloc(request, callback, udata);
 
 	SX_DEBUG(debug_expander, "expander sending: %s", request);
 
@@ -872,7 +872,7 @@ have3:
 		sx_report(SX_ERROR,"Wrong reply: %s\n", response);
 		exit(0);
 	}
-	bgpq_request_free(req);
+	request_free(req);
 
 	return 0;
 }
@@ -881,7 +881,7 @@ int
 bgpq_expand(struct bgpq_expander *b)
 {
 	int			 fd = -1, err, ret, aquery = 0;
-	struct sx_slentry	*mc;
+	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
 
@@ -1162,14 +1162,14 @@ expander_freeall(struct bgpq_expander *expander) {
 	struct sx_tentry	*var, *nxt;
 
 	while (!STAILQ_EMPTY(&expander->macroses)) {
-		struct sx_slentry *n1 = STAILQ_FIRST(&expander->macroses);
+		struct slentry *n1 = STAILQ_FIRST(&expander->macroses);
 		STAILQ_REMOVE_HEAD(&expander->macroses, entries);
 		free(n1->text);
 		free(n1);
 	}
 
 	while (!STAILQ_EMPTY(&expander->rsets)) {
-		struct sx_slentry *n1 = STAILQ_FIRST(&expander->rsets);
+		struct slentry *n1 = STAILQ_FIRST(&expander->rsets);
 		STAILQ_REMOVE_HEAD(&expander->rsets, entries);
 		free(n1->text);
 		free(n1);

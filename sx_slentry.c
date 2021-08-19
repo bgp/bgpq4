@@ -31,15 +31,15 @@
 
 #include "extern.h"
 
-struct sx_slentry *
+struct slentry *
 sx_slentry_new(char *t)
 {
-	struct sx_slentry	*e = malloc(sizeof(struct sx_slentry));
+	struct slentry	*e = malloc(sizeof(struct slentry));
 
 	if (!e)
 		return NULL;
 
-	memset(e, 0, sizeof(struct sx_slentry));
+	memset(e, 0, sizeof(struct slentry));
 
 	e->text = strdup(t);
 
