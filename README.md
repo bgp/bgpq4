@@ -1,240 +1,234 @@
-NAME
-----
+BGPQ4(8) - System Manager's Manual
 
-`bgpq4` - bgp filtering automation tool
+# NAME
 
-The `bgpq4` utility queries IRRd and then generates IRR and/or RPKI based
-filters formatted for a wide assortment of BGP implementations.
+**bgpq4** - bgp filtering automation tool
 
-SYNOPSIS
---------
+# SYNOPSIS
 
-```
-	bgpq4 [-h host[:port]] [-S sources] [-Ez] [-f asn | -F fmt | -G asn | -t] [-46ABbDdeJjNnpsUX] [-a asn] [-r len] [-R len] [-m max] [-W len] OBJECTS [...] EXCEPT OBJECTS
-```
+**bgpq4**
+\[**-h**&nbsp;*host\[:port]*]
+\[**-S**&nbsp;*sources*]
+\[**-EPz**]
+\[**-f**&nbsp;*asn*&nbsp;|
+**-F**&nbsp;*fmt*&nbsp;|
+**-G**&nbsp;*asn*
+**-t**]
+\[**-46ABbDdJjNnsXU**]
+\[**-a**&nbsp;*asn*]
+\[**-r**&nbsp;*len*]
+\[**-R**&nbsp;*len*]
+\[**-m**&nbsp;*max*]
+\[**-W**&nbsp;*len*]
+*OBJECTS*
+\[...]
+\[EXCEPT&nbsp;OBJECTS]
 
-DESCRIPTION
------------
+# DESCRIPTION
 
-The bgpq4 utility used to generate configuration (prefix-lists,
-extended access-lists, policy-statement terms and as-path lists)
-based on IRR routing data.
+The
+**bgpq4**
+utility used to generate configurations (prefix-lists, extended
+access-lists, policy-statement terms and as-path lists) based on RADB data.
 
 The options are as follows:
 
-#### -4 
+**-4**
 
-Generate IPv4 prefix/access-lists (default).
+> generate IPv4 prefix/access-lists (default).
 
-#### -6      
+**-6**
 
-Generate IPv6 prefix/access-lists (IPv4 by default).
+> generate IPv6 prefix/access-lists (IPv4 by default).
 
-#### -A      
+**-A**
 
-Try to aggregate generated filters as much as possible (not all output formats
-supported).
+> try to aggregate prefix-lists as much as possible (not all output
+> formats supported).
 
-#### -a asn
+**-a** *asn*
 
-Specify ASN that shall be denied in case of empty prefix-list (OpenBGPD).
+> specify what asn shall be denied in case of empty prefix-list (OpenBGPD)
 
-#### -B
+**-B**
 
-Generate output in OpenBGPD format.
+> generate output in OpenBGPD format (default: Cisco)
 
-#### -b
+**-b**
 
-Generate output in BIRD format.
+> generate output in BIRD format (default: Cisco).
 
-#### -d      
+**-d**
 
-Enable some debugging output.
+> enable some debugging output.
 
-#### -E      
+**-e**
 
-Generate extended access-list (Cisco) or policy-statement term using
-route-filters (Juniper), [ip|ipv6]-prefix-list (Nokia) or prefix-filter
-(OpenBGPD)
+> generate output in Arista EOS format (default: Cisco).
 
-#### -e
+**-E**
 
-Generate output in Arista EOS format.
+> generate extended access-list (Cisco), policy-statement term using
+> route-filters (Juniper), \[ip|ipv6]-prefix-list (Nokia) or prefix-sets
+> (OpenBGPd).
 
-#### -f `AS number`
+**-f** *number*
 
-Generate input as-path access-list for adjacent as `AS number`.
+> generate input as-path access-list.
 
-#### -F `fmt`
+**-F** *fmt*
 
-Generate output in user-defined format.
+> generate output in user-defined format.
 
-#### -G `number`
+**-G** *number*
 
-Generate output as-path access-list.
+> generate output as-path access-list.
 
-#### -h `host[:port]`
+**-h** *host\[:port]*
 
-Host running IRRD database (default: `rr.ntt.net`).
+> host running IRRD database (default: rr.ntt.net).
 
-#### -J      
+**-J**
 
-Generate config for Juniper.
+> generate config for Juniper (default: Cisco).
 
-#### -j      
+**-j**
 
-Generate output in JSON format.
+> generate output in JSON format (default: Cisco).
 
-#### -K
+**-K**
 
-Generate config for MikroTik.
+> generate config for Mikrotik (default: Cisco).
 
-#### -m `length`
+**-l** *name*
 
-Maximum length of accepted prefixes (default: `32` for IPv4, `128` for IPv6).
+> name of generated entry.
 
-#### -M `match`
+**-L** *limit*
 
-Extra match conditions for Juniper route-filters. See the examples section.
+> limit recursion depth when expanding as-sets.
 
-#### -n
+**-m** *len*
 
-Generate config for Nokia SR OS (former Alcatel-Lucent) MD-CLI.
+> maximum prefix-length of accepted prefixes (default: 32 for IPv4 and
+> 128 for IPv6).
 
-#### -N
+**-M** *match*
 
-Generate config for Nokia SR OS (former Alcatel-Lucent) classic CLI.
+> extra match conditions for Juniper route-filters.
 
-#### -l `name`
+**-n**
 
-`Name` of generated configuration stanza.
+> generate config for Nokia SR OS MD-CLI (Cisco IOS by default)
 
-#### -L `limit`
+**-N**
 
-Limit recursion depth when expanding. This slows `bgpq4` a bit, but sometimes
-is a useful feature to prevent generated filters from growing too big.
+> generate config for Nokia SR OS classic CLI (Cisco IOS by default).
 
-#### -p
+**-p**
 
-Enable use of private ASNs and ASNs used for documentation purpose only
-(default: disabled).
+> accept routes registered for private ASNs (default: disabled)
 
-#### -r `length`
+**-P**
 
-Allow more-specific routes with masklen starting with specified length.
+> generate prefix-list (default, backward compatibility).
 
-#### -R `length`
+**-r** *len*
 
-Allow more-specific routes up to specified masklen too.  (Please, note: objects
-with prefix-length greater than specified length will be always allowed.)
+> allow more specific routes starting with specified masklen too.
 
-#### -s
+**-R** *len*
 
-Generate sequence numbers in IOS-style prefix-lists.
+> allow more specific routes up to specified masklen too.
 
-#### -S `sources`
+**-s**
 
-Use specified sources only (recommended: RADB,RIPE,APNIC).
+> generate sequence numbers in IOS-style prefix-lists.
 
-#### -t
+**-S** *sources*
 
-Generate as-sets for OpenBGPD (OpenBSD 6.4+), BIRD and JSON formats.
+> use specified sources only (recommended: RADB,RIPE,APNIC).
 
-#### -T      
+**-t**
 
-Disable pipelining (not recommended).
+> generate as-sets for OpenBGPd, BIRD and JSON formats.
 
-#### -U
+**-T**
 
-Generate output in Huawei format.
+> disable pipelining (not recommended).
 
-#### -W `length`
+**-W** *len*
 
-Generate as-path strings of a given length maximum (0 for infinity).
+> generate as-path strings of no more than len items (use 0 for inifinity).
 
-#### -X      
+**-U**
 
-Generate output in Cisco IOS XR format.
+> generate config for Huawei devices (Cisco IOS by default)
 
-#### -z
+**-X**
 
-Generate Juniper route-filter-list (JunOS 16.2+).
+> generate config for Cisco IOS XR devices (plain IOS by default).
 
-####  `OBJECTS`
+**-z**
 
-`OBJECTS` means networks (in prefix format), autonomous systems, as-sets and
-route-sets. If multiple objects are specified they will be merged.
+> generate route-filter-lists (JunOS 16.2+).
 
-#### `EXCEPT OBJECTS`
+*OBJECTS*
 
-You can exclude autonomous sets, as-sets and route-sets found during
-expansion from future expansion.
+> means networks (in prefix format), autonomous systems, as-sets and route-sets.
 
-EXAMPLES
---------
-Generating prefix filter for MikroTik for `AS20597`:
+*EXCEPT OBJECTS*
 
-     $ ./bgpq4 -Kl eltel-v4 AS20597
-     /routing filter add action=accept chain="eltel-v4" prefix=81.9.0.0/20
-     /routing filter add action=accept chain="eltel-v4" prefix=81.9.32.0/20
-     /routing filter add action=accept chain="eltel-v4" prefix=81.9.96.0/20
-     /routing filter add action=accept chain="eltel-v4" prefix=81.222.128.0/20
-     /routing filter add action=accept chain="eltel-v4" prefix=81.222.160.0/20
-     /routing filter add action=accept chain="eltel-v4" prefix=81.222.192.0/18
-     /routing filter add action=accept chain="eltel-v4" prefix=85.249.8.0/21
-     /routing filter add action=accept chain="eltel-v4" prefix=85.249.224.0/19
-     /routing filter add action=accept chain="eltel-v4" prefix=89.112.0.0/17
-     /routing filter add action=accept chain="eltel-v4" prefix=217.170.64.0/19
+> those objects will be excluded from expansion.
 
-Generating named Juniper prefix-filter for `AS20597`:
+# EXAMPLES
 
-     $ bgpq4 -Jl eltel-v4 AS20597
-     policy-options {
-     replace:
-      prefix-list eltel-v4 {
-         81.9.0.0/20;
-         81.9.32.0/20;
-         81.9.96.0/20;
-         81.222.128.0/20;
-         81.222.192.0/18;
-         85.249.8.0/21;
-         85.249.224.0/19;
-         89.112.0.0/19;
-         89.112.4.0/22;
-         89.112.32.0/19;
-         89.112.64.0/19;
-         217.170.64.0/20;
-         217.170.80.0/20;
-      }
-     }
+Generating named juniper prefix-filter for AS20597:
+
+	$ bgpq4 -Jl eltel AS20597
+	policy-options {
+	replace:
+	 prefix-list eltel {
+	    81.9.0.0/20;
+	    81.9.32.0/20;
+	    81.9.96.0/20;
+	    81.222.128.0/20;
+	    81.222.192.0/18;
+	    85.249.8.0/21;
+	    85.249.224.0/19;
+	    89.112.0.0/19;
+	    89.112.4.0/22;
+	    89.112.32.0/19;
+	    89.112.64.0/19;
+	    217.170.64.0/20;
+	    217.170.80.0/20;
+	 }
+	}
 
 For Cisco we can use aggregation (-A) flag to make this prefix-filter
 more compact:
 
-     $ bgpq4 -Al eltel-v4 AS20597
-     no ip prefix-list eltel-v4
-     ip prefix-list eltel-v4 permit 81.9.0.0/20
-     ip prefix-list eltel-v4 permit 81.9.32.0/20
-     ip prefix-list eltel-v4 permit 81.9.96.0/20
-     ip prefix-list eltel-v4 permit 81.222.128.0/20
-     ip prefix-list eltel-v4 permit 81.222.192.0/18
-     ip prefix-list eltel-v4 permit 85.249.8.0/21
-     ip prefix-list eltel-v4 permit 85.249.224.0/19
-     ip prefix-list eltel-v4 permit 89.112.0.0/18 ge 19 le 19
-     ip prefix-list eltel-v4 permit 89.112.4.0/22
-     ip prefix-list eltel-v4 permit 89.112.64.0/19
-     ip prefix-list eltel-v4 permit 217.170.64.0/19 ge 20 le 20
+	$ bgpq4 -Al eltel AS20597
+	no ip prefix-list eltel
+	ip prefix-list eltel permit 81.9.0.0/20
+	ip prefix-list eltel permit 81.9.32.0/20
+	ip prefix-list eltel permit 81.9.96.0/20
+	ip prefix-list eltel permit 81.222.128.0/20
+	ip prefix-list eltel permit 81.222.192.0/18
+	ip prefix-list eltel permit 85.249.8.0/21
+	ip prefix-list eltel permit 85.249.224.0/19
+	ip prefix-list eltel permit 89.112.0.0/18 ge 19 le 19
+	ip prefix-list eltel permit 89.112.4.0/22
+	ip prefix-list eltel permit 89.112.64.0/19
+	ip prefix-list eltel permit 217.170.64.0/19 ge 20 le 20
 
-and, as you see, prefixes `89.112.0.0/19` and `89.112.32.0/19` now aggregated 
-into single entry 
+\- you see, prefixes 89.112.0.0/19 and 89.112.32.0/19 now aggregated
+into single entry 89.112.0.0/18 ge 19 le 19.
 
-	ip prefix-list eltel permit 89.112.0.0/18 ge 19 le 19.
+Well, for Juniper we can generate even more interesting policy-options,
+using -M &lt;extra match conditions&gt;, -R &lt;len&gt; and hierarchical names:
 
-Well, for Juniper we can generate even more interesting policy-statement,
-using `-M <extra match conditions>`, `-r <len>`, `-R <len>` and hierarchical 
-names:
-
-     $ bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
+	$ bgpq4 -AJEl eltel/specifics -r 29 -R 32 -M "community blackhole" AS20597
 	policy-options {
 	 policy-statement eltel {
 	  term specifics {
@@ -255,51 +249,83 @@ names:
 	 }
 	}
 
+generated policy-option term now allows all specifics with prefix-length
+between /29 and /32 for eltel networks if they match with special community
+blackhole (defined elsewhere in configuration).
 
-generated policy-option term now allows more-specific routes in range
-/29 - /32 for eltel networks if they marked with community 'blackhole' 
-(defined elsewhere in configuration).
+Of course, this version supports IPv6 (-6):
 
-Of course, `bgpq4` supports IPv6 (-6):
-
-     $ bgpq4 -6l as-retn-v6 AS-RETN6
-     no ipv6 prefix-list as-retn-v6
-     ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe00::/48
-     ipv6 prefix-list as-retn-v6 permit 2001:7fb:fe01::/48
-     [....]
+	$ bgpq4 -6l as-retn-6 AS-RETN6
+	no ipv6 prefix-list as-retn-6
+	ipv6 prefix-list as-retn-6 permit 2001:7fb:fe00::/48
+	ipv6 prefix-list as-retn-6 permit 2001:7fb:fe01::/48
+	[....]
 
 and assumes your device supports 32-bit ASNs
 
-     $ bgpq4 -Jf 112 AS-SPACENET
-     policy-options {
-     replace:
-      as-path-group NN {
-       as-path a0 "^112(112)*$";
-       as-path a1 "^112(.)*(1898|5539|8495|8763|8878|12136|12931|15909)$";
-       as-path a2 "^112(.)*(21358|23600|24151|25152|31529|34127|34906)$";
-       as-path a3 "^112(.)*(35052|41720|43628|44450|196611)$";
-      }
-     }
+	$ bgpq4 -Jf 112 AS-SPACENET
+	policy-options {
+	replace:
+	 as-path-group NN {
+	  as-path a0 "^112(112)*$";
+	  as-path a1 "^112(.)*(1898|5539|8495|8763|8878|12136|12931|15909)$";
+	  as-path a2 "^112(.)*(21358|23456|23600|24151|25152|31529|34127|34906)$";
+	  as-path a3 "^112(.)*(35052|41720|43628|44450|196611)$";
+	 }
+	}
 
-see `AS196611` in the end of the list ? That's a 32-bit ASN.
+see \`AS196611\` in the end of the list ? That's a 32-bit ASN.
 
-USER-DEFINED FORMAT
--------------------
+# USER-DEFINED FORMAT
 
 If you want to generate configuration not for routers, but for some
 other programs/systems, you may use user-defined formatting, like in
 example below:
 
-	$ bgpq4 -F "ipfw add pass all from %n/%l to any\\n" as3254
+	$ bgpq4 -F "ipfw add pass all from %n/%l to any\n" as3254
 	ipfw add pass all from 62.244.0.0/18 to any
 	ipfw add pass all from 91.219.29.0/24 to any
 	ipfw add pass all from 91.219.30.0/24 to any
 	ipfw add pass all from 193.193.192.0/19 to any
 
-Recognized format characters: '%n' - network, '%l' - mask length,
-'%a' - aggregate low mask length, '%A' - aggregate high mask length,
-'%N' - object name, '%m' - object mask and '%i' - inversed mask.
-Recognized escape characters: '\n' - new line, '\t' - tabulation.
+Recognized format sequences are:
+
+**%n**
+
+> network
+
+**%l**
+
+> mask length
+
+**%a**
+
+> aggregate low mask length
+
+**%A**
+
+> aggregate high mask length
+
+**%N**
+
+> object name
+
+**%m**
+
+> object mask
+
+**%i**
+
+> inversed mask
+
+**&#92;n**
+
+> new line
+
+**&#92;t**
+
+> tabulation
+
 Please note that no new lines inserted automatically after each sentence,
 you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
@@ -307,102 +333,78 @@ be in one line (sometimes it makes sense):
 	$ bgpq4 -6F "%n/%l; " as-eltel
 	2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
 
-DIAGNOSTICS
------------
+# PERFORMANCE
 
-When everything is OK, `bgpq4` generates result to standard output and
-exits with status == 0.  In case of errors they are printed to stderr and
-program exits with non-zero status.
-
-NOTES ON ULTRA-LARGE PREFIX-LISTS
----------------------------------
-
-To improve `bgpq4` performance when expanding extra-large AS-SETs you
+To improve \`bgpq4\` performance when expanding extra-large AS-SETs you
 shall tune OS settings to enlarge TCP send buffer.
 
 FreeBSD can be tuned in the following way:
 
-    sysctl -w net.inet.tcp.sendbuf_max=2097152
-    
+	sysctl -w net.inet.tcp.sendbuf_max=2097152
+
 Linux can be tuned in the following way:
 
-    sysctl -w net.ipv4.tcp_window_scaling=1
-    sysctl -w net.core.rmem_max=2097152
-    sysctl -w net.core.wmem_max=2097152
-    sysctl -w net.ipv4.tcp_rmem="4096 87380 2097152"
-    sysctl -w net.ipv4.tcp_wmem="4096 65536 2097152"
+	sysctl -w net.ipv4.tcp_window_scaling=1
 
-BUILDING
---------
+	sysctl -w net.core.rmem_max=2097152
+
+	sysctl -w net.core.wmem_max=2097152
+
+	sysctl -w net.ipv4.tcp_rmem="4096 87380 2097152"
+
+	sysctl -w net.ipv4.tcp_wmem="4096 65536 2097152"
+
+# BUILDING
 
 This project uses autotools. If you are building from the repository,
 run the following command to prepare the build system:
 
-    ./bootstrap
+	./bootstrap
 
 In order to compile the software, run:
 
-    ./configure
-    make
-    make install
+	./configure
+
+	make
+
+	make install
 
 If you wish to remove the generated build system files from your
 working tree, run:
 
-    make maintainer-clean
+	make maintainer-clean
 
 In order to create a distribution archive, run:
 
-    make dist
+	make dist
 
-PACKAGE INSTALLATION
---------------------
+# DIAGNOSTICS
 
-In FreeBSD binary package can be installed using
+When everything is OK,
+**bgpq4**
+generates access-list to standard output and exits with status == 0.
+In case of errors they are printed to stderr and program exits with
+non-zero status.
 
-```shell
-pkg install bgpq4
-```
-
-Or from ports with `portmaster`
-
-```shell
-portmaster net-mgmt/bgpq4
-```
-
-On Arch Linux, BGPQ4 is [available in AUR](https://aur.archlinux.org/packages/bgpq4/):
-
-```shell
-yay -S bgpq4
-```
-
-On OpenBSD:
-
-```shell
-pkg_add bgpq4
-```
-
-MAILING LIST
-------------
-
-Users and interested parties can subscribe to the BGPQ4 mailing list [bgpq4@tcp0.com](https://tcp0.com/cgi-bin/mailman/listinfo/bgpq4).
-
-SEE ALSO
---------
-
-NLNOG's [BGP Filter Guide](http://bgpfilterguide.nlnog.net/)
-
-AUTHORS
--------
+# AUTHORS
 
 Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders,
 Massimiliano Stucchi, Michail Litvak, Peter Schoenmaker, Roelf Wichertjes,
 and contributions from many others.
 
-Project
--------
+# SEE ALSO
 
-BGPQ4 is maintained by Job Snijders `<job@sobornost.net>`.
+**https://github.com/bgp/bgpq4**
+BGPQ4 on Github.
 
-[https://github.com/bgp/bgpq4](https://github.com/bgp/bgpq4)
+**http://bgpfilterguide.nlnog.net/**
+NLNOG's BGP Filter Guide.
 
+**https://tcp0.com/cgi-bin/mailman/listinfo/bgpq4**
+Users and interested parties can subscribe to the BGPQ4 mailing list bgpq4@tcp0.com
+
+# PROJECT MAINTAINER
+
+Job Snijders &lt;job@sobornost.net&gt;
+
+OpenBSD 7.0 - December 23, 2020

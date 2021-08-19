@@ -283,14 +283,59 @@ $ bgpq4 -6F "%n/%l; " as-eltel
 2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
 .Ed
 .fi
+.Sh PERFORMANCE
+To improve `bgpq4` performance when expanding extra-large AS-SETs you
+shall tune OS settings to enlarge TCP send buffer.
+.Pp
+FreeBSD can be tuned in the following way:
+.Pp
+.Dl sysctl -w net.inet.tcp.sendbuf_max=2097152
+.Pp
+Linux can be tuned in the following way:
+.Pp
+.Dl sysctl -w net.ipv4.tcp_window_scaling=1
+.Dl sysctl -w net.core.rmem_max=2097152
+.Dl sysctl -w net.core.wmem_max=2097152
+.Dl sysctl -w net.ipv4.tcp_rmem="4096 87380 2097152"
+.Dl sysctl -w net.ipv4.tcp_wmem="4096 65536 2097152"
+.Sh BUILDING
+This project uses autotools. If you are building from the repository,
+run the following command to prepare the build system:
+.Pp
+.Dl ./bootstrap
+.Pp
+In order to compile the software, run:
+.Pp
+.Dl ./configure
+.Dl make
+.Dl make install
+.Pp
+If you wish to remove the generated build system files from your
+working tree, run:
+.Pp
+.Dl make maintainer-clean
+.Pp
+In order to create a distribution archive, run:
+.Pp
+.Dl make dist
 .Sh DIAGNOSTICS
 When everything is OK,
 .Nm
 generates access-list to standard output and exits with status == 0.
 In case of errors they are printed to stderr and program exits with
 non-zero status.
+.Sh AUTHORS
+Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders,
+Massimiliano Stucchi, Michail Litvak, Peter Schoenmaker, Roelf Wichertjes,
+and contributions from many others.
 .Sh SEE ALSO
 .Sy https://github.com/bgp/bgpq4
 BGPQ4 on Github.
+.Pp
+.Sy http://bgpfilterguide.nlnog.net/
+NLNOG's BGP Filter Guide.
+.Pp
+.Sy https://tcp0.com/cgi-bin/mailman/listinfo/bgpq4
+Users and interested parties can subscribe to the BGPQ4 mailing list bgpq4@tcp0.com
 .Sh PROJECT MAINTAINER
 .An Job Snijders Aq job@sobornost.net
