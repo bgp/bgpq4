@@ -301,7 +301,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 			bgpq_expander_add_already(b, as);
 			if (pipelining) {
 				struct bgpq_request *req1 = bgpq_pipeline(b,
-				    bgpq_expanded_macro_limit, NULL, "!i%s",
+				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
 				        as);
 				req1->depth = req->depth + 1;
 			} else {
@@ -735,13 +735,9 @@ bgpq_expand_irrd(struct bgpq_expander *b,
 
 	req = bgpq_request_alloc(request, callback, udata);
 
-	SX_DEBUG(debug_expander, "expander: sending '%s'\n", request);
+	SX_DEBUG(debug_expander, "expander sending: %s", request);
 
 	if ((ret = write(b->fd, request, strlen(request)) == 0) || ret == -1)
-		err(1, "write");
-
-	// push the button by sending a newline
-	if ((ret = write(b->fd, "\n", 1) == 0) || ret == -1)
 		err(1, "write");
 
 	memset(response, 0, sizeof(response));
@@ -1031,20 +1027,20 @@ bgpq_expand(struct bgpq_expander *b)
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
 			if (aquery)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
-				    "!a%s%s",
+				    "!a%s%s\n",
 				    b->family == AF_INET ? "4" : "6",
 				    mc->text);
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro, b,
-				    "!i%s,1", mc->text);
+				    "!i%s,1\n", mc->text);
 		} else {
 			bgpq_expander_add_already(b, mc->text);
 			if (pipelining)
 				bgpq_pipeline(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s", mc->text);
+				    NULL, "!i%s\n", mc->text);
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s", mc->text);
+				    NULL, "!i%s\n", mc->text);
 		}
 	}
 
@@ -1060,10 +1056,10 @@ bgpq_expand(struct bgpq_expander *b)
 		STAILQ_FOREACH(mc, &b->rsets, entries) {
 			if (b->family == AF_INET)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix,
-				    NULL, "!i%s,1", mc->text);
+				    NULL, "!i%s,1\n", mc->text);
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
-				    NULL, "!i%s,1", mc->text);
+				    NULL, "!i%s,1\n", mc->text);
 		}
 		for (k=0; k < sizeof(b->asn32s) / sizeof(unsigned char *); k++) {
 			if (!b->asn32s[k])
@@ -1074,18 +1070,18 @@ bgpq_expand(struct bgpq_expander *b)
 						if (b->family == AF_INET6) {
 							if (!pipelining) {
 								bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
-								    NULL, "!6as%" PRIu32, ( k << 16) + i * 8 + j);
+								    NULL, "!6as%" PRIu32 "\n", ( k << 16) + i * 8 + j);
 							} else {
 								bgpq_pipeline(b, bgpq_expanded_v6prefix,
-								    NULL, "!6as%" PRIu32, (k << 16) + i * 8 + j);
+								    NULL, "!6as%" PRIu32 "\n", (k << 16) + i * 8 + j);
 							}
 						} else {
 							if (!pipelining) {
 								bgpq_expand_irrd(b, bgpq_expanded_prefix,
-								    NULL, "!gas%" PRIu32, (k << 16) + i * 8 + j);
+								    NULL, "!gas%" PRIu32 "\n", (k << 16) + i * 8 + j);
 							} else {
 								bgpq_pipeline(b, bgpq_expanded_prefix,
-								    NULL, "!gas%" PRIu32, ( k<< 16) + i* 8 + j);
+								    NULL, "!gas%" PRIu32 "\n", ( k<< 16) + i* 8 + j);
 							}
 						}
 					}
