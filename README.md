@@ -1,5 +1,3 @@
-BGPQ4(8) - System Manager's Manual
-
 # NAME
 
 **bgpq4** - bgp filtering automation tool
@@ -406,5 +404,3 @@ Users and interested parties can subscribe to the BGPQ4 mailing list bgpq4@tcp0.
 # PROJECT MAINTAINER
 
 Job Snijders &lt;job@sobornost.net&gt;
-
-OpenBSD 7.0 - December 23, 2020
