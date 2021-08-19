@@ -1,4 +1,4 @@
-SUBDIRS = include compat
+SUBDIRS = include
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
@@ -10,7 +10,11 @@ bin_PROGRAMS=bgpq4
 dist_man8_MANS=bgpq4.8
 
 bgpq4_LDADD = $(PLATFORM_LDADD) $(PROG_LDADD)
+
+if !HAVE_STRLCPY
+SUBDIRS += compat
 bgpq4_LDADD += $(top_builddir)/compat/libcompat.la
+endif
 
 bgpq4_SOURCES=main.c extern.h printer.c expander.c \
     sx_maxsockbuf.c \
