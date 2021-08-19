@@ -251,10 +251,29 @@ ipfw add pass all from 193.193.192.0/19 to any
 .Ed
 .fi
 .Pp
-Recognized format characters: %n - network, %l - mask length,
-%a - aggregate low mask length, %A - aggregate high mask length,
-%N - object name, %m - object mask and %i - inversed mask.
-Recognized escape characters: \\n - new line, \\t - tabulation.
+Recognized format sequences are:
+.Pp
+.Bl -tag -width Ds -offset indent -compact
+.It Cm %n
+network
+.It Cm %l
+mask length
+.It Cm %a
+aggregate low mask length
+.It Cm %A
+aggregate high mask length
+.It Cm %N
+object name
+.It Cm %m
+object mask
+.It Cm %i
+inversed mask
+.It Cm \en
+new line
+.It Cm \et
+tabulation
+.El
+.Pp
 Please note that no new lines inserted automatically after each sentence,
 you have to add them into format string manually, elsewhere output will
 be in one line (sometimes it makes sense):
