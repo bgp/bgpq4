@@ -344,7 +344,7 @@ main(int argc, char* argv[])
 			mc = md = expander.match;
 			while (*mc) {
 				if (*mc == '\\') {
-					if (*(mc+1) == '\n') {
+					if (*(mc + 1) == '\n') {
 						*md = '\n';
 						md++;
 						mc += 2;

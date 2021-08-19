@@ -133,7 +133,7 @@ sx_prefix_parse(struct sx_prefix *p, int af, char *text)
 {
 	char	*c = NULL;
 	int	 masklen, ret;
-	char	 mtext[INET6_ADDRSTRLEN+5];
+	char	 mtext[INET6_ADDRSTRLEN + 5];
 
 	strlcpy(mtext, text, sizeof(mtext));
 
@@ -142,7 +142,7 @@ sx_prefix_parse(struct sx_prefix *p, int af, char *text)
 	if (c) {
 		char* eod;
 		*c = 0;
-		masklen = strtol(c+1, &eod, 10);
+		masklen = strtol(c + 1, &eod, 10);
 		if (eod && eod[0] && !isspace(eod[0])) {
 			*c = '/';
 			sx_report(SX_ERROR, "Invalid masklen in prefix %s\n",
@@ -297,7 +297,7 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 
 	if (!sx_prefix_parse(p, 0, text)) {
 		sx_report(SX_ERROR, "Unable to parse prefix %s^%s\n", text,
-		    d+1);
+		    d + 1);
 		return 0;
 	}
 
@@ -323,7 +323,7 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 		max = maxlen;
 	} else if (isdigit(d[1])) {
 		char *dm = NULL;
-		min = strtoul(d+1, &dm, 10);
+		min = strtoul(d + 1, &dm, 10);
 		if (dm && *dm == '-' && isdigit(dm[1])) {
 			max = strtoul(dm + 1, NULL, 10);
 		} else if (dm && *dm) {
@@ -483,7 +483,7 @@ sx_prefix_snprintf_fmt(struct sx_prefix *p, FILE *f,
 			}
 			c += 2;
 		} else if (*c == '\\') {
-			switch(*(c+1)) {
+			switch(*(c + 1)) {
 			case 'n':
 				fprintf(f, "\n");
 				break;
@@ -925,7 +925,7 @@ sx_radix_node_aggregate(struct sx_radix_node *node)
 		if (!node->r->isAggregate && !node->l->isAggregate
 		    && !node->r->isGlue && !node->l->isGlue
 		    && node->r->prefix->masklen == node->l->prefix->masklen) {
-			if (node->r->prefix->masklen == node->prefix->masklen+1) {
+			if (node->r->prefix->masklen == node->prefix->masklen + 1) {
 				node->isAggregate = 1;
 				node->r->isGlue = 1;
 				node->l->isGlue = 1;
@@ -1019,7 +1019,7 @@ sx_radix_node_aggregate(struct sx_radix_node *node)
 		    && node->l->aggregateHi == node->r->son->aggregateHi
 		    && node->l->aggregateLow == node->r->son->aggregateLow) {
 			if (node->l->prefix->masklen == node->prefix->masklen + 1
-			    && node->r->prefix->masklen == node->prefix->masklen+1) {
+			    && node->r->prefix->masklen == node->prefix->masklen + 1) {
 				if (node->isGlue) {
 					node->l->isGlue = 1;
 					node->r->son->isGlue = 1;

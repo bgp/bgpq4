@@ -451,7 +451,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 {
 	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
 		char *eptr;
-		unsigned long asn = strtoul(q+4, &eptr, 10), asn0, asn1 = 0;
+		unsigned long asn = strtoul(q + 4, &eptr, 10), asn0, asn1 = 0;
 		if (!asn || asn == ULONG_MAX || asn >= 4294967295
 		    || (eptr && *eptr != '\n')) {
 			sx_report(SX_ERROR, "some problem invalidating asn"
@@ -602,7 +602,7 @@ have:
 				/* response is not yet fully buffered */
 				memcpy(recvbuffer, eon + 1,
 				    off - ((eon + 1) - response));
-				offset = off - ((eon+1) - response);
+				offset = off - ((eon + 1) - response);
 				memset(response, 0, sizeof(response));
 				off = 0;
 			}
@@ -674,7 +674,7 @@ have3:
 				if (c[0] == 0)
 					break;
 				req->callback(c, b, req);
-				c += spn+1;
+				c += spn + 1;
 			}
 			assert(c == recvbuffer + togot);
 			memset(recvbuffer, 0, togot + 2);
@@ -704,7 +704,7 @@ have3:
 		}
 
 		memmove(response, cres + 1, off - ((cres + 1) - response));
-		off -= (cres+1) - response;
+		off -= (cres + 1) - response;
 		memset(response + off, 0, sizeof(response) - off);
 		SX_DEBUG(debug_expander > 5,
 		    "fixed response of %i, %.*s\n", off, off, response);
@@ -763,7 +763,7 @@ repeat:
 
 	if (response[0] == 'A') {
 		char	*eon, *c;
-		long 	 togot = strtoul(response+1, &eon, 10);
+		long 	 togot = strtoul(response + 1, &eon, 10);
 		char 	*recvbuffer = malloc(togot + 2);
 		int 	 offset = 0;
 
