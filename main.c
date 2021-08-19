@@ -729,19 +729,19 @@ main(int argc, char* argv[])
 			sx_report(SX_FATAL,"Unreachable point... call snar\n");
 			exit(1);
 		case T_ASPATH:
-			bgpq4_print_aspath(stdout,&expander);
+			bgpq4_print_aspath(stdout, &expander);
 			break;
 		case T_OASPATH:
-			bgpq4_print_oaspath(stdout,&expander);
+			bgpq4_print_oaspath(stdout, &expander);
 			break;
 		case T_ASSET:
-			bgpq4_print_asset(stdout,&expander);
+			bgpq4_print_asset(stdout, &expander);
 			break;
 		case T_PREFIXLIST:
-			bgpq4_print_prefixlist(stdout,&expander);
+			bgpq4_print_prefixlist(stdout, &expander);
 			break;
 		case T_EACL:
-			bgpq4_print_eacl(stdout,&expander);
+			bgpq4_print_eacl(stdout, &expander);
 			break;
 		case T_ROUTE_FILTER_LIST:
 			bgpq4_print_route_filter_list(stdout, &expander);

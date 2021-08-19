@@ -450,14 +450,27 @@ static void
 bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 {
 	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
-		char *eptr;
-		unsigned long asn = strtoul(q + 4, &eptr, 10), asn0, asn1 = 0;
-		if (!asn || asn == ULONG_MAX || asn >= 4294967295
-		    || (eptr && *eptr != '\n')) {
-			sx_report(SX_ERROR, "some problem invalidating asn"
-			    " %s\n", q);
+		char		*eptr;
+		unsigned long	 asn, asn0, asn1 = 0;
+
+		asn = strtoul(q + 4, &eptr, 10);
+		if (q[0] == '\0' || *eptr != '\0') {
+			sx_report(SX_ERROR, "not a number: %s\n", q);
 			return;
 		}
+		if (errno == ERANGE && asn == ULONG_MAX) {
+			sx_report(SX_ERROR, "overflow: %s\n", q);
+			return;
+		}
+		if (asn >= 4294967295) {
+			sx_report(SX_ERROR, "out of range: %s\n", q);
+			return;
+		}
+		if (eptr && *eptr != '\n') {
+			sx_report(SX_ERROR, "no number? %s\n", q);
+			return;
+		}
+
 		asn1 = asn % 65536;
 		asn0 = asn / 65536;
 		if (!b->asn32s[asn0] ||
@@ -500,8 +513,8 @@ bgpq_write(struct bgpq_expander *b)
 static int
 bgpq_selread(struct bgpq_expander *b, char *buffer, int size)
 {
-	fd_set rfd, wfd;
-	int ret;
+	fd_set		rfd, wfd;
+	int		ret;
 
 repeat:
 	FD_ZERO(&rfd);
