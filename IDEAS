@@ -1,0 +1,29 @@
+Ben Maddison taught me another aggregation trick:
+
+	route-set:      AS37271:RS-EXAMPLE
+	mp-members:     192.0.2.0/27
+	mp-members:     192.0.2.32/27
+	mp-members:     192.0.2.64/27
+	mp-members:     192.0.2.96/27
+	mp-members:     192.0.2.128/26
+	mp-members:     192.0.2.128/27
+	mp-members:     192.0.2.160/27
+	mp-members:     192.0.2.192/27
+	mp-members:     192.0.2.224/27
+	descr:          Example route-set
+	mnt-by:         MAINT-AS37271
+	changed:        benm@workonline.africa 20210819
+	source:         RADB
+
+BGPQ4 produces the following:
+
+	$ bgpq4 -A AS37271:RS-EXAMPLE
+	no ip prefix-list NN
+	ip prefix-list NN permit 192.0.2.0/25 ge 27 le 27
+	ip prefix-list NN permit 192.0.2.128/26 le 27
+	ip prefix-list NN permit 192.0.2.192/26 ge 27 le 27
+
+But the following aggregation also is valid, and shorter:
+
+	ip prefix-list NN permit 192.0.2.0/24 ge 27 le 27
+	ip prefix-list NN permit 192.0.2.128/26
