@@ -580,7 +580,7 @@ have:
 				    "bytes: %s\n", togot + 2, strerror(errno));
 			}
 
-			memset(recvbuffer,0,togot+2);
+			memset(recvbuffer, 0, togot + 2);
 
 			if (!eon || *eon != '\n') {
 				sx_report(SX_ERROR,"A-code finished with wrong"
@@ -773,13 +773,13 @@ repeat:
 		}
 
 		if (eon && *eon != '\n') {
-			sx_report(SX_ERROR,"A-code finised with wrong char "
+			sx_report(SX_ERROR,"A-code finished with wrong char "
 			    "'%c' (%s)\n", *eon, response);
 			exit(1);
 		}
 
-		if (off - ((eon + 1)-response) > togot) {
-			memcpy(recvbuffer, eon+1, togot);
+		if (off - ((eon + 1) - response) > togot) {
+			memcpy(recvbuffer, eon + 1, togot);
 			offset = togot;
 			memmove(response, eon + 1 + togot,
 			    off - ((eon + 1) - response) - togot);
