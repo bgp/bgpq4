@@ -1546,27 +1546,18 @@ bgpq4_print_kprefix(struct sx_radix_node *n, void *ff)
 
 	sx_prefix_snprintf_sep(n->prefix, prefix, sizeof(prefix), "/");
 
-	if (n->isAggregate) {
-		if (n->aggregateLow > n->prefix->masklen) {
-			fprintf(f,"/routing filter add action=accept chain=\""
-			    "%s-%s\" prefix=%s prefix-length=%d-%d\n",
-			    bname ? bname : "NN",
-			    n->prefix->family == AF_INET ? "V4" : "V6",
-			    prefix, n->aggregateLow, n->aggregateHi);
-		} else {
-			fprintf(f,"/routing filter add action=accept chain=\""
-			    "%s-%s\" prefix=%s prefix-length=%d\n",
-			    bname ? bname : "NN",
-			    n->prefix->family == AF_INET ? "V4" : "V6",
-			    prefix, n->aggregateHi);
-		}
-	} else {
+	if (n->isAggregate)
+		fprintf(f,"/routing filter add action=accept chain=\""
+		    "%s-%s\" prefix=%s prefix-length=%d-%d\n",
+		    bname ? bname : "NN",
+		    n->prefix->family == AF_INET ? "V4" : "V6",
+		    prefix, n->aggregateLow, n->aggregateHi);
+	else
 		fprintf(f,"/routing filter add action=accept chain=\""
 		    "%s-%s\" prefix=%s\n",
 		    bname ? bname : "NN",
 		    n->prefix->family == AF_INET ? "V4" : "V6",
 		    prefix);
-	}
 
 checkSon:
 	if (n->son)
