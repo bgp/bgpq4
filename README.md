@@ -220,7 +220,7 @@ more compact:
 	ip prefix-list eltel permit 89.112.64.0/19
 	ip prefix-list eltel permit 217.170.64.0/19 ge 20 le 20
 
-\- you see, prefixes 89.112.0.0/19 and 89.112.32.0/19 now aggregated
+Prefixes 89.112.0.0/19 and 89.112.32.0/19 now aggregated
 into single entry 89.112.0.0/18 ge 19 le 19.
 
 Well, for Juniper we can generate even more interesting policy-options,
@@ -330,6 +330,46 @@ be in one line (sometimes it makes sense):
 
 	$ bgpq4 -6F "%n/%l; " as-eltel
 	2001:1b00::/32; 2620:4f:8000::/48; 2a04:bac0::/29; 2a05:3a80::/48;
+
+# NOTES ON SOURCES
+
+By default
+*bgpq4*
+trusts to data from all databases mirrored into NTT's IRR service.
+Unfortunately, not all these databases are equal in how much can we
+trust their data.
+RIR maintained databases (AFRINIC, ARIN, APNIC, LACNIC and RIPE)
+shall be trusted more than the others because they are indeed have the
+knowledge about which address space allocated to this or that ASn,
+other databases lack this knowledge and can (and, actually, do) contain
+some stale data: noone but RIRs care to remove outdated route-objects
+when address space revoked from one ASn and allocated to another.
+In order to keep their filters both compact and actual,
+*bgpq4 users*
+are encouraged to use '-S' flag to limit database sources to only
+ones they trust.
+
+General recommendations:
+
+Use minimal set of RIR databases (only those in which you and your
+customers have registered route-objects).
+
+Avoid using ARIN-NONAUTH and RIPE-NONAUTH as trusted source: these records
+were created in database but for address space allocated to different RIR,
+so the NONAUTH databases have no chance to confirm validity of this route
+object.
+
+	$ bgpq4 -S RIPE,RADB as-space
+	no ip prefix-list NN
+	ip prefix-list NN permit 195.190.32.0/19
+	
+	$ bgpq4 -S RADB,RIPE as-space
+	no ip prefix-list NN
+	ip prefix-list NN permit 45.4.4.0/22
+	ip prefix-list NN permit 45.4.132.0/22
+	ip prefix-list NN permit 45.6.128.0/22
+	ip prefix-list NN permit 45.65.184.0/22
+	[...]
 
 # PERFORMANCE
 
