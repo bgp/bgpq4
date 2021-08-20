@@ -40,11 +40,6 @@
 
 extern int debug_expander;
 
-void bgpq4_print_json_aspath(FILE *f, struct bgpq_expander *b);
-void bgpq4_print_bird_aspath(FILE *f, struct bgpq_expander *b);
-void bgpq4_print_openbgpd_aspath(FILE *f, struct bgpq_expander *b);
-void bgpq4_print_openbgpd_asset(FILE *f, struct bgpq_expander *b);
-
 static void 
 bgpq4_print_cisco_aspath(FILE *f, struct bgpq_expander *b)
 {
@@ -528,6 +523,209 @@ bgpq4_print_nokia_md_oaspath(FILE *f, struct bgpq_expander *b)
 	fprintf(f, "}\n");
 }
 
+static void
+bgpq4_print_jprefix(struct sx_radix_node *n, void *ff)
+{
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (n->isGlue)
+		return;
+
+	if (!f)
+		f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+	fprintf(f,"    %s;\n", prefix);
+}
+
+static int   needscomma = 0;
+
+static void
+bgpq4_print_json_prefix(struct sx_radix_node *n, void *ff)
+{
+	char	prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!f)
+		f = stdout;
+
+	sx_prefix_jsnprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (!n->isAggregate) {
+		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": true }",
+		    needscomma ? "," : "", prefix);
+	} else if (n->aggregateLow > n->prefix->masklen) {
+		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": false,\n"
+		    "      \"greater-equal\": %u, \"less-equal\": %u }",
+		    needscomma ? "," : "", prefix, n->aggregateLow,
+		    n->aggregateHi);
+	} else {
+		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": false, "
+		    "\"less-equal\": %u }", needscomma ? "," : "", prefix,
+		    n->aggregateHi);
+	}
+
+	needscomma = 1;
+
+checkSon:
+	if (n->son)
+		bgpq4_print_json_prefix(n->son, ff);
+}
+
+static void
+bgpq4_print_json_aspath(FILE *f, struct bgpq_expander *b)
+{
+	int			 nc = 0;
+	struct asn_entry	*asne;
+
+	fprintf(f, "{\"%s\": [", b->name);
+
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f, "%s\n  %u",
+			    needscomma ? "," : "",
+			    asne->asn);
+			needscomma = 1;
+		} else {
+			fprintf(f, "%s%u",
+			    needscomma ? "," : "",
+			    asne->asn);
+			needscomma = 1;
+		}
+
+		nc++;
+		if (nc == b->aswidth)
+			nc = 0;
+	}
+
+	fprintf(f,"\n]}\n");
+}
+
+static void
+bgpq4_print_bird_prefix(struct sx_radix_node *n, void *ff)
+{
+	char	 prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!f)
+		f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (!n->isAggregate) {
+		fprintf(f, "%s\n    %s", needscomma ? "," : "", prefix);
+	} else if (n->aggregateLow > n->prefix->masklen) {
+		fprintf(f, "%s\n    %s{%u,%u}", needscomma ? "," : "", prefix,
+		    n->aggregateLow, n->aggregateHi);
+	} else {
+		fprintf(f, "%s\n    %s{%u,%u}", needscomma ? "," : "", prefix,
+		    n->prefix->masklen, n->aggregateHi);
+	}
+
+	needscomma = 1;
+
+checkSon:
+	if (n->son)
+		bgpq4_print_bird_prefix(n->son, ff);
+}
+
+static void
+bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
+{
+	int			 nc = 0;
+	struct asn_entry	*asne;
+
+
+	fprintf(f, "%s = [", b->name);
+
+	if (RB_EMPTY(&b->asnlist)) {
+		fprintf(f, "];\n");
+		return;
+	}
+	
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc)
+			fprintf(f, "\n    %u", asne->asn);
+		else
+			fprintf(f, ", %u", asne->asn);
+
+		nc++;
+		if (nc == b->aswidth)
+			nc = 0;
+	}
+}
+
+static void
+bgpq4_print_openbgpd_prefix(struct sx_radix_node *n, void *ff)
+{
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!f)
+		f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (!n->isAggregate) {
+		fprintf(f, "\n\t%s", prefix);
+	} else if (n->aggregateLow == n->aggregateHi) {
+		fprintf(f, "\n\t%s prefixlen = %u", prefix, n->aggregateHi);
+	} else if (n->aggregateLow > n->prefix->masklen) {
+		fprintf(f, "\n\t%s prefixlen %u - %u",
+		    prefix, n->aggregateLow, n->aggregateHi);
+	} else {
+		fprintf(f, "\n\t%s prefixlen %u - %u",
+		    prefix, n->prefix->masklen, n->aggregateHi);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_openbgpd_prefix(n->son, ff);
+}
+
+static void
+bgpq4_print_openbgpd_asset(FILE *f, struct bgpq_expander *b)
+{
+	int			 nc = 0;
+	struct asn_entry	*asne;
+
+	fprintf(f, "as-set %s {", b->name);
+
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		fprintf(f, "%s%u", nc == 0 ? "\n\t" : " ", asne->asn);
+
+		nc++;
+		if (nc == b->aswidth)
+			nc = 0;
+		}
+
+	fprintf(f, "\n}\n");
+}
+
+static void
+bgpq4_print_openbgpd_aspath(FILE *f, struct bgpq_expander *b)
+{
+	struct asn_entry	*asne;
+
+	if (RB_EMPTY(&b->asnlist)) {
+		fprintf(f, "deny from AS %u\n", b->asnumber);
+		return;
+	}
+	
+	RB_FOREACH(asne, asn_tree, &b->asnlist)
+		fprintf(f, "allow from AS %u AS %u\n", b->asnumber, asne->asn);
+}
+
 void
 bgpq4_print_aspath(FILE *f, struct bgpq_expander *b)
 {
@@ -613,209 +811,6 @@ bgpq4_print_asset(FILE *f, struct bgpq_expander *b)
 		sx_report(SX_FATAL, "as-sets (-t) supported for JSON, "
 		    "OpenBGPD, and BIRD only\n");
 	}
-}
-
-static void
-bgpq4_print_jprefix(struct sx_radix_node *n, void *ff)
-{
-	char 	 prefix[128];
-	FILE	*f = (FILE*)ff;
-
-	if (n->isGlue)
-		return;
-
-	if (!f)
-		f = stdout;
-
-	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
-	fprintf(f,"    %s;\n", prefix);
-}
-
-static int   needscomma = 0;
-
-static void
-bgpq4_print_json_prefix(struct sx_radix_node *n, void *ff)
-{
-	char	prefix[128];
-	FILE	*f = (FILE*)ff;
-
-	if (n->isGlue)
-		goto checkSon;
-
-	if (!f)
-		f = stdout;
-
-	sx_prefix_jsnprintf(n->prefix, prefix, sizeof(prefix));
-
-	if (!n->isAggregate) {
-		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": true }",
-		    needscomma ? "," : "", prefix);
-	} else if (n->aggregateLow > n->prefix->masklen) {
-		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": false,\n"
-		    "      \"greater-equal\": %u, \"less-equal\": %u }",
-		    needscomma ? "," : "", prefix, n->aggregateLow,
-		    n->aggregateHi);
-	} else {
-		fprintf(f, "%s\n    { \"prefix\": \"%s\", \"exact\": false, "
-		    "\"less-equal\": %u }", needscomma ? "," : "", prefix,
-		    n->aggregateHi);
-	}
-
-	needscomma = 1;
-
-checkSon:
-	if (n->son)
-		bgpq4_print_json_prefix(n->son, ff);
-}
-
-void
-bgpq4_print_json_aspath(FILE *f, struct bgpq_expander *b)
-{
-	int			 nc = 0;
-	struct asn_entry	*asne;
-
-	fprintf(f, "{\"%s\": [", b->name);
-
-	RB_FOREACH(asne, asn_tree, &b->asnlist) {
-		if (!nc) {
-			fprintf(f, "%s\n  %u",
-			    needscomma ? "," : "",
-			    asne->asn);
-			needscomma = 1;
-		} else {
-			fprintf(f, "%s%u",
-			    needscomma ? "," : "",
-			    asne->asn);
-			needscomma = 1;
-		}
-
-		nc++;
-		if (nc == b->aswidth)
-			nc = 0;
-	}
-
-	fprintf(f,"\n]}\n");
-}
-
-static void
-bgpq4_print_bird_prefix(struct sx_radix_node *n, void *ff)
-{
-	char	 prefix[128];
-	FILE	*f = (FILE*)ff;
-
-	if (n->isGlue)
-		goto checkSon;
-
-	if (!f)
-		f = stdout;
-
-	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
-
-	if (!n->isAggregate) {
-		fprintf(f, "%s\n    %s", needscomma ? "," : "", prefix);
-	} else if (n->aggregateLow > n->prefix->masklen) {
-		fprintf(f, "%s\n    %s{%u,%u}", needscomma ? "," : "", prefix,
-		    n->aggregateLow, n->aggregateHi);
-	} else {
-		fprintf(f, "%s\n    %s{%u,%u}", needscomma ? "," : "", prefix,
-		    n->prefix->masklen, n->aggregateHi);
-	}
-
-	needscomma = 1;
-
-checkSon:
-	if (n->son)
-		bgpq4_print_bird_prefix(n->son, ff);
-}
-
-void
-bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
-{
-	int			 nc = 0;
-	struct asn_entry	*asne;
-
-
-	fprintf(f, "%s = [", b->name);
-
-	if (RB_EMPTY(&b->asnlist)) {
-		fprintf(f, "];\n");
-		return;
-	}
-	
-	RB_FOREACH(asne, asn_tree, &b->asnlist) {
-		if (!nc)
-			fprintf(f, "\n    %u", asne->asn);
-		else
-			fprintf(f, ", %u", asne->asn);
-
-		nc++;
-		if (nc == b->aswidth)
-			nc = 0;
-	}
-}
-
-static void
-bgpq4_print_openbgpd_prefix(struct sx_radix_node *n, void *ff)
-{
-	char 	 prefix[128];
-	FILE	*f = (FILE*)ff;
-
-	if (n->isGlue)
-		goto checkSon;
-
-	if (!f)
-		f = stdout;
-
-	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
-
-	if (!n->isAggregate) {
-		fprintf(f, "\n\t%s", prefix);
-	} else if (n->aggregateLow == n->aggregateHi) {
-		fprintf(f, "\n\t%s prefixlen = %u", prefix, n->aggregateHi);
-	} else if (n->aggregateLow > n->prefix->masklen) {
-		fprintf(f, "\n\t%s prefixlen %u - %u",
-		    prefix, n->aggregateLow, n->aggregateHi);
-	} else {
-		fprintf(f, "\n\t%s prefixlen %u - %u",
-		    prefix, n->prefix->masklen, n->aggregateHi);
-	}
-
-checkSon:
-	if (n->son)
-		bgpq4_print_openbgpd_prefix(n->son, ff);
-}
-
-void
-bgpq4_print_openbgpd_asset(FILE *f, struct bgpq_expander *b)
-{
-	int			 nc = 0;
-	struct asn_entry	*asne;
-
-	fprintf(f, "as-set %s {", b->name);
-
-	RB_FOREACH(asne, asn_tree, &b->asnlist) {
-		fprintf(f, "%s%u", nc == 0 ? "\n\t" : " ", asne->asn);
-
-		nc++;
-		if (nc == b->aswidth)
-			nc = 0;
-		}
-
-	fprintf(f, "\n}\n");
-}
-
-void
-bgpq4_print_openbgpd_aspath(FILE *f, struct bgpq_expander *b)
-{
-	struct asn_entry	*asne;
-
-	if (RB_EMPTY(&b->asnlist)) {
-		fprintf(f, "deny from AS %u\n", b->asnumber);
-		return;
-	}
-	
-	RB_FOREACH(asne, asn_tree, &b->asnlist)
-		fprintf(f, "allow from AS %u AS %u\n", b->asnumber, asne->asn);
 }
 
 static int jrfilter_prefixed = 1;
