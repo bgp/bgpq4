@@ -55,8 +55,8 @@ bgpq4_print_cisco_aspath(FILE *f, struct bgpq_expander *b)
 
 	find.asn = b->asnumber;
 	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
-		fprintf(f, "ip as-path access-list %s permit"
-		    " ^%u(_%u)*$\n", b->name, res->asn, res->asn);
+		fprintf(f, "ip as-path access-list %s permit ^%u(_%u)*$\n",
+		    b->name, res->asn, res->asn);
 		RB_REMOVE(asn_tree, &b->asnlist, res);
 	}
 
