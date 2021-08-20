@@ -124,8 +124,8 @@ version(void)
 static void
 exclusive(void)
 {
-	fprintf(stderr,"-E, -f <asnum>, -G <asnum>, and -t are mutually "
-	    "exclusive\n");
+	fprintf(stderr,"-E, -F, -K , -f <asnum>, -G <asnum>, and -t are mutually"
+	    " exclusive\n");
 	exit(1);
 }
 
