@@ -1,4 +1,4 @@
-1.3 (2021-XX-XX)
+1.3 (2021-08-20)
     - Change versioning from X.Y.Z to Y.Z
     - The repository file hierachy has been reorganized (compat/ include/)
     - Man page has been extended
