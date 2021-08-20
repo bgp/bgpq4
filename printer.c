@@ -642,7 +642,6 @@ bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 	int			 nc = 0;
 	struct asn_entry	*asne;
 
-
 	fprintf(f, "%s = [", b->name);
 
 	if (RB_EMPTY(&b->asnlist)) {
@@ -651,15 +650,21 @@ bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 	}
 	
 	RB_FOREACH(asne, asn_tree, &b->asnlist) {
-		if (!nc)
-			fprintf(f, "\n    %u", asne->asn);
-		else
+		if (!nc) {
+			fprintf(f, "%s\n    %u", needscomma ? "," : "",
+			    asne->asn);
+			needscomma = 1;
+		} else {
 			fprintf(f, ", %u", asne->asn);
+			needscomma = 1;
+		}
 
 		nc++;
 		if (nc == b->aswidth)
 			nc = 0;
 	}
+
+	fprintf(f, "];\n");
 }
 
 static void
