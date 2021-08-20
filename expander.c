@@ -58,7 +58,15 @@ tentry_cmp(struct sx_tentry *a, struct sx_tentry *b)
 	return strcasecmp(a->text, b->text);
 }
 
-RB_GENERATE_STATIC(tentree, sx_tentry, entries, tentry_cmp);
+RB_GENERATE_STATIC(tentree, sx_tentry, entry, tentry_cmp);
+
+int
+asn_cmp(struct asn_entry *a, struct asn_entry *b)
+{
+	return (a->asn < b->asn ? -1 : a->asn > b->asn);
+}
+
+RB_GENERATE(asn_tree, asn_entry, entry, asn_cmp);
 
 int
 bgpq_expander_init(struct bgpq_expander *b, int af)
@@ -80,22 +88,12 @@ bgpq_expander_init(struct bgpq_expander *b, int af)
 	b->sources = "";
 	b->name = "NN";
 	b->aswidth = 8;
-	b->asn32s[0] = malloc(8192);
-	if (!b->asn32s[0]) {
-		sx_report(SX_FATAL,"Unable to allocate 8192 bytes: %s\n",
-		    strerror(errno));
-		exit(1);
-	}
-	memset(b->asn32s[0], 0, 8192);
 	b->identify = 1;
 	b->server = "rr.ntt.net";
 	b->port = "43";
 
-	//	b->wq = STAILQ_HEAD_INITIALZIER(b->wq);
-	//      b->rq = STAILQ_HEAD_INITIALZIER(b->rq);
-	//      b->rsets = STAILQ_HEAD_INITIALZIER(b->rsets);
-	//      b->macroses = STAILQ_HEAD_INITIALZIER(b->macroses);
-	
+	RB_INIT(&b->asnlist);
+
 	STAILQ_INIT(&b->wq);
 	STAILQ_INIT(&b->rq);
 	STAILQ_INIT(&b->rsets);
@@ -123,7 +121,7 @@ bgpq_expander_add_asset(struct bgpq_expander *b, char *as)
 
 	le = sx_slentry_new(as);
 
-	STAILQ_INSERT_TAIL(&b->macroses, le, entries);
+	STAILQ_INSERT_TAIL(&b->macroses, le, entry);
 
 	return 1;
 }
@@ -141,7 +139,7 @@ bgpq_expander_add_rset(struct bgpq_expander *b, char *rs)
 	if (!le)
 		return 0;
 
-	STAILQ_INSERT_TAIL(&b->rsets, le, entries);
+	STAILQ_INSERT_TAIL(&b->rsets, le, entry);
 
 	return 1;
 }
@@ -183,46 +181,29 @@ bgpq_expander_add_stop(struct bgpq_expander *b, char *rs)
 int
 bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 {
-	char		*eoa;
-	uint32_t	 asn1 = 0, asn2 = 0;
-	uint32_t	 asno = 0;
+	char			*eoa;
+	uint32_t	 	 asno = 0;
+	struct asn_entry	*asne;
 
 	if (!b || !as)
 		return 0;
 
 	asno = strtoul(as + 2, &eoa, 10);
-
 	if (eoa && *eoa != 0) {
 		sx_report(SX_ERROR,"Invalid symbol in AS number: '%c' in %s\n",
 		    *eoa, as);
 		return 0;
 	}
 
-	if (asno > 65535) {
-		asn1 = asno / 65536;
-		asn2 = asno % 65536;
-	} else
-		asn1 = asno;
-
 	if (!expand_special_asn &&
 	    ((asno  >= 4200000000ul) || (asno >= 64496 && asno <= 65551)))
 		return 0;
 
-	if (!b->asn32s[asn1]) {
-		b->asn32s[asn1] = malloc(8192);
-		if (!b->asn32s[asn1]) {
-			sx_report(SX_FATAL, "Unable to allocate 8192 "
-			    "bytes: %s. Unable to add asn32 %s to "
-			    " future expansion\n", strerror(errno), as);
-				return 0;
-			}
-		memset(b->asn32s[asn1], 0, 8192);
-	}
+	if ((asne = malloc(sizeof(struct asn_entry))) == NULL)
+		err(1, NULL);
 
-	if (asno > 65535)
-		b->asn32s[asn1][asn2 / 8] |= (0x80 >> (asn2 % 8));
-	else
-		b->asn32s[0][asn1 / 8] |= (0x80 >> (asn1 % 8));
+	asne->asn = asno;
+	RB_INSERT(asn_tree, &b->asnlist, asne);
 
 	return 1;
 }
@@ -449,12 +430,15 @@ bgpq_pipeline(struct bgpq_expander *b,
 static void
 bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 {
-	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
-		char		*eptr;
-		unsigned long	 asn, asn0, asn1 = 0;
+	char			*eptr;
+	unsigned long		 asn = 0;
+	struct asn_entry	 find, *res;
 
+	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
+
+		errno = 0;
 		asn = strtoul(q + 4, &eptr, 10);
-		if (q[0] == '\0' || *eptr != '\0') {
+		if (*eptr != '\n') {
 			sx_report(SX_ERROR, "not a number: %s\n", q);
 			return;
 		}
@@ -471,15 +455,16 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 			return;
 		}
 
-		asn1 = asn % 65536;
-		asn0 = asn / 65536;
-		if (!b->asn32s[asn0] ||
-		    !(b->asn32s[asn0][asn1/8] & (0x80 >> (asn1 % 8)))) {
-			sx_report(SX_NOTICE, "strange, invalidating inactive "
-			    "asn %lu(%s)\n", asn, q);
-		} else {
-			b->asn32s[asn0][asn1 / 8] &= ~(0x80 >> (asn1 % 8));
+		find.asn = asn;
+		res = RB_FIND(asn_tree, &b->asnlist, &find);
+		if (res == NULL)
+			return;
+
+		if (RB_REMOVE(asn_tree, &b->asnlist, res) == NULL) {
+			sx_report(SX_ERROR, "failed to remove: %lu", asn);
+			return;
 		}
+			
 	}
 }
 
@@ -884,6 +869,7 @@ bgpq_expand(struct bgpq_expander *b)
 	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
+	struct asn_entry	*asne;
 
 	sl.l_onoff = 1;
 	sl.l_linger = 5;
@@ -1036,7 +1022,7 @@ bgpq_expand(struct bgpq_expander *b)
 	if (pipelining)
 		fcntl(fd, F_SETFL, O_NONBLOCK|(fcntl(fd, F_GETFL)));
 
-	STAILQ_FOREACH(mc, &b->macroses, entries) {
+	STAILQ_FOREACH(mc, &b->macroses, entry) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
 			if (aquery)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
@@ -1065,8 +1051,7 @@ bgpq_expand(struct bgpq_expander *b)
 	}
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
-		uint32_t i, j, k;
-		STAILQ_FOREACH(mc, &b->rsets, entries) {
+		STAILQ_FOREACH(mc, &b->rsets, entry) {
 			if (b->family == AF_INET)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix,
 				    NULL, "!i%s,1\n", mc->text);
@@ -1074,33 +1059,27 @@ bgpq_expand(struct bgpq_expander *b)
 				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
 				    NULL, "!i%s,1\n", mc->text);
 		}
-		for (k=0; k < sizeof(b->asn32s) / sizeof(unsigned char *); k++) {
-			if (!b->asn32s[k])
-				continue;
-			for (i=0; i<8192; i++) {
-				for (j=0; j<8; j++) {
-					if (b->asn32s[k][i] & (0x80 >> j)) {
-						if (b->family == AF_INET6) {
-							if (!pipelining) {
-								bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
-								    NULL, "!6as%" PRIu32 "\n", ( k << 16) + i * 8 + j);
-							} else {
-								bgpq_pipeline(b, bgpq_expanded_v6prefix,
-								    NULL, "!6as%" PRIu32 "\n", (k << 16) + i * 8 + j);
-							}
-						} else {
-							if (!pipelining) {
-								bgpq_expand_irrd(b, bgpq_expanded_prefix,
-								    NULL, "!gas%" PRIu32 "\n", (k << 16) + i * 8 + j);
-							} else {
-								bgpq_pipeline(b, bgpq_expanded_prefix,
-								    NULL, "!gas%" PRIu32 "\n", ( k<< 16) + i* 8 + j);
-							}
-						}
-					}
+
+		RB_FOREACH(asne, asn_tree, &b->asnlist) {
+			if (b->family == AF_INET6) {
+				if (!pipelining) {
+					bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+					    NULL, "!6as%" PRIu32 "\n", asne->asn);
+				} else {
+					bgpq_pipeline(b, bgpq_expanded_v6prefix,
+					    NULL, "!6as%" PRIu32 "\n", asne->asn);
+				}
+			} else {
+				if (!pipelining) {
+					bgpq_expand_irrd(b, bgpq_expanded_prefix,
+					    NULL, "!gas%" PRIu32 "\n", asne->asn);
+				} else {
+					bgpq_pipeline(b, bgpq_expanded_prefix,
+					    NULL, "!gas%" PRIu32 "\n", asne->asn);
 				}
 			}
 		}
+
 		if (pipelining) {
 			if (!STAILQ_EMPTY(&b->wq))
 				bgpq_write(b);
@@ -1160,17 +1139,18 @@ bgpq_prequest_freeall(struct bgpq_prequest *bpr) {
 void
 expander_freeall(struct bgpq_expander *expander) {
 	struct sx_tentry	*var, *nxt;
+	struct asn_entry	*asne, *asne_next;
 
 	while (!STAILQ_EMPTY(&expander->macroses)) {
 		struct slentry *n1 = STAILQ_FIRST(&expander->macroses);
-		STAILQ_REMOVE_HEAD(&expander->macroses, entries);
+		STAILQ_REMOVE_HEAD(&expander->macroses, entry);
 		free(n1->text);
 		free(n1);
 	}
 
 	while (!STAILQ_EMPTY(&expander->rsets)) {
 		struct slentry *n1 = STAILQ_FIRST(&expander->rsets);
-		STAILQ_REMOVE_HEAD(&expander->rsets, entries);
+		STAILQ_REMOVE_HEAD(&expander->rsets, entry);
 		free(n1->text);
 		free(n1);
 	}
@@ -1189,10 +1169,11 @@ expander_freeall(struct bgpq_expander *expander) {
 		free(var);
 	}
 
-	for (int i = 0; i < 65536; i++) {
-		if (expander->asn32s[i] != NULL) {
-			free(expander->asn32s[i]);
-		}
+	for (asne = RB_MIN(asn_tree, &expander->asnlist);
+	    asne != NULL; asne = asne_next) {
+		asne_next = RB_NEXT(asn_tree, &expander->asnlist, asne);
+		RB_REMOVE(asn_tree, &expander->asnlist, asne);
+		free(asne);
 	}
 
 	sx_radix_tree_freeall(expander->tree);

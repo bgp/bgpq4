@@ -449,14 +449,18 @@ main(int argc, char* argv[])
 			case V_CISCO:
 			case V_MIKROTIK:
 				expander.aswidth = 4;
+				break;
 			case V_CISCO_XR:
 				expander.aswidth = 6;
+				break;
 			case V_JUNIPER:
 			case V_NOKIA:
 			case V_NOKIA_MD:
 				expander.aswidth = 8;
+				break;
 			case V_BIRD:
 				expander.aswidth = 10;
+				break;
 			}
 		} else if (expander.generation == T_OASPATH) {
 			int vendor = expander.vendor;
@@ -464,12 +468,15 @@ main(int argc, char* argv[])
 			case V_ARISTA:
 			case V_CISCO:
 				expander.aswidth = 5;
+				break;
 			case V_CISCO_XR:
 				expander.aswidth = 7;
+				break;
 			case V_JUNIPER:
 			case V_NOKIA:
 			case V_NOKIA_MD:
 				expander.aswidth = 8;
+				break;
 			}
 		}
 	}

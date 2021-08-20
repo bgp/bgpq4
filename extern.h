@@ -30,18 +30,23 @@
 #include "sx_prefix.h"
 
 struct slentry {
-	STAILQ_ENTRY(slentry)	 entries;
+	STAILQ_ENTRY(slentry)	 entry;
 	char			*text;
 };
 
 struct slentry		*sx_slentry_new(char *text);
 
 struct sx_tentry {
-	RB_ENTRY(sx_tentry)	 entries;
+	RB_ENTRY(sx_tentry)	 entry;
 	char			*text;
 };
 
 struct sx_tentry	*sx_tentry_new(char *text);
+
+struct asn_entry {
+	RB_ENTRY(asn_entry)	entry;
+	uint32_t		asn;
+};
 
 typedef enum {
 	V_CISCO = 0,
@@ -102,11 +107,14 @@ struct bgpq_expander {
 	char				*format;
 	unsigned int		 	 maxlen;
 	int			 	 fd;
-	unsigned char 			*asn32s[65536];
+	RB_HEAD(asn_tree, asn_entry)	 asnlist;
 	STAILQ_HEAD(requests, request)	 wq, rq;
 	STAILQ_HEAD(slentries, slentry)	 macroses, rsets;
 	RB_HEAD(tentree, sx_tentry)	 already, stoplist;
 };
+
+int asn_cmp(struct asn_entry *, struct asn_entry *);
+RB_PROTOTYPE(asn_tree, asn_entry, entry, asn_cmp);
 
 int bgpq_expander_init(struct bgpq_expander *b, int af);
 int bgpq_expander_add_asset(struct bgpq_expander *b, char *set);
@@ -118,12 +126,12 @@ int bgpq_expander_add_stop(struct bgpq_expander *b, char *object);
 
 int bgpq_expand(struct bgpq_expander *b);
 
-int bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b);
-int bgpq4_print_eacl(FILE *f, struct bgpq_expander *b);
-int bgpq4_print_aspath(FILE *f, struct bgpq_expander *b);
-int bgpq4_print_asset(FILE *f, struct bgpq_expander *b);
-int bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b);
-int bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_eacl(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_aspath(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_asset(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b);
 
 void sx_radix_node_freeall(struct sx_radix_node *n);
 void sx_radix_tree_freeall(struct sx_radix_tree *t);
