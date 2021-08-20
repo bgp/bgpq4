@@ -664,7 +664,7 @@ bgpq4_print_bird_aspath(FILE* f, struct bgpq_expander* b)
 			nc = 0;
 	}
 
-	fprintf(f, "];\n");
+	fprintf(f, "\n];\n");
 }
 
 static void
