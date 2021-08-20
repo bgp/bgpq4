@@ -1070,11 +1070,11 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 		wildmask.s_addr = htonl(wildmask.s_addr);
 
 		if (wildaddr.s_addr) {
-			fprintf(f, "permit ip %s ",
+			fprintf(f, " permit ip %s ",
 			    inet_ntoa(n->prefix->addr.addr));
 			fprintf(f, "%s ", inet_ntoa(wildaddr));
 		} else {
-			fprintf(f, "permit ip host %s ",
+			fprintf(f, " permit ip host %s ",
 			    inet_ntoa(n->prefix->addr.addr));
 		}
 
@@ -1085,7 +1085,7 @@ bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 			fprintf(f, "host %s\n", inet_ntoa(mask));
 		}
 	} else {
-		fprintf(f, "permit ip host %s host %s\n", prefix,
+		fprintf(f, " permit ip host %s host %s\n", prefix,
 		    inet_ntoa(netmask));
 	}
 
@@ -1632,6 +1632,7 @@ bgpq4_print_eacl(FILE *f, struct bgpq_expander *b)
 		bgpq4_print_juniper_routefilter(f, b);
 		break;
 	case V_CISCO:
+	case V_ARISTA:
 		bgpq4_print_cisco_eacl(f, b);
 		break;
 	case V_OPENBGPD:
@@ -1642,9 +1643,6 @@ bgpq4_print_eacl(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_NOKIA_MD:
 		bgpq4_print_nokia_md_prefixlist(f, b);
-		break;
-	case V_ARISTA:
-		bgpq4_print_cisco_eacl(f, b);
 		break;
 	default:
 		sx_report(SX_FATAL, "unreachable point\n");
