@@ -446,7 +446,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 			sx_report(SX_ERROR, "overflow: %s\n", q);
 			return;
 		}
-		if (asn >= 4294967295) {
+		if (asn == 0 || asn >= 4294967295) {
 			sx_report(SX_ERROR, "out of range: %s\n", q);
 			return;
 		}
@@ -456,15 +456,10 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 		}
 
 		find.asn = asn;
-		res = RB_FIND(asn_tree, &b->asnlist, &find);
-		if (res == NULL)
-			return;
-
-		if (RB_REMOVE(asn_tree, &b->asnlist, res) == NULL) {
-			sx_report(SX_ERROR, "failed to remove: %lu", asn);
-			return;
+		if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) == NULL) {
+			RB_REMOVE(asn_tree, &b->asnlist, res);
+			free(res);
 		}
-			
 	}
 }
 
