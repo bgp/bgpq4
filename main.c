@@ -197,149 +197,143 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "346a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz"))
-	    !=EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz")) != EOF) {
 	switch (c) {
-        case '3':
-            /*
-             * No-op, left for backwards compatibility with bgpq3
-             */
-            break;
-		case '4':
-			/* do nothing, expander already configured for IPv4 */
-			if (expander.family == AF_INET6) {
-				sx_report(SX_FATAL, "-4 and -6 are mutually "
-				    "exclusive\n");
-				exit(1);
+	case '4':
+		/* do nothing, expander already configured for IPv4 */
+		if (expander.family == AF_INET6) {
+			sx_report(SX_FATAL, "-4 and -6 are mutually "
+			    "exclusive\n");
+			exit(1);
+		}
+		selectedipv4 = 1;
+		break;
+	case '6':
+		if (selectedipv4) {
+			sx_report(SX_FATAL, "-4 and -6 are mutually "
+			    "exclusive\n");
+			exit(1);
+		}
+		af = AF_INET6;
+		expander.family = AF_INET6;
+		expander.tree->family = AF_INET6;
+		break;
+	case 'a':
+		parseasnumber(&expander, optarg);
+		break;
+	case 'A':
+		if (aggregate)
+			debug_aggregation++;
+		aggregate = 1;
+		break;
+	case 'b':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_BIRD;
+		break;
+	case 'B':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_OPENBGPD;
+		break;
+	case 'd':
+		debug_expander++;
+		break;
+	case 'E':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_EACL;
+		break;
+	case 'e':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_ARISTA;
+		expander.sequence = 1;
+		break;
+	case 'F':
+		if (expander.vendor)
+			exclusive();
+		expander.vendor = V_FORMAT;
+		expander.format = optarg;
+		break;
+	case 'f':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_ASPATH;
+		parseasnumber(&expander, optarg);
+		break;
+	case 'G':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_OASPATH;
+		parseasnumber(&expander, optarg);
+		break;
+	case 'h':
+		{
+			char *d = strchr(optarg, ':');
+			expander.server = optarg;
+			if (d) {
+				*d = 0;
+				expander.port = d + 1;
 			}
-			selectedipv4=1;
-			break;
-		case '6':
-			if (selectedipv4) {
-				sx_report(SX_FATAL, "-4 and -6 are mutually "
-				    "exclusive\n");
-				exit(1);
-			}
-			af = AF_INET6;
-			expander.family = AF_INET6;
-			expander.tree->family = AF_INET6;
-			break;
-		case 'a':
-			parseasnumber(&expander, optarg);
-			break;
-		case 'A':
-			if (aggregate)
-				debug_aggregation++;
-			aggregate = 1;
-			break;
-		case 'b':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_BIRD;
-			break;
-		case 'B':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_OPENBGPD;
-			break;
-		case 'd':
-			debug_expander++;
-			break;
-		case 'E':
-			if (expander.generation)
-				exclusive();
-			expander.generation = T_EACL;
-			break;
-		case 'e':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_ARISTA;
-			expander.sequence = 1;
-			break;
-		case 'F':
-			if (expander.vendor)
-				exclusive();
-			expander.vendor = V_FORMAT;
-			expander.format = optarg;
-			break;
-		case 'f':
-			if (expander.generation)
-				exclusive();
-			expander.generation = T_ASPATH;
-			parseasnumber(&expander, optarg);
-			break;
-		case 'G':
-			if (expander.generation)
-				exclusive();
-			expander.generation = T_OASPATH;
-			parseasnumber(&expander, optarg);
-			break;
-		case 'h':
-			{
-				char* d = strchr(optarg, ':');
-				expander.server = optarg;
-				if (d) {
-					*d = 0;
-					expander.port = d + 1;
-				}
-			}
-			break;
-		case 'J':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_JUNIPER;
-			break;
-		case 'j':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_JSON;
-			break;
-		case 'K':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_MIKROTIK;
-			break;
-		case 'p':
-			expand_special_asn = 1;
-			break;
-		case 'r':
-			refineLow = strtoul(optarg, NULL, 10);
-			if (!refineLow) {
-				sx_report(SX_FATAL, "Invalid refineLow value:"
-				    " %s\n", optarg);
-				exit(1);
-			}
-			break;
-		case 'R':
-			refine = strtoul(optarg, NULL, 10);
-			if (!refine) {
-				sx_report(SX_FATAL,"Invalid refine length:"
-				    " %s\n", optarg);
-				exit(1);
-			}
-			break;
-		case 'l':
-			expander.name = optarg;
-			break;
-		case 'L':
-			expander.maxdepth = strtol(optarg, NULL, 10);
-			if (expander.maxdepth < 1) {
-				sx_report(SX_FATAL, "Invalid maximum recursion"
-				    " (-L): %s\n", optarg);
-				exit(1);
-			}
-			break;
-		case 'm':
-			maxlen=strtoul(optarg, NULL, 10);
-			if (!maxlen) {
-				sx_report(SX_FATAL, "Invalid maxlen (-m): %s\n",
-				    optarg);
-				exit(1);
-			}
-			break;
-		case 'M':
-			{
-			char *mc, *md;
+		}
+		break;
+	case 'J':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_JUNIPER;
+		break;
+	case 'j':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_JSON;
+		break;
+	case 'K':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_MIKROTIK;
+		break;
+	case 'p':
+		expand_special_asn = 1;
+		break;
+	case 'r':
+		refineLow = strtoul(optarg, NULL, 10);
+		if (!refineLow) {
+			sx_report(SX_FATAL, "Invalid refineLow value:"
+			    " %s\n", optarg);
+			exit(1);
+		}
+		break;
+	case 'R':
+		refine = strtoul(optarg, NULL, 10);
+		if (!refine) {
+			sx_report(SX_FATAL,"Invalid refine length:"
+			    " %s\n", optarg);
+			exit(1);
+		}
+		break;
+	case 'l':
+		expander.name = optarg;
+		break;
+	case 'L':
+		expander.maxdepth = strtol(optarg, NULL, 10);
+		if (expander.maxdepth < 1) {
+			sx_report(SX_FATAL, "Invalid maximum recursion"
+			    " (-L): %s\n", optarg);
+			exit(1);
+		}
+		break;
+	case 'm':
+		maxlen=strtoul(optarg, NULL, 10);
+		if (!maxlen) {
+			sx_report(SX_FATAL, "Invalid maxlen (-m): %s\n",
+			    optarg);
+			exit(1);
+		}
+		break;
+	case 'M':
+		{
+			char	*mc, *md;
 			expander.match = strdup(optarg);
 			mc = md = expander.match;
 			while (*mc) {
@@ -377,64 +371,63 @@ main(int argc, char* argv[])
 				}
 			}
 			*md = 0;
-			}
-			break;
-		case 'N':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_NOKIA;
-			break;
-		case 'n':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_NOKIA_MD;
-			break;
-		case 't':
-			if (expander.generation)
-				exclusive();
-			expander.generation = T_ASSET;
-			break;
-		case 'T':
-			pipelining = 0;
-			break;
-		case 's':
-			expander.sequence = 1;
-			break;
-		case 'S':
-			expander.sources = optarg;
-			break;
-		case 'U':
-			if (expander.vendor)
-				exclusive();
-			expander.vendor = V_HUAWEI;
-			break;
-		case 'W':
-			expander.aswidth = atoi(optarg);
-			if (expander.aswidth < 0) {
-				sx_report(SX_FATAL,"Invalid as-width: %s\n",
-				    optarg);
-				exit(1);
-			}
-			widthSet = 1;
-			break;
-		case 'w':
-			expander.validate_asns = 1;
-			break;
-		case 'X':
-			if (expander.vendor)
-				vendor_exclusive();
-			expander.vendor = V_CISCO_XR;
-			break;
-		case 'v':
-			version();
-			break;
-		case 'z':
-			if (expander.generation)
-				exclusive();
-			expander.generation = T_ROUTE_FILTER_LIST;
-			break;
-		default:
-			usage(1);
+		}
+		break;
+	case 'N':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_NOKIA;
+		break;
+	case 'n':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_NOKIA_MD;
+		break;
+	case 't':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_ASSET;
+		break;
+	case 'T':
+		pipelining = 0;
+		break;
+	case 's':
+		expander.sequence = 1;
+		break;
+	case 'S':
+		expander.sources = optarg;
+		break;
+	case 'U':
+		if (expander.vendor)
+			exclusive();
+		expander.vendor = V_HUAWEI;
+		break;
+	case 'W':
+		expander.aswidth = atoi(optarg);
+		if (expander.aswidth < 0) {
+			sx_report(SX_FATAL,"Invalid as-width: %s\n", optarg);
+			exit(1);
+		}
+		widthSet = 1;
+		break;
+	case 'w':
+		expander.validate_asns = 1;
+		break;
+	case 'X':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_CISCO_XR;
+		break;
+	case 'v':
+		version();
+		break;
+	case 'z':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_ROUTE_FILTER_LIST;
+		break;
+	default:
+		usage(1);
 	}
 	}
 
