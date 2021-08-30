@@ -1,9 +1,9 @@
-ARG image=centos/centos:latest
-FROM quay.io/$image
+ARG image=alpine:latest
+FROM $image
 
 # Install dependencies
-RUN yum update -y
-RUN yum install -y autoconf automake gcc libtool make
+RUN apk upgrade
+RUN apk add autoconf automake file gcc gzip libtool make musl-dev
 
 # Add source code
 ADD . /src

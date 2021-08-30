@@ -9,14 +9,18 @@ jobs:
       fail-fast: false
       matrix:
         dockerenv:
+          - debian:bookworm
+          - debian:bullseye
           - debian:buster
-          - debian:stretch
+          - ubuntu:focal
           - ubuntu:bionic
-          - ubuntu:xenial
-          - centos:8
-          - centos:7
-          - fedora:31
-          - fedora:30
+          - fedora/fedora:34
+          - fedora/fedora:33
+          - centos/centos:stream8
+          - centos/centos:7
+          - rockylinux/rockylinux:8
+          - alpine:edge
+          - alpine:3.14
     steps:
     - uses: actions/checkout@v1
     - name: Run build on ${{matrix.dockerenv}}
