@@ -5,9 +5,6 @@ summary: BGP filtering automation tool
 description: |
   The bgpq4 utility used to generate configurations (prefix-lists, extended
   access-lists, policy-statement terms and as-path lists) based on IRR data.
-website: https://github.com/bgp/bgpq4
-source-code: https://github.com/bgp/bgpq4.git
-issues: https://github.com/bgp/bgpq4/issues
 license: BSD-2-Clause
 
 grade: stable
