@@ -198,7 +198,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -402,6 +402,11 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			exclusive();
 		expander.vendor = V_HUAWEI;
+		break;
+	case 'u':
+		if (expander.vendor)
+			exclusive();
+		expander.vendor = V_HUAWEI_XPL;
 		break;
 	case 'W':
 		expander.aswidth = atoi(optarg);
