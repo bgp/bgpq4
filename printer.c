@@ -407,6 +407,43 @@ bgpq4_print_huawei_aspath(FILE *f, struct bgpq_expander *b)
 }
 
 static void
+bgpq4_print_huawei_xpl_aspath(FILE *f, struct bgpq_expander *b)
+{
+	int 			 nc = 0, comma = 1;
+	struct asn_entry	*asne, find, *res;
+
+	fprintf(f, "xpl as-path-list %s", b->name);
+
+	find.asn = b->asnumber;
+	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
+		fprintf(f, "\n  regular ^%u(_%u)*$", res->asn, res->asn);
+		RB_REMOVE(asn_tree, &b->asnlist, res);
+	}
+
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f, "%s\n  regular ^%u(_[0-9]+)*_(%u",
+			    comma ? "," : "",
+			    b->asnumber,
+			    asne->asn);
+			comma = 1;
+		} else
+			fprintf(f, "|%u", asne->asn);
+
+		nc++;
+		if (nc == b->aswidth) {
+			fprintf(f, ")$");
+			nc = 0;
+		}
+	}
+
+	if (nc)
+		fprintf(f, ")$");
+
+	fprintf(f, "\nend-list\n");
+}
+
+static void
 bgpq4_print_huawei_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	int			 nc = 0;
@@ -443,6 +480,42 @@ bgpq4_print_huawei_oaspath(FILE *f, struct bgpq_expander *b)
 
 	if (nc)
 		fprintf(f, ")$\n");
+}
+
+static void
+bgpq4_print_huawei_xpl_oaspath(FILE *f, struct bgpq_expander *b)
+{
+	int 			 nc = 0, comma = 0;
+	struct asn_entry	*asne, find, *res;
+
+	fprintf(f, "xpl as-path-list %s", b->name);
+
+	find.asn = b->asnumber;
+	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
+		fprintf(f, "\n  regular ^(_%u)*$", res->asn);
+		RB_REMOVE(asn_tree, &b->asnlist, res);
+		comma = 1;
+	}
+
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f,"%s\n  regular ^(_[0-9]+)*_(%u",
+			    comma ? "," : "", asne->asn);
+			comma = 1;
+		} else
+			fprintf(f,"|%u",asne->asn);
+
+		nc++;
+		if (nc == b->aswidth) {
+			fprintf(f,")$");
+			nc = 0;
+		}
+	}
+
+	if (nc)
+		fprintf(f,")$");
+
+	fprintf(f,"\nend-list\n");
 }
 
 static void
@@ -763,6 +836,9 @@ bgpq4_print_aspath(FILE *f, struct bgpq_expander *b)
 	case V_HUAWEI:
 		bgpq4_print_huawei_aspath(f, b);
 		break;
+	case V_HUAWEI_XPL:
+		bgpq4_print_huawei_xpl_aspath(f, b);
+		break;
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
 	}
@@ -793,6 +869,9 @@ bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_HUAWEI:
 		bgpq4_print_huawei_oaspath(f, b);
+		break;
+	case V_HUAWEI_XPL:
+		bgpq4_print_huawei_xpl_oaspath(f, b);
 		break;
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
@@ -971,6 +1050,43 @@ bgpq4_print_hprefix(struct sx_radix_node *n, void *ff)
 checkSon:
 	if (n->son)
 		bgpq4_print_hprefix(n->son, ff);
+}
+
+static void
+bgpq4_print_hprefixxpl(struct sx_radix_node* n, void* ff)
+{
+	char prefix[128];
+	FILE* f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf_sep(n->prefix, prefix, sizeof(prefix), " ");
+
+	if (n->isAggregate) {
+		if (n->aggregateLow>n->prefix->masklen) {
+			fprintf(f,"%s %s ge %u le %u",
+			    needscomma ? ",\n " : " ",
+			    prefix, n->aggregateLow, n->aggregateHi);
+		} else {
+			fprintf(f,"%s %s le %u",
+			    needscomma ? ",\n " : " ",
+			    prefix, n->aggregateHi);
+		}
+	} else {
+		fprintf(f, "%s %s",
+		    needscomma ? ",\n " : " ",
+		    prefix);
+	}
+
+	needscomma = 1;
+
+checkSon:
+	if (n->son)
+		bgpq4_print_hprefixxpl(n->son, ff);
 }
 
 static void
@@ -1370,6 +1486,18 @@ bgpq4_print_huawei_prefixlist(FILE *f, struct bgpq_expander *b)
 }
 
 static void
+bgpq4_print_huawei_xpl_prefixlist(FILE* f, struct bgpq_expander* b)
+{
+	bname = b->name ? b->name : "NN";
+
+	fprintf(f, "no xpl %s-prefix-list %s\nxpl %s-prefix-list %s\n", b->family==AF_INET ? "ip" : "ipv6", bname, b->family==AF_INET ? "ip" : "ipv6", bname);
+
+	sx_radix_tree_foreach(b->tree, bgpq4_print_hprefixxpl, f);
+
+	fprintf(f, "\nend-list\n");
+}
+
+static void
 bgpq4_print_arista_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
@@ -1614,6 +1742,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_HUAWEI:
 		bgpq4_print_huawei_prefixlist(f, b);
+		break;
+	case V_HUAWEI_XPL:
+		bgpq4_print_huawei_xpl_prefixlist(f, b);
 		break;
 	case V_MIKROTIK:
 		bgpq4_print_mikrotik_prefixlist(f, b);

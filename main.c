@@ -59,6 +59,7 @@ usage(int ecode)
 	printf(" no option : Cisco IOS Classic (default)\n");
 	printf(" -X        : Cisco IOS XR\n");
 	printf(" -U        : Huawei\n");
+	printf(" -u        : Huawei XPL\n");
 	printf(" -j        : JSON\n");
 	printf(" -J        : Juniper Junos\n");
 	printf(" -K        : MikroTik RouterOS\n");
@@ -134,8 +135,8 @@ vendor_exclusive(void)
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei), -e (Arista) and -X (IOS XR) options are mutually"
-	    " exclusive\n");
+	    " -U (Huawei), -u (Huawei XPL), -e (Arista) and -X (IOS XR) options "
+	    " are mutually exclusive\n");
 	exit(1);
 }
 
@@ -197,7 +198,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -401,6 +402,11 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			exclusive();
 		expander.vendor = V_HUAWEI;
+		break;
+	case 'u':
+		if (expander.vendor)
+			exclusive();
+		expander.vendor = V_HUAWEI_XPL;
 		break;
 	case 'W':
 		expander.aswidth = atoi(optarg);
