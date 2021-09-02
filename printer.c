@@ -407,51 +407,33 @@ bgpq4_print_huawei_aspath(FILE *f, struct bgpq_expander *b)
 }
 
 static void
-bgpq4_print_huawei_xpl_aspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_huawei_xpl_aspath(FILE *f, struct bgpq_expander *b)
 {
-	int nc = 0, i, j, k, comma = 0;
+	int 			 nc = 0, comma = 1;
+	struct asn_entry	*asne, find, *res;
 
-	fprintf(f, "xpl as-path-list %s", b->name ? b->name : "NN");
+	fprintf(f, "xpl as-path-list %s", b->name);
 
-	if (b->asn32s[b->asnumber / 65536] &&
-	    b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
-	    (0x80 >> (b->asnumber%8))) {
-		fprintf(f,"\n  regular ^%u(_%u)*$", b->asnumber,
-		    b->asnumber);
-		comma = 1;
+	find.asn = b->asnumber;
+	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
+		fprintf(f, "\n  regular ^%u(_%u)*$", res->asn, res->asn);
+		RB_REMOVE(asn_tree, &b->asnlist, res);
 	}
 
-	for (k = 0; k < 65536; k++) {
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f, "%s\n  regular ^%u(_[0-9]+)*_(%u",
+			    comma ? "," : "",
+			    b->asnumber,
+			    asne->asn);
+			comma = 1;
+		} else
+			fprintf(f, "|%u", asne->asn);
 
-		if (!b->asn32s[k])
-			continue;
-
-		for (i = 0; i < 8192; i++) {
-			for (j = 0; j < 8; j++) {
-				if (b->asn32s[k][i] & (0x80 >> j)) {
-
-					if (k * 65536 + i * 8 + j == b->asnumber)
-						continue;
-
-					if (!nc) {
-						fprintf(f, "%s\n  regular ^%u(_[0-9]+)*_(%u",
-						    comma ? "," : "",
-						    b->asnumber,
-						    k * 65536 + i * 8 + j);
-						comma=1;
-					} else {
-						fprintf(f, "|%u",
-						    k * 65536 + i * 8 + j);
-					}
-
-					nc++;
-
-					if (nc == b->aswidth) {
-						fprintf(f, ")$");
-						nc = 0;
-					}
-				}
-			}
+		nc++;
+		if (nc == b->aswidth) {
+			fprintf(f, ")$");
+			nc = 0;
 		}
 	}
 
@@ -459,7 +441,6 @@ bgpq4_print_huawei_xpl_aspath(FILE* f, struct bgpq_expander* b)
 		fprintf(f, ")$");
 
 	fprintf(f, "\nend-list\n");
-	return 0;
 }
 
 static void
@@ -502,48 +483,32 @@ bgpq4_print_huawei_oaspath(FILE *f, struct bgpq_expander *b)
 }
 
 static void
-bgpq4_print_huawei_xpl_oaspath(FILE* f, struct bgpq_expander* b)
+bgpq4_print_huawei_xpl_oaspath(FILE *f, struct bgpq_expander *b)
 {
-	int nc = 0, i, j, k, comma = 0;
+	int 			 nc = 0, comma = 0;
+	struct asn_entry	*asne, find, *res;
 
-	fprintf(f, "xpl as-path-list %s", b->name ? b->name : "NN");
+	fprintf(f, "xpl as-path-list %s", b->name);
 
-	if (b->asn32s[b->asnumber / 65536] &&
-	    b->asn32s[b->asnumber / 65536][(b->asnumber % 65536) / 8] &
-	    (0x80 >> (b->asnumber % 8))) {
-		fprintf(f,"\n  regular ^(_%u)*$", b->asnumber);
+	find.asn = b->asnumber;
+	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
+		fprintf(f, "\n  regular ^(_%u)*$", res->asn);
+		RB_REMOVE(asn_tree, &b->asnlist, res);
 		comma = 1;
 	}
 
-	for (k = 0; k < 65536; k++) {
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f,"%s\n  regular ^(_[0-9]+)*_(%u",
+			    comma ? "," : "", asne->asn);
+			comma = 1;
+		} else
+			fprintf(f,"|%u",asne->asn);
 
-		if (!b->asn32s[k])
-			continue;
-
-		for (i = 0; i < 8192; i++) {
-			for (j = 0; j < 8; j++) {
-
-				if (b->asn32s[k][i] & (0x80 >> j)) {
-
-					if (k * 65536 + i * 8 + j == b->asnumber)
-						continue;
-
-					if (!nc) {
-						fprintf(f,"%s\n  regular ^(_[0-9]+)*_(%u",
-						    comma ? "," : "",
-						    k * 65536 + i * 8 + j);
-						comma = 1;
-					} else {
-						fprintf(f,"|%u",k*65536+i*8+j);
-					}
-
-					nc++;
-					if (nc == b->aswidth) {
-						fprintf(f,")$");
-						nc=0;
-					}
-				}
-			}
+		nc++;
+		if (nc == b->aswidth) {
+			fprintf(f,")$");
+			nc = 0;
 		}
 	}
 
@@ -551,8 +516,6 @@ bgpq4_print_huawei_xpl_oaspath(FILE* f, struct bgpq_expander* b)
 		fprintf(f,")$");
 
 	fprintf(f,"\nend-list\n");
-
-	return 0;
 }
 
 static void
@@ -1532,8 +1495,6 @@ bgpq4_print_huawei_xpl_prefixlist(FILE* f, struct bgpq_expander* b)
 	sx_radix_tree_foreach(b->tree, bgpq4_print_hprefixxpl, f);
 
 	fprintf(f, "\nend-list\n");
-
-	return 0;
 }
 
 static void
