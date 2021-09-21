@@ -27,7 +27,7 @@
 The
 **bgpq4**
 utility used to generate configurations (prefix-lists, extended
-access-lists, policy-statement terms and as-path lists) based on RADB data.
+access-lists, policy-statement terms and as-path lists) based on IRR data.
 
 The options are as follows:
 
@@ -145,7 +145,7 @@ The options are as follows:
 
 **-S** *sources*
 
-> use specified sources only (recommended: RADB,RIPE,APNIC).
+> use specified sources only (recommended: AFRINIC,ARIN,APNIC,LACNIC,RIPE).
 
 **-t**
 
