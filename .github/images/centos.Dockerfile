@@ -3,7 +3,7 @@ FROM quay.io/$image
 
 # Install dependencies
 RUN yum update -y
-RUN yum install -y autoconf automake gcc libtool make
+RUN yum install -y autoconf automake gcc libtool make diffutils file
 
 # Add source code
 ADD . /src

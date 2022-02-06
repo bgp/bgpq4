@@ -14,13 +14,15 @@ jobs:
           - debian:buster
           - ubuntu:focal
           - ubuntu:bionic
+          - fedora/fedora:36
+          - fedora/fedora:35
           - fedora/fedora:34
-          - fedora/fedora:33
+          - centos/centos:stream9
           - centos/centos:stream8
           - centos/centos:7
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.14
+          - alpine:3.15
     steps:
     - uses: actions/checkout@v1
     - name: Run build on ${{matrix.dockerenv}}
