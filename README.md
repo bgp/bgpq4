@@ -11,6 +11,7 @@
 \[**-f**&nbsp;*asn*&nbsp;|
 **-F**&nbsp;*fmt*&nbsp;|
 **-G**&nbsp;*asn*
+**-H**&nbsp;*asn*
 **-t**]
 \[**-46ABbDdJjNnsXU**]
 \[**-a**&nbsp;*asn*]
@@ -81,6 +82,10 @@ The options are as follows:
 **-G** *number*
 
 > generate output as-path access-list.
+
+**-H** *number*
+
+> generate output as-list for JunOS 21.3R1+ `as-path-origin` filter (JunOS only)
 
 **-h** *host\[:port]*
 

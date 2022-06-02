@@ -68,6 +68,7 @@ typedef enum {
 	T_NONE = 0,
 	T_ASPATH,
 	T_OASPATH,
+	T_ASLIST,
 	T_ASSET,
 	T_PREFIXLIST,	
 	T_EACL,
@@ -132,6 +133,7 @@ void bgpq4_print_eacl(FILE *f, struct bgpq_expander *b);
 void bgpq4_print_aspath(FILE *f, struct bgpq_expander *b);
 void bgpq4_print_asset(FILE *f, struct bgpq_expander *b);
 void bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b);
+void bgpq4_print_aslist(FILE *f, struct bgpq_expander *b);
 void bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b);
 
 void sx_radix_node_freeall(struct sx_radix_node *n);
