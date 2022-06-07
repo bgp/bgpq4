@@ -277,9 +277,9 @@ new line
 tabulation
 .El
 .Pp
-Please note that no new lines inserted automatically after each sentence,
-you have to add them into format string manually, elsewhere output will
-be in one line (sometimes it makes sense):
+Please note that no new lines are inserted automatically after each sentence.
+You have to add them into format string manually, otherwise the output will
+be in one single line (sometimes it makes sense):
 .nf
 .Bd -literal
 $ bgpq4 -6F "%n/%l; " as-eltel
@@ -289,29 +289,29 @@ $ bgpq4 -6F "%n/%l; " as-eltel
 .Sh NOTES ON SOURCES
 By default
 .Em bgpq4
-trusts to data from all databases mirrored into NTT's IRR service.
-Unfortunately, not all these databases are equal in how much can we
+trusts data from all the databases mirrored into NTT's IRR service.
+Unfortunately, not all these databases are equal in how much we can
 trust their data.
 RIR maintained databases (AFRINIC, ARIN, APNIC, LACNIC and RIPE)
-shall be trusted more than the others because they are indeed have the
-knowledge about which address space allocated to this or that ASn,
-other databases lack this knowledge and can (and, actually, do) contain
-some stale data: noone but RIRs care to remove outdated route-objects
-when address space revoked from one ASn and allocated to another.
+shall be trusted more than the others because they have the
+knowledge about who the rightful holders of resources are, while
+other databases lack this knowledge and can (and, actually do) contain 
+stale data: no one but the RIRs care to remove outdated route-objects
+when address space is de-allocated or transferred.
 In order to keep their filters both compact and actual,
 .Em bgpq4 users
 are encouraged to use '-S' flag to limit database sources to only
-ones they trust.
+the ones they trust.
 .Pp
 General recommendations:
 .Pp
-Use minimal set of RIR databases (only those in which you and your
+Use a minimal set of RIR databases (only those in which you and your
 customers have registered route-objects).
 .Pp
-Avoid using ARIN-NONAUTH and RIPE-NONAUTH as trusted source: these records
-were created in database but for address space allocated to different RIR,
-so the NONAUTH databases have no chance to confirm validity of this route
-object.
+Avoid using ARIN-NONAUTH and RIPE-NONAUTH as trusted sources: these records
+were created in the database, but for address space allocated to different RIRs,
+so the NONAUTH databases have no chance to confirm validity of the route
+objects they contain.
 .Bd -literal
 $ bgpq4 -S RIPE,RADB as-space
 no ip prefix-list NN
