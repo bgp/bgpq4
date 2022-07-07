@@ -50,7 +50,7 @@ extern int expand_special_asn;
 static int
 usage(int ecode)
 {
-	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G <num>"
+	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G|H <num>"
 	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS> ... "
 	    "[EXCEPT <OBJECTS> ...]\n");
 	printf("\nVendor targets:\n");
@@ -87,6 +87,7 @@ usage(int ecode)
 	    "(OpenBGPD)\n");
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
+	printf(" -H number : generate origin as-lists (JunOS only)\n");
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
@@ -96,7 +97,7 @@ usage(int ecode)
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
 	printf(" -z        : generate route-filter-list (Junos only)\n");
-	printf(" -W len    : specify max-entries on as-path line (use 0 for "
+	printf(" -W len    : specify max-entries on as-path/as-list line (use 0 for "
 		"infinity)\n");
 
 	printf("\nUtility operations:\n");
@@ -196,7 +197,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:tTh:UuwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -265,6 +266,12 @@ main(int argc, char* argv[])
 		if (expander.generation)
 			exclusive();
 		expander.generation = T_OASPATH;
+		parseasnumber(&expander, optarg);
+		break;
+	case 'H':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_ASLIST;
 		parseasnumber(&expander, optarg);
 		break;
 	case 'h':
@@ -475,6 +482,13 @@ main(int argc, char* argv[])
 				expander.aswidth = 8;
 				break;
 			}
+		} else if (expander.generation == T_ASLIST) {
+			int vendor = expander.vendor;
+			switch (vendor) {
+			case V_JUNIPER:
+				expander.aswidth = 8;
+				break;
+			}
 		}
 	}
 
@@ -660,14 +674,18 @@ main(int argc, char* argv[])
 		    "only with Juniper route-filters\n");
 	}
 
-	if ((expander.generation == T_ASPATH || expander.generation == T_OASPATH)
+	if ((expander.generation == T_ASPATH
+	    || expander.generation == T_OASPATH
+	    || expander.generation == T_ASLIST)
 	    && af != AF_INET && !expander.validate_asns) {
-		sx_report(SX_FATAL, "Sorry, -6 makes no sense with as-path (-f/-G) "
+		sx_report(SX_FATAL, "Sorry, -6 makes no sense with as-path (-f/-G) or as-list (-H) "
 		    "generation\n");
 	}
 
-	if (expander.validate_asns && expander.generation != T_ASPATH
-	    && expander.generation != T_OASPATH) {
+	if (expander.validate_asns
+	    && expander.generation != T_ASPATH
+	    && expander.generation != T_OASPATH
+	    && expander.generation != T_ASLIST) {
 		sx_report(SX_FATAL, "Sorry, -w makes sense only for as-path "
 		    "(-f/-G) generation\n");
 	}
@@ -737,6 +755,9 @@ main(int argc, char* argv[])
 			break;
 		case T_OASPATH:
 			bgpq4_print_oaspath(stdout, &expander);
+			break;
+		case T_ASLIST:
+			bgpq4_print_aslist(stdout, &expander);
 			break;
 		case T_ASSET:
 			bgpq4_print_asset(stdout, &expander);

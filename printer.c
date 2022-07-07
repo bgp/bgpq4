@@ -275,6 +275,45 @@ bgpq4_print_juniper_oaspath(FILE *f, struct bgpq_expander *b)
 }
 
 static void
+bgpq4_print_juniper_aslist(FILE *f, struct bgpq_expander *b)
+{
+	int			 nc = 0, lineNo = 0;
+	struct asn_entry	*asne, find, *res;
+
+	fprintf(f,"policy-options {\nreplace:\n as-list-group %s {\n",
+	    b->name);
+
+	find.asn = b->asnumber;
+	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
+		fprintf(f, "  as-list a0 members %u;\n", res->asn);
+		RB_REMOVE(asn_tree, &b->asnlist, res);
+		lineNo++;
+	}
+
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+		if (!nc) {
+			fprintf(f, "  as-list a%u members [ %u",
+			    lineNo, asne->asn);
+		} else {
+			fprintf(f," %u", asne->asn);
+		}
+
+		nc++;
+
+		if (nc == b->aswidth) {
+			fprintf(f, " ];\n");
+			nc = 0;
+			lineNo++;
+		}
+	}
+
+	if (nc)
+		fprintf(f, " ];\n");
+
+	fprintf(f, " }\n}\n");
+}
+
+static void
 bgpq4_print_openbgpd_oaspath(FILE *f, struct bgpq_expander *b)
 {
 	struct asn_entry	*asne;
@@ -872,6 +911,18 @@ bgpq4_print_oaspath(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_HUAWEI_XPL:
 		bgpq4_print_huawei_xpl_oaspath(f, b);
+		break;
+	default:
+		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
+	}
+}
+
+void
+bgpq4_print_aslist(FILE *f, struct bgpq_expander *b)
+{
+	switch (b->vendor) {
+	case V_JUNIPER:
+		bgpq4_print_juniper_aslist(f, b);
 		break;
 	default:
 		sx_report(SX_FATAL,"Unknown vendor %i\n", b->vendor);
