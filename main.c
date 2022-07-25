@@ -748,7 +748,7 @@ main(int argc, char* argv[])
 
 	switch (expander.generation) {
 		case T_NONE:
-			sx_report(SX_FATAL,"Unreachable point... call snar\n");
+			sx_report(SX_FATAL,"Unreachable point");
 			exit(1);
 		case T_ASPATH:
 			bgpq4_print_aspath(stdout, &expander);

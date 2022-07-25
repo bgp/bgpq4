@@ -37,6 +37,7 @@
 .Fl f Ar asn |
 .Fl F Ar fmt |
 .Fl G Ar asn
+.Fl H Ar asn
 .Fl t
 .Oc
 .Op Fl 46ABbDdJjNnsXU
@@ -83,6 +84,10 @@ generate input as-path access-list.
 generate output in user-defined format.
 .It Fl G Ar number
 generate output as-path access-list.
+.It Fl H Ar number
+generate output as-list for
+.Em as-path-origin
+filter (JunOS 21.3R1+)
 .It Fl h Ar host[:port]
 host running IRRD database (default: rr.ntt.net).
 .It Fl J
