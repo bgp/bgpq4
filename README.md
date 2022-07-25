@@ -150,7 +150,7 @@ The options are as follows:
 
 **-S** *sources*
 
-> use specified sources only (recommended: RIPE,AFRINIC,ARIN,APNIC,LACNIC,RIPE).
+> use specified sources only (recommended: RPKI,AFRINIC,ARIN,APNIC,LACNIC,RIPE).
 
 **-t**
 
