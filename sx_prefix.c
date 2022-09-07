@@ -44,7 +44,7 @@ sx_prefix_alloc(struct sx_prefix *p)
 {
 	struct sx_prefix *sp;
 
-	if ((sp = malloc(sizeof(struct sx_prefix)) == NULL)
+	if ((sp = malloc(sizeof(struct sx_prefix))) == NULL)
 		err(1, NULL);
 
 	if (p)
@@ -56,7 +56,7 @@ sx_prefix_alloc(struct sx_prefix *p)
 }
 
 void
-sx_prefix_destroy(struct sx_prefix *p)
+sx_prefix_free(struct sx_prefix *p)
 {
 	if (p)
 		free(p);
@@ -263,16 +263,19 @@ sx_radix_tree_insert_specifics(struct sx_radix_tree *t, struct sx_prefix *p,
     unsigned min, unsigned max)
 {
 	struct sx_prefix *np;
+	struct sx_radix_node *nn;
+
 	np = sx_prefix_alloc(p);
 
 	if (np->masklen >= min) {
-		struct sx_radix_node *nn = sx_radix_tree_insert(t, np);
-		sx_prefix_destroy(np);
+		nn = sx_radix_tree_insert(t, np);
+		sx_prefix_free(np);
 		np = nn->prefix;
 	}
 
 	if (np->masklen + 1 > max)
 		return 1;
+
 
 	np->masklen += 1;
 	sx_radix_tree_insert_specifics(t, np, min, max);
@@ -379,7 +382,7 @@ sx_prefix_new(int af, char *text)
 		return NULL;
 
 	if (!sx_prefix_parse(p, af, text)) {
-		sx_prefix_destroy(p);
+		sx_prefix_free(p);
 		return NULL;
 	}
 
@@ -727,7 +730,7 @@ next:
 		char pbuffer[128], cbuffer[128];
 		sx_prefix_snprintf(prefix, pbuffer, sizeof(pbuffer));
 		sx_prefix_snprintf(chead->prefix, cbuffer, sizeof(cbuffer));
-		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n",
+		printf("Unreachable point... eb=%i, prefix=%s, chead=%s\n",
 		    eb, pbuffer, cbuffer);
 		abort();
 	}
@@ -737,8 +740,8 @@ next:
 struct sx_radix_node *
 sx_radix_tree_insert(struct sx_radix_tree *tree, struct sx_prefix *prefix)
 {
-	unsigned int		 eb;
-	struct sx_radix_node	**candidate=NULL, *chead;
+	unsigned int eb;
+	struct sx_radix_node *chead, **candidate = NULL;
 
 	if (!tree || !prefix)
 		return NULL;
@@ -754,7 +757,7 @@ sx_radix_tree_insert(struct sx_radix_tree *tree, struct sx_prefix *prefix)
 	candidate = &tree->head;
 	chead = tree->head;
 
-next:
+ next:
 	eb = sx_prefix_eqbits(prefix, chead->prefix);
 	if (eb < prefix->masklen && eb < chead->prefix->masklen) {
 		struct sx_prefix *neoRoot = sx_prefix_alloc(prefix);
@@ -763,7 +766,7 @@ next:
 		neoRoot->masklen = eb;
 		sx_prefix_adjust_masklen(neoRoot);
 		rn=sx_radix_node_new(neoRoot);
-                sx_prefix_destroy(neoRoot);
+                sx_prefix_free(neoRoot);
                 neoRoot = rn->prefix;
 		if (!rn) {
 			sx_report(SX_ERROR,"Unable to create node: %s\n",
@@ -787,11 +790,10 @@ next:
 		return ret;
 	} else if (eb == prefix->masklen && eb < chead->prefix->masklen) {
 		struct sx_radix_node *ret = sx_radix_node_new(prefix);
-		if (sx_prefix_isbitset(chead->prefix, eb + 1)) {
+		if (sx_prefix_isbitset(chead->prefix, eb + 1))
 			ret->r = chead;
-		} else {
+		else
 			ret->l = chead;
-		}
 		ret->parent = chead->parent;
 		chead->parent = ret;
 		*candidate = ret;
@@ -828,7 +830,7 @@ next:
 		char pbuffer[128], cbuffer[128];
 		sx_prefix_snprintf(prefix, pbuffer, sizeof(pbuffer));
 		sx_prefix_snprintf(chead->prefix, cbuffer, sizeof(cbuffer));
-		printf("Unreachible point... eb=%i, prefix=%s, chead=%s\n", eb,
+		printf("Unreachable point... eb=%i, prefix=%s, chead=%s\n", eb,
 		    pbuffer, cbuffer);
 		abort();
 	}
