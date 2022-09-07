@@ -259,28 +259,19 @@ sx_prefix_setbit(struct sx_prefix *p, int n)
 
 
 static int
-sx_radix_tree_insert_specifics(struct sx_radix_tree *t, struct sx_prefix *p,
+sx_radix_tree_insert_specifics(struct sx_radix_tree *t, struct sx_prefix p,
     unsigned min, unsigned max)
 {
-	struct sx_prefix *np;
-	struct sx_radix_node *nn;
+	if (p.masklen >= min)
+		sx_radix_tree_insert(t, &p);
 
-	np = sx_prefix_alloc(p);
-
-	if (np->masklen >= min) {
-		nn = sx_radix_tree_insert(t, np);
-		sx_prefix_free(np);
-		np = nn->prefix;
-	}
-
-	if (np->masklen + 1 > max)
+	if (p.masklen + 1 > max)
 		return 1;
 
-
-	np->masklen += 1;
-	sx_radix_tree_insert_specifics(t, np, min, max);
-	sx_prefix_setbit(np, np->masklen);
-	sx_radix_tree_insert_specifics(t, np, min, max);
+	p.masklen += 1;
+	sx_radix_tree_insert_specifics(t, p, min, max);
+	sx_prefix_setbit(&p, p.masklen);
+	sx_radix_tree_insert_specifics(t, p, min, max);
 
 	return 1;
 }
@@ -289,18 +280,16 @@ int
 sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
     char *text)
 {
-	char			*d = strchr(text, '^');
-	struct sx_prefix	*p;
+	struct sx_prefix	 p;
 	unsigned long		 min, max = 0;
-
-	p = sx_prefix_alloc(NULL);
+	char			*d = strchr(text, '^');
 
 	if (!d || !d[1])
 		return 0;
 
 	*d = 0;
 
-	if (!sx_prefix_parse(p, 0, text)) {
+	if (!sx_prefix_parse(&p, 0, text)) {
 		sx_report(SX_ERROR, "Unable to parse prefix %s^%s\n", text,
 		    d + 1);
 		return 0;
@@ -308,23 +297,23 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 
 	*d = '^';
 
-	if (af && p->family != af) {
+	if (af && p.family != af) {
 		sx_report(SX_ERROR, "Ignoring prefix %s, wrong af %i\n", text,
-		    p->family);
+		    p.family);
 		return 0;
 	}
 
-	if (maxlen && p->masklen > maxlen) {
+	if (maxlen && p.masklen > maxlen) {
 		SX_DEBUG(debug_expander, "Ignoring prefix %s, masklen %i > max"
-		    " masklen %u\n", text, p->masklen, maxlen);
+		    " masklen %u\n", text, p.masklen, maxlen);
 		return 0;
 	}
 
 	if (d[1] == '-') {
-		min = p->masklen + 1;
+		min = p.masklen + 1;
 		max = maxlen;
 	} else if (d[1] == '+') {
-		min = p->masklen;
+		min = p.masklen;
 		max = maxlen;
 	} else if (isdigit(d[1])) {
 		char *dm = NULL;
@@ -341,9 +330,9 @@ sx_prefix_range_parse(struct sx_radix_tree *tree, int af, unsigned int maxlen,
 		return 0;
 	}
 
-	if (min < p->masklen) {
+	if (min < p.masklen) {
 		sx_report(SX_ERROR, "Invalid prefix-range %s: min %lu < "
-		    "masklen %u\n", text, min, p->masklen);
+		    "masklen %u\n", text, min, p.masklen);
 		return 0;
 	}
 

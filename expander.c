@@ -229,7 +229,7 @@ bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix)
 	sx_radix_tree_insert(b->tree, p);
 
         if (p)
-		sx_prefix_destroy(p);
+		sx_prefix_free(p);
 
 	return 1;
 }
@@ -1113,7 +1113,7 @@ sx_radix_node_freeall(struct sx_radix_node *n) {
 	if (n->payload)
 		free(n->payload);
 
-	sx_prefix_destroy(n->prefix);
+	sx_prefix_free(n->prefix);
 
 	free(n);
 }
