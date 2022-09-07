@@ -26,6 +26,7 @@
  */
 
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,13 +39,13 @@
 int debug_aggregation = 0;
 extern int debug_expander;
 
-struct sx_prefix*
+struct sx_prefix *
 sx_prefix_alloc(struct sx_prefix *p)
 {
-	struct sx_prefix *sp = malloc(sizeof(struct sx_prefix));
+	struct sx_prefix *sp;
 
-	if (!sp)
-		return NULL;
+	if ((sp = malloc(sizeof(struct sx_prefix)) == NULL)
+		err(1, NULL);
 
 	if (p)
 		memcpy(sp, p, sizeof(struct sx_prefix));
@@ -64,15 +65,16 @@ sx_prefix_destroy(struct sx_prefix *p)
 void
 sx_radix_node_destroy(struct sx_radix_node *n)
 {
-	if (n) {
-		if (n->payload)
-			free(n->payload);
+	if (!n)
+		return;
 
-    		if (n->prefix)
-			free(n->prefix);
+	if (n->payload)
+		free(n->payload);
 
-    		free(n);
-	}
+	if (n->prefix)
+		free(n->prefix);
+
+	free(n);
 }
 
 void
@@ -140,7 +142,7 @@ sx_prefix_parse(struct sx_prefix *p, int af, char *text)
 	c = strchr(mtext,'/');
 
 	if (c) {
-		char* eod;
+		char *eod;
 		*c = 0;
 		masklen = strtol(c + 1, &eod, 10);
 		if (eod && eod[0] && !isspace(eod[0])) {
@@ -519,13 +521,13 @@ sx_prefix_jsnprintf(struct sx_prefix *p, char *rbuffer, int srb)
 	return snprintf(rbuffer, srb, "%s\\/%i", buffer, p->masklen);
 }
 
-struct sx_radix_tree*
+struct sx_radix_tree *
 sx_radix_tree_new(int af)
 {
-	struct sx_radix_tree *rt = malloc(sizeof(struct sx_radix_tree));
+	struct sx_radix_tree *rt;
 
-	if (!rt)
-		return NULL;
+	if ((rt = malloc(sizeof(struct sx_radix_tree))) == NULL)
+		err(1, NULL);
 
 	memset(rt, 0, sizeof(struct sx_radix_tree));
 	rt->family = af;
@@ -539,13 +541,13 @@ sx_radix_tree_empty(struct sx_radix_tree *t)
 	return t->head == NULL;
 }
 
-struct sx_radix_node*
+struct sx_radix_node *
 sx_radix_node_new(struct sx_prefix *prefix)
 {
-	struct sx_radix_node *rn = malloc(sizeof(struct sx_radix_node));
+	struct sx_radix_node *rn;
 
-	if (!rn)
-		return NULL;
+	if ((rn = malloc(sizeof(struct sx_radix_node))) == NULL)
+		err(1, NULL);
 
 	memset(rn, 0, sizeof(struct sx_radix_node));
 
@@ -582,7 +584,7 @@ sx_prefix_eqbits(struct sx_prefix *a, struct sx_prefix *b)
 	return b->masklen;
 }
 
-struct sx_prefix*
+struct sx_prefix *
 sx_prefix_overlay(struct sx_prefix *p, int n)
 {
 	struct sx_prefix *sp = sx_prefix_alloc(p);
@@ -668,7 +670,7 @@ next:
 }
 	
 			
-struct sx_radix_node*
+struct sx_radix_node *
 sx_radix_tree_lookup(struct sx_radix_tree *tree, struct sx_prefix *prefix)
 {
 	unsigned int 		 eb;
@@ -732,7 +734,7 @@ next:
 }
 
 
-struct sx_radix_node*
+struct sx_radix_node *
 sx_radix_tree_insert(struct sx_radix_tree *tree, struct sx_prefix *prefix)
 {
 	unsigned int		 eb;
@@ -848,7 +850,7 @@ sx_radix_node_fprintf(struct sx_radix_node *node, void *udata)
 
 int
 sx_radix_node_foreach(struct sx_radix_node *node,
-    void (*func)(struct sx_radix_node*, void*), void *udata)
+    void (*func)(struct sx_radix_node *, void *), void *udata)
 {
 	func(node, udata);
 
@@ -1055,7 +1057,7 @@ sx_radix_tree_aggregate(struct sx_radix_tree *tree)
 static void
 setGlueUpTo(struct sx_radix_node *node, void *udata)
 {
-	unsigned refine = *(unsigned*)udata;
+	unsigned refine = *(unsigned *)udata;
 
 	if (node && node->prefix->masklen <= refine)
 		node->isGlue = 1;
@@ -1115,7 +1117,7 @@ sx_radix_tree_refine(struct sx_radix_tree *tree, unsigned refine)
 static void
 setGlueFrom(struct sx_radix_node *node, void *udata)
 {
-	unsigned refine = *(unsigned*)udata;
+	unsigned refine = *(unsigned *)udata;
 
 	if (node && node->prefix->masklen <= refine)
 		node->isGlue = 1;
