@@ -13,7 +13,7 @@
 **-G**&nbsp;*asn*
 **-H**&nbsp;*asn*
 **-t**]
-\[**-46ABbDdJjNnsXU**]
+\[**-46ABbDdJjoNnsXU**]
 \[**-a**&nbsp;*asn*]
 \[**-r**&nbsp;*len*]
 \[**-R**&nbsp;*len*]
@@ -127,6 +127,10 @@ The options are as follows:
 **-N**
 
 > generate config for Nokia SR OS classic CLI (Cisco IOS by default).
+
+**-o**
+
+> only use the speicifed data source for an AS-SET or Route-Set (specified with the "::" notation)
 
 **-p**
 
@@ -430,8 +434,9 @@ In order to create a distribution archive, run:
 When everything is OK,
 **bgpq4**
 generates access-list to standard output and exits with status == 0.
-In case of errors they are printed to stderr and program exits with
-non-zero status.
+In case of errors they are printed to stderr and the program exits with
+non-zero status. A prefix list may still be printed to standard out
+with a non-zero exit status but it may be incomplete.
 
 # AUTHORS
 

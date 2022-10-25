@@ -178,7 +178,7 @@ parseasnumber(struct bgpq_expander *expander, char *asnstr)
 int
 main(int argc, char* argv[])
 {
-	int c;
+	int c, rval = 0;
 	struct bgpq_expander expander;
 	int af = AF_INET, selectedipv4 = 0, exceptmode = 0;
 	int widthSet = 0, aggregate = 0, refine = 0, refineLow = 0;
@@ -197,7 +197,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:opr:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -388,6 +388,9 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_NOKIA_MD;
+		break;
+	case 'o':
+		expander.usesource = 1;
 		break;
 	case 't':
 		if (expander.generation)
@@ -694,17 +697,22 @@ main(int argc, char* argv[])
 		usage(1);
 
 	while (argv[0]) {
+		char *obj = argv[0];
+		if (expander.usesource){
+			char *d = strstr(argv[0], "::");
+			if (d) obj = d + 2;
+		}
 		if (!strcmp(argv[0], "EXCEPT")) {
 			exceptmode = 1;
 		} else if (exceptmode) {
 			bgpq_expander_add_stop(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "AS-", 3)) {
+		} else if (!strncasecmp(obj, "AS-", 3)) {
 			bgpq_expander_add_asset(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "RS-", 3)) {
+		} else if (!strncasecmp(obj, "RS-", 3)) {
 			bgpq_expander_add_rset(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "AS", 2)) {
+		} else if (!strncasecmp(obj, "AS", 2)) {
 			char *ec;
-			if ((ec = strchr(argv[0], ':'))) {
+			if ((ec = strchr(obj, ':'))) {
 				if (!strncasecmp(ec + 1, "AS-", 3)) {
 					bgpq_expander_add_asset(&expander, argv[0]);
 				} else if (!strncasecmp(ec + 1, "RS-", 3)) {
@@ -735,7 +743,7 @@ main(int argc, char* argv[])
 	}
 
 	if (!bgpq_expand(&expander))
-		exit(1);
+		rval = 1;
 
 	if (refine)
 		sx_radix_tree_refine(expander.tree, refine);
@@ -775,5 +783,5 @@ main(int argc, char* argv[])
 
         expander_freeall(&expander);
 
-	return 0;
+	return rval;
 }

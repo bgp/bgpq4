@@ -91,6 +91,8 @@ struct bgpq_expander {
 	struct sx_radix_tree	 	*tree;
 	int			 	 family;
 	char				*sources;
+	char				*defaultsources;
+	unsigned int			usesource;
 	uint32_t		 	 asnumber;
 	int			 	 aswidth;
 	char				*name;
