@@ -243,18 +243,42 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 	return sx_prefix_range_parse(b->tree, b->family, b->maxlen, prefix);
 }
 
-static char*
+char*
 bgpq_get_asset(char *object){
 	char *d = strstr(object, "::");
 	if (d){
-		char *asset = (char*)calloc(1, 256);
-		memcpy(asset, d + 2, strlen(object) - (d - object) - 2);
-		return asset;
+		d += 2;
+	} else {
+		d = object;
 	}
-	return NULL;
+
+	char *ec = strchr(d, ':');
+	if (ec) {
+		ec += 1;
+	} else {
+		ec = d;
+	}
+
+	char *asset = (char*)calloc(1, 256);
+	memcpy(asset, ec, strlen(object) - (ec - object));
+	return asset;
 }
 
-static char*
+char*
+bgpq_get_rset(char *object){
+	char *d = strstr(object, "::");
+	if (d){
+		d += 2;
+	} else {
+		d = object;
+	}
+
+	char *rset = (char*)calloc(1, 256);
+	memcpy(rset, d, strlen(object) - (d - object));
+	return rset;
+}
+
+char*
 bgpq_get_source(char *object){
 	char *d = strstr(object, "::");
 	if (d){
@@ -320,7 +344,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 				}
 				struct request *req1 = bgpq_pipeline(b,
 				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
-				        as);
+				        bgpq_get_asset(as));
 				req1->depth = req->depth + 1;
 			} else {
 				if (b->usesource) {
@@ -336,7 +360,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 				}
 				b->cdepth++;
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", as);
+				    NULL, "!i%s\n", bgpq_get_asset(as));
 				b->cdepth--;
 			}
 		} else {
@@ -411,6 +435,9 @@ bgpq_get_irrd_sources(int fd) {
 	if ((ret = write(fd, query, strlen(query))) != qlen) {
 		sx_report(SX_ERROR, "Partial write of query to "
 			"IRRd: %i bytes, %s\n", ret, strerror(errno));
+		close(fd);
+		free(sources);
+		free(response);
 		exit(1);
 	}
 
@@ -419,10 +446,16 @@ bgpq_get_irrd_sources(int fd) {
 		if (*(response + strlen(response) - 2) != 'C') {
 			sx_report(SX_ERROR, "Invalid response "
 				"'%s': %s\n", response, query);
+			close(fd);
+			free(sources);
+			free(response);
 			exit(1);
 		}
 	} else {
 		sx_report(SX_ERROR, "failed to read sources\n");
+		close(fd);
+		free(sources);
+		free(response);
 		exit(1);
 	}
 
@@ -433,17 +466,23 @@ bgpq_get_irrd_sources(int fd) {
 		if (!end) {
 			sx_report(SX_ERROR, "No 2nd newline in response '%s': %s\n",
 				response, query);
+			close(fd);
+			free(sources);
+			free(response);
 			exit(1);
 		}
 		unsigned int slen = end - start;
 		if (slen > rsize) {
-			memcpy(sources, start, rsize);
+			memcpy(sources, start, rsize-1);
 		} else {
 			memcpy(sources, start, slen);
 		}
 	} else {
 		sx_report(SX_ERROR, "No 1st newline in response '%s': %s\n",
 			response, query);
+		close(fd);
+		free(sources);
+		free(response);
 		exit(1);
 	}
 	free(response);
@@ -774,26 +813,26 @@ have3:
 			free(recvbuffer);
 		} else if (response[0] == 'C') {
 			/* No data */
-			SX_DEBUG(debug_expander,"No data expanding %s\n",
+			SX_DEBUG(debug_expander,"No data expanding %s",
 			    req->request);
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
 		} else if (response[0] == 'D') {
-			sx_report(SX_ERROR, "Key not found expanding %s\n",
+			sx_report(SX_ERROR, "Key not found expanding %s",
 			    req->request);
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
 			rval = 0;
 		} else if (response[0] == 'E') {
-			sx_report(SX_ERROR, "Multiple keys expanding %s: %s\n",
+			sx_report(SX_ERROR, "Multiple keys expanding %s: %s",
 			    req->request, response);
 			rval = 0;
 		} else if ( response[0] == 'F') {
-			sx_report(SX_ERROR, "Error expanding %s: %s\n",
+			sx_report(SX_ERROR, "Error expanding %s: %s",
 			    req->request, response);
 			rval = 0;
 		} else {
-			sx_report(SX_ERROR,"Wrong reply: %s to %s\n", response,
+			sx_report(SX_ERROR,"Wrong reply: %s to %s", response,
 			    req->request);
 			exit(1);
 		}
@@ -945,7 +984,7 @@ have3:
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
 	} else if (response[0] == 'D') {
-		sx_report(SX_ERROR, "Key not found expanding %s\n",
+		sx_report(SX_ERROR, "Key not found expanding %s",
 			req->request);
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
@@ -953,11 +992,11 @@ have3:
 	} else if (response[0] == 'E') {
 		/* XXXXXX */
 	} else if (response[0] == 'F') {
-		sx_report(SX_ERROR, "Error expanding %s: %s\n",
+		sx_report(SX_ERROR, "Error expanding %s: %s",
 			request, response);
 		rval = 0;
 	} else {
-		sx_report(SX_ERROR,"Wrong reply: %s\n", response);
+		sx_report(SX_ERROR,"Wrong reply: %s", response);
 		exit(1);
 	}
 	request_free(req);
@@ -968,7 +1007,7 @@ have3:
 int
 bgpq_expand(struct bgpq_expander *b)
 {
-	int			 fd = -1, err, ret, aquery = 0, rval = 1;
+	int			 fd = -1, err, ret, aquery = 0;
 	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
@@ -1143,17 +1182,6 @@ bgpq_expand(struct bgpq_expander *b)
 		}
 	}
 
-	if (b->usesource) {
-		if (b->sources && b->sources[0] != 0) {
-			b->defaultsources = (char*)calloc(1, strlen(b->sources));
-			strcpy(b->defaultsources, b->sources);
-		} else {
-			b->defaultsources = bgpq_get_irrd_sources(b->fd);
-		}
-	} else {
-		b->defaultsources = bgpq_get_irrd_sources(b->fd);
-	}
-
 	if (pipelining)
 		fcntl(fd, F_SETFL, O_NONBLOCK|(fcntl(fd, F_GETFL)));
 
@@ -1162,89 +1190,128 @@ bgpq_expand(struct bgpq_expander *b)
 			if (b->usesource) {
 				char *source = bgpq_get_source(mc->text);
 				if (source){
-					char *object = bgpq_get_asset(mc->text);
-					if (!object) {
-						sx_report(
-							SX_ERROR,
-							"failed to split object and source from %s\n",
-							mc->text
-						);
-						close(fd);
-						free(b->defaultsources);
-						free(source);
-						exit(1);
-					}
 					if (pipelining){
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
 						bgpq_pipeline(b, bgpq_expanded_macro_limit, b,
-							"!i%s\n", object);
+							"!i%s\n", bgpq_get_asset(mc->text));
 					} else {
-						if (!bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source))
-							rval = 0;
-						if (!bgpq_expand_irrd(
-							b, bgpq_expanded_macro_limit, b, "!i%s\n", object))
-							rval = 0;
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
+							b, "!i%s\n", bgpq_get_asset(mc->text));
 					}
 					free(source);
-					free(object);
 				} else {
 					if (pipelining){
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n",
 							b->defaultsources);
 						bgpq_pipeline(b, bgpq_expanded_macro_limit, b,
-							"!i%s\n", mc->text);
+							"!i%s\n", bgpq_get_asset(mc->text));
 					} else {
-						if (!bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
-							b->defaultsources))
-							rval = 0;
-						if (!bgpq_expand_irrd(b, bgpq_expanded_macro_limit, b,
-							"!i%s\n", mc->text))
-							rval = 0;
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						bgpq_expand_irrd(b, bgpq_expanded_macro_limit, b,
+							"!i%s\n", bgpq_get_asset(mc->text));
 					}
 				}
 			} else if (aquery)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
 				    "!a%s%s\n",
 				    b->family == AF_INET ? "4" : "6",
-				    mc->text);
+				    bgpq_get_asset(mc->text));
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro, b,
-				    "!i%s,1\n", mc->text);
+				    "!i%s,1\n", bgpq_get_asset(mc->text));
 		} else {
-			bgpq_expander_add_already(b, mc->text);
+			bgpq_expander_add_already(b, bgpq_get_asset(mc->text));
 			if (pipelining)
 				bgpq_pipeline(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", mc->text);
+				    NULL, "!i%s\n", bgpq_get_asset(mc->text));
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", mc->text);
+				    NULL, "!i%s\n", bgpq_get_asset(mc->text));
 		}
 	}
 
 	if (pipelining){
 		bgpq_pipeline(b, NULL, NULL, "!s%s\n", b->defaultsources);
 	} else {
-		if (!bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", b->defaultsources))
-			rval = 0;
+		bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", b->defaultsources);
 	}
 
 	if (pipelining) {
 		if (!STAILQ_EMPTY(&b->wq))
 			bgpq_write(b);
 		if (!STAILQ_EMPTY(&b->rq)) {
-			if (!bgpq_read(b))
-				rval = 0;
+			bgpq_read(b);
 		}
 	}
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		STAILQ_FOREACH(mc, &b->rsets, entry) {
-			if (b->family == AF_INET)
-				bgpq_expand_irrd(b, bgpq_expanded_prefix,
-				    NULL, "!i%s,1\n", mc->text);
-			else
-				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
-				    NULL, "!i%s,1\n", mc->text);
+			if (b->usesource) {
+				char *source = bgpq_get_source(mc->text);
+				if (source){
+					if (pipelining){
+						printf("Checking %s\n", bgpq_get_rset(mc->text));
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
+						if (b->family == AF_INET)
+							bgpq_pipeline(b, bgpq_expanded_prefix,
+				    			NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_pipeline(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						if (b->family == AF_INET)
+							bgpq_expand_irrd(b, bgpq_expanded_prefix,
+				    			NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					}
+					free(source);
+				} else {
+					if (pipelining){
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						if (b->family == AF_INET)
+							bgpq_pipeline(b, bgpq_expanded_prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_pipeline(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						if (b->family == AF_INET)
+							bgpq_expand_irrd(b, bgpq_expanded_prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					}
+				}
+			} else {
+				if (pipelining){
+					bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+						b->defaultsources);
+					if (b->family == AF_INET)
+						bgpq_pipeline(b, bgpq_expanded_prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+					else
+						bgpq_pipeline(b, bgpq_expanded_v6prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+				} else {
+					bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+						b->defaultsources);
+					if (b->family == AF_INET)
+						bgpq_expand_irrd(b, bgpq_expanded_prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+					else
+						bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+				}
+			}
 		}
 
 		RB_FOREACH(asne, asn_tree, &b->asnlist) {
@@ -1271,8 +1338,7 @@ bgpq_expand(struct bgpq_expander *b)
 			if (!STAILQ_EMPTY(&b->wq))
 				bgpq_write(b);
 			if (!STAILQ_EMPTY(&b->rq)) {
-				if (!bgpq_read(b))
-					rval = 0;
+				bgpq_read(b);
 			}
 		}
 	}
@@ -1290,7 +1356,7 @@ bgpq_expand(struct bgpq_expander *b)
 	close(fd);
 	free(b->defaultsources);
 
-	return rval;
+	return 1;
 }
 
 void

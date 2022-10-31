@@ -128,6 +128,10 @@ int bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_stop(struct bgpq_expander *b, char *object);
 
+char* bgpq_get_asset(char *object);
+char* bgpq_get_rset(char *object);
+char* bgpq_get_source(char *object);
+
 int bgpq_expand(struct bgpq_expander *b);
 
 void bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b);

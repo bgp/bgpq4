@@ -178,7 +178,7 @@ parseasnumber(struct bgpq_expander *expander, char *asnstr)
 int
 main(int argc, char* argv[])
 {
-	int c, rval = 0;
+	int c;
 	struct bgpq_expander expander;
 	int af = AF_INET, selectedipv4 = 0, exceptmode = 0;
 	int widthSet = 0, aggregate = 0, refine = 0, refineLow = 0;
@@ -190,14 +190,14 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 #endif
-	
+
 	bgpq_expander_init(&expander, af);
 
 	if (getenv("IRRD_SOURCES"))
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:opr:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -388,9 +388,6 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_NOKIA_MD;
-		break;
-	case 'o':
-		expander.usesource = 1;
 		break;
 	case 't':
 		if (expander.generation)
@@ -698,9 +695,10 @@ main(int argc, char* argv[])
 
 	while (argv[0]) {
 		char *obj = argv[0];
-		if (expander.usesource){
-			char *d = strstr(argv[0], "::");
-			if (d) obj = d + 2;
+		char *delim = strstr(argv[0], "::");
+		if (delim) {
+			expander.usesource = 1;
+			obj = delim + 2;
 		}
 		if (!strcmp(argv[0], "EXCEPT")) {
 			exceptmode = 1;
@@ -743,7 +741,7 @@ main(int argc, char* argv[])
 	}
 
 	if (!bgpq_expand(&expander))
-		rval = 1;
+		exit(1);
 
 	if (refine)
 		sx_radix_tree_refine(expander.tree, refine);
@@ -783,5 +781,5 @@ main(int argc, char* argv[])
 
         expander_freeall(&expander);
 
-	return rval;
+	return 0;
 }
