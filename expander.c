@@ -1241,9 +1241,8 @@ bgpq_expand(struct bgpq_expander *b)
 	if (pipelining) {
 		if (!STAILQ_EMPTY(&b->wq))
 			bgpq_write(b);
-		if (!STAILQ_EMPTY(&b->rq)) {
+		if (!STAILQ_EMPTY(&b->rq))
 			bgpq_read(b);
-		}
 	}
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
@@ -1337,9 +1336,8 @@ bgpq_expand(struct bgpq_expander *b)
 		if (pipelining) {
 			if (!STAILQ_EMPTY(&b->wq))
 				bgpq_write(b);
-			if (!STAILQ_EMPTY(&b->rq)) {
+			if (!STAILQ_EMPTY(&b->rq))
 				bgpq_read(b);
-			}
 		}
 	}
 
