@@ -261,7 +261,7 @@ bgpq_get_asset(char *object){
 		ec = d;
 	}
 
-	if ((asset = (char*)calloc(1, 256)) == NULL)
+	if ((asset = calloc(1, 256)) == NULL)
 		sx_report(SX_FATAL, "calloc failed for asset\n");
 	memcpy(asset, ec, strlen(object) - (ec - object));
 	return asset;
