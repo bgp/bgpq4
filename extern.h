@@ -92,7 +92,7 @@ struct bgpq_expander {
 	int			 	 family;
 	char				*sources;
 	char				*defaultsources;
-	unsigned int			usesource;
+	unsigned int			 usesource;
 	uint32_t		 	 asnumber;
 	int			 	 aswidth;
 	char				*name;

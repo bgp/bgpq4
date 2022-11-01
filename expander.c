@@ -245,21 +245,24 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 
 char*
 bgpq_get_asset(char *object){
-	char *d = strstr(object, "::");
+	char *asset, *d, *ec;
+
+	d = strstr(object, "::");
 	if (d){
 		d += 2;
 	} else {
 		d = object;
 	}
 
-	char *ec = strchr(d, ':');
+	ec = strchr(d, ':');
 	if (ec) {
 		ec += 1;
 	} else {
 		ec = d;
 	}
 
-	char *asset = (char*)calloc(1, 256);
+	if ((asset = (char*)calloc(1, 256)) == NULL)
+		sx_report(SX_FATAL, "calloc failed for asset\n");
 	memcpy(asset, ec, strlen(object) - (ec - object));
 	return asset;
 }
