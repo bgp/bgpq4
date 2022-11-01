@@ -1016,7 +1016,7 @@ int
 bgpq_expand(struct bgpq_expander *b)
 {
 	int			 fd = -1, e, ret, aquery = 0;
-	char 				*source;
+	char 			*source;
 	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
