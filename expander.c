@@ -203,7 +203,7 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 	}
 
 	if ((asne = malloc(sizeof(struct asn_entry))) == NULL)
-		sx_report(SX_FATAL, "malloc failed for asn\n");
+		err(1, NULL);
 
 	asne->asn = asno;
 	RB_INSERT(asn_tree, &b->asnlist, asne);
@@ -262,32 +262,37 @@ bgpq_get_asset(char *object){
 	}
 
 	if ((asset = calloc(1, 256)) == NULL)
-		sx_report(SX_FATAL, "calloc failed for asset\n");
+		err(1, NULL);
 	memcpy(asset, ec, strlen(object) - (ec - object));
 	return asset;
 }
 
 char*
 bgpq_get_rset(char *object){
-	char *d = strstr(object, "::");
+	char *d, *rset;
+
+	d = strstr(object, "::");
 	if (d){
 		d += 2;
 	} else {
 		d = object;
 	}
 
-	char *rset = (char*)calloc(1, 256);
+	if ((rset = calloc(1, 256)) == NULL)
+		err(1, NULL);
 	memcpy(rset, d, strlen(object) - (d - object));
 	return rset;
 }
 
 char*
 bgpq_get_source(char *object){
-	char *d = strstr(object, "::");
+	char *d, *source;
+
+	d = strstr(object, "::");
 	if (d){
-		char *source = (char*)calloc(1, 256);
-		unsigned int slen = d - object;
-		memcpy(source, object, slen);
+		if ((source = calloc(1, 256)) == NULL)
+			err(1, NULL);
+		memcpy(source, object, (d - object));
 		return source;
 	}
 	return NULL;
@@ -431,8 +436,12 @@ bgpq_get_irrd_sources(int fd) {
 	char *query = "!s-lc\n";
 	int qlen = strlen(query);
 	const unsigned int rsize = 256;
-	char *response = (char*)calloc(1, rsize);
-	char *sources = (char*)calloc(1, rsize);
+	char *response, *sources;
+
+	if ((response = calloc(1, rsize)) == NULL)
+		err(1, NULL);
+	if ((sources = calloc(1, rsize)) == NULL)
+		err(1, NULL);
 
 	SX_DEBUG(debug_expander, "Requesting source list %s", query);
 	if ((ret = write(fd, query, strlen(query))) != qlen) {
@@ -875,12 +884,8 @@ bgpq_expand_irrd(struct bgpq_expander *b,
 
 	SX_DEBUG(debug_expander, "expander sending: %s", request);
 
-	if ((ret = write(b->fd, request, strlen(request)) == 0) || ret == -1) {
-		sx_report(SX_ERROR,
-			"Partial write of request to IRRd: %li bytes, %s\n",
-			ret, strerror(errno));
-		exit(1);
-	}
+	if ((ret = write(b->fd, request, strlen(request)) == 0) || ret == -1)
+		err(1, "write");
 
 	memset(response, 0, sizeof(response));
 
@@ -1010,7 +1015,8 @@ have3:
 int
 bgpq_expand(struct bgpq_expander *b)
 {
-	int			 fd = -1, err, ret, aquery = 0;
+	int			 fd = -1, e, ret, aquery = 0;
+	char 			*source;
 	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
@@ -1023,11 +1029,11 @@ bgpq_expand(struct bgpq_expander *b)
 
 	hints.ai_socktype = SOCK_STREAM;
 
-	err=getaddrinfo(b->server, b->port, &hints, &res);
+	e=getaddrinfo(b->server, b->port, &hints, &res);
 
-	if (err) {
+	if (e) {
 		sx_report(SX_ERROR,"Unable to resolve %s: %s\n", b->server,
-		    gai_strerror(err));
+		    gai_strerror(e));
 		exit(1);
 	}
 
@@ -1047,16 +1053,16 @@ bgpq_expand(struct bgpq_expander *b)
 			close(fd);
 			exit(1);
 		}
-		err = connect(fd, rp->ai_addr, rp->ai_addrlen);
-		if (err) {
+		e = connect(fd, rp->ai_addr, rp->ai_addrlen);
+		if (e) {
 			close(fd);
 			fd = -1;
 			continue;
 		}
-		err = sx_maxsockbuf(fd, SO_SNDBUF);
-		if (err > 0) {
+		e = sx_maxsockbuf(fd, SO_SNDBUF);
+		if (e > 0) {
 			SX_DEBUG(debug_expander, "Acquired sendbuf of %i "
-			    "bytes\n", err);
+			    "bytes\n", e);
 		} else {
 			close(fd);
 			fd = -1;
@@ -1141,7 +1147,8 @@ bgpq_expand(struct bgpq_expander *b)
 
 	if (b->usesource) {
 		if (b->sources && b->sources[0] != 0) {
-			b->defaultsources = (char*)calloc(1, strlen(b->sources));
+			if ((b->defaultsources = calloc(1, strlen(b->sources))) == NULL)
+				err(1, NULL);
 			strcpy(b->defaultsources, b->sources);
 		} else {
 			b->defaultsources = bgpq_get_irrd_sources(b->fd);
@@ -1191,7 +1198,7 @@ bgpq_expand(struct bgpq_expander *b)
 	STAILQ_FOREACH(mc, &b->macroses, entry) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
 			if (b->usesource) {
-				char *source = bgpq_get_source(mc->text);
+				source = bgpq_get_source(mc->text);
 				if (source){
 					if (pipelining){
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
@@ -1251,7 +1258,7 @@ bgpq_expand(struct bgpq_expander *b)
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		STAILQ_FOREACH(mc, &b->rsets, entry) {
 			if (b->usesource) {
-				char *source = bgpq_get_source(mc->text);
+				source = bgpq_get_source(mc->text);
 				if (source){
 					if (pipelining){
 						printf("Checking %s\n", bgpq_get_rset(mc->text));
