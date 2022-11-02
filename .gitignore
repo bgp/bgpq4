@@ -1,4 +1,5 @@
-*\.o
+*\.in
 *\.log
+*\.o
 .deps
 .libs
