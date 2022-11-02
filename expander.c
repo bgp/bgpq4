@@ -245,7 +245,7 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 
 char*
 bgpq_get_asset(char *object){
-	char *asset, *d, *ec;
+	char *asset, *d;
 
 	d = strstr(object, "::");
 	if (d){
@@ -254,16 +254,9 @@ bgpq_get_asset(char *object){
 		d = object;
 	}
 
-	ec = strchr(d, ':');
-	if (ec) {
-		ec += 1;
-	} else {
-		ec = d;
-	}
-
 	if ((asset = calloc(1, 256)) == NULL)
 		err(1, NULL);
-	memcpy(asset, ec, strlen(object) - (ec - object));
+	memcpy(asset, d, strlen(object) - (d - object));
 	return asset;
 }
 
@@ -319,6 +312,8 @@ static int
 bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
     struct request *req)
 {
+	char *source;
+
 	if (!strncasecmp(as, "AS-", 3) || strchr(as, '-') || strchr(as, ':')) {
 		struct sx_tentry tkey = { .text = as };
 
@@ -340,7 +335,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 			bgpq_expander_add_already(b, as);
 			if (pipelining) {
 				if (b->usesource) {
-					char *source = bgpq_get_source(as);
+					source = bgpq_get_source(as);
 					if (source){
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
 						free(source);
@@ -356,7 +351,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 				req1->depth = req->depth + 1;
 			} else {
 				if (b->usesource) {
-					char *source = bgpq_get_source(as);
+					source = bgpq_get_source(as);
 					if (source) {
 						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
 						free(source);
