@@ -86,6 +86,7 @@ bgpq_expander_init(struct bgpq_expander *b, int af)
 
 	b->family = af;
 	b->sources = "";
+	b->usesource = 0;
 	b->name = "NN";
 	b->aswidth = 8;
 	b->identify = 1;
@@ -152,7 +153,7 @@ bgpq_expander_add_already(struct bgpq_expander *b, char *rs)
 	lkey.text = rs;
 
 	if (RB_FIND(tentree, &b->already, &lkey))
-		return 1;
+		return 0;
 
 	le = sx_tentry_new(rs);
 
@@ -169,7 +170,7 @@ bgpq_expander_add_stop(struct bgpq_expander *b, char *rs)
 	lkey.text = rs;
 
 	if (RB_FIND(tentree, &b->stoplist, &lkey))
-		return 1;
+		return 0;
 
 	le = sx_tentry_new(rs);
 
@@ -196,11 +197,13 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 	}
 
 	if (!expand_special_asn &&
-	    ((asno  >= 4200000000ul) || (asno >= 64496 && asno <= 65551)))
+	    ((asno  >= 4200000000ul) || (asno >= 64496 && asno <= 65551))) {
+		sx_report(SX_ERROR,"Invalid AS number: %u\n", asno);
 		return 0;
+	}
 
 	if ((asne = malloc(sizeof(struct asn_entry))) == NULL)
-		err(1, NULL);
+		sx_report(SX_FATAL, "malloc failed for asn\n");
 
 	asne->asn = asno;
 	RB_INSERT(asn_tree, &b->asnlist, asne);
@@ -240,6 +243,49 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 	return sx_prefix_range_parse(b->tree, b->family, b->maxlen, prefix);
 }
 
+char*
+bgpq_get_asset(char *object){
+	char *asset, *d;
+
+	d = strstr(object, "::");
+	if (d){
+		d += 2;
+	} else {
+		d = object;
+	}
+
+	if ((asset = calloc(1, 256)) == NULL)
+		sx_report(SX_FATAL, "calloc failed for asset\n");
+	memcpy(asset, d, strlen(object) - (d - object));
+	return asset;
+}
+
+char*
+bgpq_get_rset(char *object){
+	char *d = strstr(object, "::");
+	if (d){
+		d += 2;
+	} else {
+		d = object;
+	}
+
+	char *rset = (char*)calloc(1, 256);
+	memcpy(rset, d, strlen(object) - (d - object));
+	return rset;
+}
+
+char*
+bgpq_get_source(char *object){
+	char *d = strstr(object, "::");
+	if (d){
+		char *source = (char*)calloc(1, 256);
+		unsigned int slen = d - object;
+		memcpy(source, object, slen);
+		return source;
+	}
+	return NULL;
+}
+
 static int
 bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
     struct request *req)
@@ -263,6 +309,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 {
 	if (!strncasecmp(as, "AS-", 3) || strchr(as, '-') || strchr(as, ':')) {
 		struct sx_tentry tkey = { .text = as };
+		char *source;
 
 		if (RB_FIND(tentree, &b->already, &tkey)) {
 			SX_DEBUG(debug_expander > 2, "%s is already expanding, "
@@ -281,14 +328,36 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 		    req->depth + 1 < b->maxdepth)) {
 			bgpq_expander_add_already(b, as);
 			if (pipelining) {
+				if (b->usesource) {
+					source = bgpq_get_source(as);
+					if (source){
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
+						free(source);
+					} else {
+						bgpq_pipeline(
+							b, NULL, NULL, "!s%s\n", b->defaultsources
+						);
+					}
+				}
 				struct request *req1 = bgpq_pipeline(b,
 				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
-				        as);
+				        bgpq_get_asset(as));
 				req1->depth = req->depth + 1;
 			} else {
+				if (b->usesource) {
+					source = bgpq_get_source(as);
+					if (source) {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						free(source);
+					} else {
+						bgpq_expand_irrd(
+							b, NULL, NULL, "!s%s\n", b->defaultsources
+						);
+					}
+				}
 				b->cdepth++;
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", as);
+				    NULL, "!i%s\n", bgpq_get_asset(as));
 				b->cdepth--;
 			}
 		} else {
@@ -350,6 +419,73 @@ bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander *ex,
 	return 1;
 }
 
+static char*
+bgpq_get_irrd_sources(int fd) {
+	int ret;
+	char *query = "!s-lc\n";
+	int qlen = strlen(query);
+	const unsigned int rsize = 256;
+	char *response = (char*)calloc(1, rsize);
+	char *sources = (char*)calloc(1, rsize);
+
+	SX_DEBUG(debug_expander, "Requesting source list %s", query);
+	if ((ret = write(fd, query, strlen(query))) != qlen) {
+		sx_report(SX_ERROR, "Partial write of query to "
+			"IRRd: %i bytes, %s\n", ret, strerror(errno));
+		close(fd);
+		free(sources);
+		free(response);
+		exit(1);
+	}
+
+	if (0 < read(fd, response, rsize)) {
+		SX_DEBUG(debug_expander, "Got answer %s", response);
+		if (*(response + strlen(response) - 2) != 'C') {
+			sx_report(SX_ERROR, "Invalid response "
+				"'%s': %s\n", response, query);
+			close(fd);
+			free(sources);
+			free(response);
+			exit(1);
+		}
+	} else {
+		sx_report(SX_ERROR, "failed to read sources\n");
+		close(fd);
+		free(sources);
+		free(response);
+		exit(1);
+	}
+
+	char *start = strchr(response, '\n');
+	if (start){
+		start += 1;
+		char *end = strchr(start, '\n');
+		if (!end) {
+			sx_report(SX_ERROR, "No 2nd newline in response '%s': %s\n",
+				response, query);
+			close(fd);
+			free(sources);
+			free(response);
+			exit(1);
+		}
+		unsigned int slen = end - start;
+		if (slen > rsize) {
+			memcpy(sources, start, rsize-1);
+		} else {
+			memcpy(sources, start, slen);
+		}
+	} else {
+		sx_report(SX_ERROR, "No 1st newline in response '%s': %s\n",
+			response, query);
+		close(fd);
+		free(sources);
+		free(response);
+		exit(1);
+	}
+	free(response);
+	return sources;
+}
+
 int bgpq_pipeline_dequeue(int fd, struct bgpq_expander *b);
 
 static struct request *
@@ -385,7 +521,7 @@ bgpq_pipeline(struct bgpq_expander *b,
     int (*callback)(char *, struct bgpq_expander *, struct request *),
     void *udata, char *fmt, ...)
 {
-	char			 request[128];
+	char			 request[256];
 	int			 ret;
 	struct request	*bp = NULL;
 	va_list			 ap;
@@ -402,7 +538,6 @@ bgpq_pipeline(struct bgpq_expander *b,
 		sx_report(SX_FATAL,"Unable to allocate %lu bytes: %s\n",
 		    (unsigned long)sizeof(struct request),
 		    strerror(errno));
-		exit(1);
 	}
 
 	if (STAILQ_EMPTY(&b->wq)) {
@@ -528,6 +663,7 @@ bgpq_read(struct bgpq_expander *b)
 {
 	static char response[256];
 	static int off = 0;
+	int rval = 1;
 
 	if (!STAILQ_EMPTY(&b->wq))
 		bgpq_write(b);
@@ -666,7 +802,7 @@ have3:
 					c[spn] = 0;
 				if (c[0] == 0)
 					break;
-				req->callback(c, b, req);
+				if (!req->callback(c, b, req)) rval = 0;
 				c += spn + 1;
 			}
 			assert(c == recvbuffer + togot);
@@ -674,24 +810,26 @@ have3:
 			free(recvbuffer);
 		} else if (response[0] == 'C') {
 			/* No data */
-			SX_DEBUG(debug_expander,"No data expanding %s\n",
+			SX_DEBUG(debug_expander,"No data expanding %s",
 			    req->request);
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
 		} else if (response[0] == 'D') {
-			/* .... */
-			SX_DEBUG(debug_expander,"Key not found expanding %s\n",
+			sx_report(SX_ERROR, "Key not found expanding %s",
 			    req->request);
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
+			rval = 0;
 		} else if (response[0] == 'E') {
-			sx_report(SX_ERROR, "Multiple keys expanding %s: %s\n",
+			sx_report(SX_ERROR, "Multiple keys expanding %s: %s",
 			    req->request, response);
+			rval = 0;
 		} else if ( response[0] == 'F') {
-			sx_report(SX_ERROR, "Error expanding %s: %s\n",
+			sx_report(SX_ERROR, "Error expanding %s: %s",
 			    req->request, response);
+			rval = 0;
 		} else {
-			sx_report(SX_ERROR,"Wrong reply: %s to %s\n", response,
+			sx_report(SX_ERROR,"Wrong reply: %s to %s", response,
 			    req->request);
 			exit(1);
 		}
@@ -708,7 +846,7 @@ have3:
 		request_free(req);
 	}
 
-	return 0;
+	return rval;
 }
 
 int
@@ -716,11 +854,12 @@ bgpq_expand_irrd(struct bgpq_expander *b,
     int (*callback)(char *, struct bgpq_expander *, struct request *),
     void *udata, char *fmt, ...)
 {
-	char			 request[128], response[128];
+	char			 request[256], response[256];
 	va_list			 ap;
 	ssize_t			 ret;
 	int			 off = 0;
 	struct request	*req;
+	int rval = 1;
 
 	va_start(ap, fmt);
 	vsnprintf(request, sizeof(request), fmt, ap);
@@ -730,8 +869,12 @@ bgpq_expand_irrd(struct bgpq_expander *b,
 
 	SX_DEBUG(debug_expander, "expander sending: %s", request);
 
-	if ((ret = write(b->fd, request, strlen(request)) == 0) || ret == -1)
-		err(1, "write");
+	if ((ret = write(b->fd, request, strlen(request)) == 0) || ret == -1) {
+		sx_report(SX_ERROR,
+			"Partial write of request to IRRd: %li bytes, %s\n",
+			ret, strerror(errno));
+		exit(1);
+	}
 
 	memset(response, 0, sizeof(response));
 
@@ -743,7 +886,6 @@ repeat:
 		exit(1);
 	} else if (ret == 0) {
 		sx_report(SX_FATAL, "EOF reading IRRd\n");
-		exit(1);
 	}
 
 	off += ret;
@@ -808,10 +950,8 @@ reread2:
 		if (ret < 0) {
 			sx_report(SX_FATAL, "error reading IRRd: %s\n",
 			    strerror(errno));
-			exit(1);
 		} else if (ret == 0) {
 			sx_report(SX_FATAL, "eof reading IRRd\n");
-			exit(1);
 		}
 		off += ret;
 
@@ -831,7 +971,7 @@ have3:
 			if (c[0] == 0)
 				break;
 			if (callback)
-				callback(c, b, req);
+				if (!callback(c, b, req)) rval = 0;
 			c += spn + 1;
 		}
 		memset(recvbuffer, 0, togot + 2);
@@ -841,20 +981,24 @@ have3:
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
 	} else if (response[0] == 'D') {
-		/* ... */
+		sx_report(SX_ERROR, "Key not found expanding %s",
+			req->request);
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
+		rval = 0;
 	} else if (response[0] == 'E') {
 		/* XXXXXX */
 	} else if (response[0] == 'F') {
-		/* XXXXXX */
+		sx_report(SX_ERROR, "Error expanding %s: %s",
+			request, response);
+		rval = 0;
 	} else {
-		sx_report(SX_ERROR,"Wrong reply: %s\n", response);
-		exit(0);
+		sx_report(SX_ERROR,"Wrong reply: %s", response);
+		exit(1);
 	}
 	request_free(req);
 
-	return 0;
+	return rval;
 }
 
 int
@@ -931,6 +1075,7 @@ bgpq_expand(struct bgpq_expander *b)
 	if ((ret = write(fd, "!!\n", 3)) != 3) {
 		sx_report(SX_ERROR, "Partial write of multiple command mode "
 		    "to IRRd: %i bytes, %s\n", ret, strerror(errno));
+		close(fd);
 		exit(1);
 	}
 
@@ -944,6 +1089,7 @@ bgpq_expand(struct bgpq_expander *b)
 				sx_report(SX_ERROR, "Partial write of "
 				    "identifier to IRRd: %i bytes, %s\n",
 				    ret, strerror(errno));
+				close(fd);
 				exit(1);
 			}
 			memset(ident, 0, sizeof(ident));
@@ -951,10 +1097,12 @@ bgpq_expand(struct bgpq_expander *b)
 				SX_DEBUG(debug_expander, "Got answer %s", ident);
 			} else {
 				sx_report(SX_ERROR, "ident, failed read from IRRd\n");
+				close(fd);
 				exit(1);
 			}
 		} else {
 			sx_report(SX_ERROR, "snprintf(ident) failed\n");
+			close(fd);
 			exit(1);
 		}
 	}
@@ -967,6 +1115,7 @@ bgpq_expand(struct bgpq_expander *b)
 		if ((ret = write(fd, "!a\n", 3)) != 3) {
 			sx_report(SX_ERROR, "Partial write of '!a' test query "
 			    "to IRRd: %i bytes, %s\n", ret, strerror(errno));
+			close(fd);
 			exit(1);
 		}
 		memset(aret, 0, sizeof(aret));
@@ -979,14 +1128,26 @@ bgpq_expand(struct bgpq_expander *b)
 			}
 		} else {
 			sx_report(SX_ERROR, "A query test failed read from IRRd\n");
+			close(fd);
 			exit(1);
 		}
 	}
 
+	if (b->usesource) {
+		if (b->sources && b->sources[0] != 0) {
+			b->defaultsources = (char*)calloc(1, strlen(b->sources));
+			strcpy(b->defaultsources, b->sources);
+		} else {
+			b->defaultsources = bgpq_get_irrd_sources(b->fd);
+		}
+	} else {
+		b->defaultsources = bgpq_get_irrd_sources(b->fd);
+	}
+
 	if (b->sources && b->sources[0] != 0) {
 		int slen = strlen(b->sources) + 4;
-		if (slen < 128)
-			slen = 128;
+		if (slen < 256)
+			slen = 256;
 		char sources[slen];
 		slen = snprintf(sources, sizeof(sources), "!s%s\n", b->sources);
 		if (slen > 0) {
@@ -994,6 +1155,7 @@ bgpq_expand(struct bgpq_expander *b)
 			if ((ret = write(fd, sources, slen)) != slen) {
 				sx_report(SX_ERROR, "Partial write of sources to "
 				    "IRRd: %i bytes, %s\n", ret, strerror(errno));
+				close(fd);
 				exit(1);
 			}
 			memset(sources, 0, sizeof(sources));
@@ -1002,14 +1164,17 @@ bgpq_expand(struct bgpq_expander *b)
 				if (sources[0] != 'C') {
 					sx_report(SX_ERROR, "Invalid source(s) "
 					    "'%s': %s\n", b->sources, sources);
+					close(fd);
 					exit(1);
 				}
 			} else {
 				sx_report(SX_ERROR, "failed to read sources\n");
+				close(fd);
 				exit(1);
 			}
 		} else {
 			sx_report(SX_ERROR, "snprintf(sources) failed\n");
+			close(fd);
 			exit(1);
 		}
 	}
@@ -1019,23 +1184,55 @@ bgpq_expand(struct bgpq_expander *b)
 
 	STAILQ_FOREACH(mc, &b->macroses, entry) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
-			if (aquery)
+			if (b->usesource) {
+				char *source = bgpq_get_source(mc->text);
+				if (source){
+					if (pipelining){
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
+						bgpq_pipeline(b, bgpq_expanded_macro_limit, b,
+							"!i%s\n", bgpq_get_asset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
+							b, "!i%s\n", bgpq_get_asset(mc->text));
+					}
+					free(source);
+				} else {
+					if (pipelining){
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						bgpq_pipeline(b, bgpq_expanded_macro_limit, b,
+							"!i%s\n", bgpq_get_asset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						bgpq_expand_irrd(b, bgpq_expanded_macro_limit, b,
+							"!i%s\n", bgpq_get_asset(mc->text));
+					}
+				}
+			} else if (aquery)
 				bgpq_expand_irrd(b, bgpq_expanded_prefix, b,
 				    "!a%s%s\n",
 				    b->family == AF_INET ? "4" : "6",
-				    mc->text);
+				    bgpq_get_asset(mc->text));
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro, b,
-				    "!i%s,1\n", mc->text);
+				    "!i%s,1\n", bgpq_get_asset(mc->text));
 		} else {
-			bgpq_expander_add_already(b, mc->text);
+			bgpq_expander_add_already(b, bgpq_get_asset(mc->text));
 			if (pipelining)
 				bgpq_pipeline(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", mc->text);
+				    NULL, "!i%s\n", bgpq_get_asset(mc->text));
 			else
 				bgpq_expand_irrd(b, bgpq_expanded_macro_limit,
-				    NULL, "!i%s\n", mc->text);
+				    NULL, "!i%s\n", bgpq_get_asset(mc->text));
 		}
+	}
+
+	if (pipelining){
+		bgpq_pipeline(b, NULL, NULL, "!s%s\n", b->defaultsources);
+	} else {
+		bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", b->defaultsources);
 	}
 
 	if (pipelining) {
@@ -1047,12 +1244,70 @@ bgpq_expand(struct bgpq_expander *b)
 
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		STAILQ_FOREACH(mc, &b->rsets, entry) {
-			if (b->family == AF_INET)
-				bgpq_expand_irrd(b, bgpq_expanded_prefix,
-				    NULL, "!i%s,1\n", mc->text);
-			else
-				bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
-				    NULL, "!i%s,1\n", mc->text);
+			if (b->usesource) {
+				char *source = bgpq_get_source(mc->text);
+				if (source){
+					if (pipelining){
+						printf("Checking %s\n", bgpq_get_rset(mc->text));
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
+						if (b->family == AF_INET)
+							bgpq_pipeline(b, bgpq_expanded_prefix,
+				    			NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_pipeline(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						if (b->family == AF_INET)
+							bgpq_expand_irrd(b, bgpq_expanded_prefix,
+				    			NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					}
+					free(source);
+				} else {
+					if (pipelining){
+						bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						if (b->family == AF_INET)
+							bgpq_pipeline(b, bgpq_expanded_prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_pipeline(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					} else {
+						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+							b->defaultsources);
+						if (b->family == AF_INET)
+							bgpq_expand_irrd(b, bgpq_expanded_prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+						else
+							bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+								NULL, "!i%s\n", bgpq_get_rset(mc->text));
+					}
+				}
+			} else {
+				if (pipelining){
+					bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+						b->defaultsources);
+					if (b->family == AF_INET)
+						bgpq_pipeline(b, bgpq_expanded_prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+					else
+						bgpq_pipeline(b, bgpq_expanded_v6prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+				} else {
+					bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+						b->defaultsources);
+					if (b->family == AF_INET)
+						bgpq_expand_irrd(b, bgpq_expanded_prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+					else
+						bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
+							NULL, "!i%s,1\n", bgpq_get_rset(mc->text));
+				}
+			}
 		}
 
 		RB_FOREACH(asne, asn_tree, &b->asnlist) {
@@ -1094,6 +1349,7 @@ bgpq_expand(struct bgpq_expander *b)
 		fcntl(fd, F_SETFL, fl);
 	}
 	close(fd);
+	free(b->defaultsources);
 
 	return 1;
 }

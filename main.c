@@ -190,7 +190,7 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 #endif
-	
+
 	bgpq_expander_init(&expander, af);
 
 	if (getenv("IRRD_SOURCES"))
@@ -694,17 +694,23 @@ main(int argc, char* argv[])
 		usage(1);
 
 	while (argv[0]) {
+		char *obj = argv[0];
+		char *delim = strstr(argv[0], "::");
+		if (delim) {
+			expander.usesource = 1;
+			obj = delim + 2;
+		}
 		if (!strcmp(argv[0], "EXCEPT")) {
 			exceptmode = 1;
 		} else if (exceptmode) {
 			bgpq_expander_add_stop(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "AS-", 3)) {
+		} else if (!strncasecmp(obj, "AS-", 3)) {
 			bgpq_expander_add_asset(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "RS-", 3)) {
+		} else if (!strncasecmp(obj, "RS-", 3)) {
 			bgpq_expander_add_rset(&expander, argv[0]);
-		} else if (!strncasecmp(argv[0], "AS", 2)) {
+		} else if (!strncasecmp(obj, "AS", 2)) {
 			char *ec;
-			if ((ec = strchr(argv[0], ':'))) {
+			if ((ec = strchr(obj, ':'))) {
 				if (!strncasecmp(ec + 1, "AS-", 3)) {
 					bgpq_expander_add_asset(&expander, argv[0]);
 				} else if (!strncasecmp(ec + 1, "RS-", 3)) {

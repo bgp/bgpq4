@@ -91,6 +91,8 @@ struct bgpq_expander {
 	struct sx_radix_tree	 	*tree;
 	int			 	 family;
 	char				*sources;
+	char				*defaultsources;
+	unsigned int			 usesource;
 	uint32_t		 	 asnumber;
 	int			 	 aswidth;
 	char				*name;
@@ -125,6 +127,10 @@ int bgpq_expander_add_as(struct bgpq_expander *b, char *as);
 int bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_stop(struct bgpq_expander *b, char *object);
+
+char* bgpq_get_asset(char *object);
+char* bgpq_get_rset(char *object);
+char* bgpq_get_source(char *object);
 
 int bgpq_expand(struct bgpq_expander *b);
 
