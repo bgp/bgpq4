@@ -1,5 +1,0 @@
-*\.in
-*\.log
-*\.o
-.deps
-.libs
