@@ -26,6 +26,6 @@ jobs:
           - alpine:edge
           - alpine:3.16
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Run build on ${{matrix.dockerenv}}
       run: docker build . --file .github/images/${{matrix.dockerenv}}.Dockerfile --build-arg image=${{matrix.dockerenv}}
