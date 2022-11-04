@@ -51,7 +51,7 @@ static int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G|H <num>"
-	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS> ... "
+	    "|f <num>|t] [-46ABbdJjKNnpwXz] [-R len] <OBJECTS> ... "
 	    "[EXCEPT <OBJECTS> ...]\n");
 	printf("\nVendor targets:\n");
 	printf(" no option : Cisco IOS Classic (default)\n");
@@ -74,6 +74,7 @@ usage(int ecode)
 	printf(" -m len    : maximum prefix length (default: 32 for IPv4, "
 		"128 for IPv6)\n");
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
+	printf(" -p        : accept routes registered for private ASNs\n");
 	printf(" -S sources: only use specified IRR sources, in the specified "
 	    "order (comma separated)\n");
 	printf(" -w        : 'validate' AS numbers: accept only ones with "
