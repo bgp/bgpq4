@@ -45,7 +45,6 @@
 extern int debug_expander;
 extern int debug_aggregation;
 extern int pipelining;
-extern int expand_special_asn;
 
 static int
 usage(int ecode)
@@ -197,7 +196,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -298,9 +297,6 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_MIKROTIK;
-		break;
-	case 'p':
-		expand_special_asn = 1;
 		break;
 	case 'r':
 		refineLow = strtoul(optarg, NULL, 10);
