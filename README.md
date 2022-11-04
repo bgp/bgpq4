@@ -128,10 +128,6 @@ It's options are as follows:
 
 > generate config for Nokia SR OS classic CLI (Cisco IOS by default).
 
-**-p**
-
-> accept routes registered for private ASNs (default: disabled)
-
 **-r** *len*
 
 > allow more specific routes starting with specified masklen too.
