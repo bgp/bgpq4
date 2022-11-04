@@ -59,7 +59,8 @@ typedef enum {
 	V_NOKIA,
 	V_HUAWEI,
 	V_HUAWEI_XPL,
-	V_MIKROTIK,
+	V_MIKROTIK6,
+	V_MIKROTIK7,
 	V_NOKIA_MD,
 	V_ARISTA
 } bgpq_vendor_t;

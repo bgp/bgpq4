@@ -1717,7 +1717,7 @@ bgpq4_print_nokia_md_ipprefixlist(FILE *f, struct bgpq_expander *b)
 }
 
 static void
-bgpq4_print_kprefix(struct sx_radix_node *n, void *ff)
+bgpq4_print_k6prefix(struct sx_radix_node *n, void *ff)
 {
 	char	 prefix[128];
 	FILE	*f = (FILE*)ff;
@@ -1745,16 +1745,60 @@ bgpq4_print_kprefix(struct sx_radix_node *n, void *ff)
 
 checkSon:
 	if (n->son)
-		bgpq4_print_kprefix(n->son, ff);
+		bgpq4_print_k6prefix(n->son, ff);
 }
 
 static void
-bgpq4_print_mikrotik_prefixlist(FILE *f, struct bgpq_expander *b)
+bgpq4_print_k7prefix(struct sx_radix_node *n, void *ff)
+{
+	char	 prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf_sep(n->prefix, prefix, sizeof(prefix), "/");
+
+	if (n->isAggregate)
+		fprintf(f,"/routing filter rule add chain=\""
+		    "%s-%s\"  rule=\"if (dst in %s && dst-len in %d-%d) {accept}\"\n",
+		    bname ? bname : "NN",
+		    n->prefix->family == AF_INET ? "V4" : "V6",
+		    prefix, n->aggregateLow, n->aggregateHi);
+	else
+		fprintf(f,"/routing filter rule add chain=\""
+		    "%s-%s\" rule=\"if (dst=%s) {accept}\"\n",
+		    bname ? bname : "NN",
+		    n->prefix->family == AF_INET ? "V4" : "V6",
+		    prefix);
+
+checkSon:
+	if (n->son)
+		bgpq4_print_k7prefix(n->son, ff);
+}
+
+static void
+bgpq4_print_mikrotik6_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
 
 	if (!sx_radix_tree_empty(b->tree)) {
-		sx_radix_tree_foreach(b->tree, bgpq4_print_kprefix, f);
+		sx_radix_tree_foreach(b->tree, bgpq4_print_k6prefix, f);
+	} else {
+		fprintf(f, "# generated prefix-list %s is empty\n", bname);
+	}
+}
+
+static void
+bgpq4_print_mikrotik7_prefixlist(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		sx_radix_tree_foreach(b->tree, bgpq4_print_k7prefix, f);
 	} else {
 		fprintf(f, "# generated prefix-list %s is empty\n", bname);
 	}
@@ -1797,8 +1841,11 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 	case V_HUAWEI_XPL:
 		bgpq4_print_huawei_xpl_prefixlist(f, b);
 		break;
-	case V_MIKROTIK:
-		bgpq4_print_mikrotik_prefixlist(f, b);
+	case V_MIKROTIK6:
+		bgpq4_print_mikrotik6_prefixlist(f, b);
+		break;
+	case V_MIKROTIK7:
+		bgpq4_print_mikrotik7_prefixlist(f, b);
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);

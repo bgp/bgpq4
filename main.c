@@ -60,7 +60,8 @@ usage(int ecode)
 	printf(" -u        : Huawei XPL\n");
 	printf(" -j        : JSON\n");
 	printf(" -J        : Juniper Junos\n");
-	printf(" -K        : MikroTik RouterOS\n");
+	printf(" -K        : MikroTik RouterOSv6\n");
+	printf(" -k        : MikroTik RouterOSv7\n");
 	printf(" -b        : NIC.CZ BIRD\n");
 	printf(" -N        : Nokia SR OS (Classic CLI)\n");
 	printf(" -n        : Nokia SR OS (MD-CLI)\n");
@@ -197,7 +198,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "46a:AbBdDEeF:S:jJKkf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -297,7 +298,12 @@ main(int argc, char* argv[])
 	case 'K':
 		if (expander.vendor)
 			vendor_exclusive();
-		expander.vendor = V_MIKROTIK;
+		expander.vendor = V_MIKROTIK6;
+		break;
+	case 'k':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_MIKROTIK7;
 		break;
 	case 'p':
 		expand_special_asn = 1;
@@ -451,7 +457,8 @@ main(int argc, char* argv[])
 			switch (vendor) {
 			case V_ARISTA:
 			case V_CISCO:
-			case V_MIKROTIK:
+			case V_MIKROTIK6:
+			case V_MIKROTIK7:
 				expander.aswidth = 4;
 				break;
 			case V_CISCO_XR:
