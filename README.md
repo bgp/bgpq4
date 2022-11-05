@@ -101,7 +101,11 @@ It's options are as follows:
 
 **-K**
 
-> generate config for Mikrotik (default: Cisco).
+> generate config for Mikrotik ROSv6 (default: Cisco).
+
+**-K7**
+
+> generate config for Mikrotik ROSv7 (default: Cisco).
 
 **-l** *name*
 
