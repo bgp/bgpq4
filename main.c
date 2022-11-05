@@ -61,7 +61,7 @@ usage(int ecode)
 	printf(" -j        : JSON\n");
 	printf(" -J        : Juniper Junos\n");
 	printf(" -K        : MikroTik RouterOSv6\n");
-	printf(" -k        : MikroTik RouterOSv7\n");
+	printf(" -K7       : MikroTik RouterOSv7\n");
 	printf(" -b        : NIC.CZ BIRD\n");
 	printf(" -N        : Nokia SR OS (Classic CLI)\n");
 	printf(" -n        : Nokia SR OS (MD-CLI)\n");
@@ -134,9 +134,9 @@ static void
 vendor_exclusive(void)
 {
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
-	    " -j (JSON), -N (Nokia SR OS Classic), -n (Nokia SR OS MD-CLI),"
-	    " -U (Huawei), -u (Huawei XPL), -e (Arista) and -X (IOS XR) options "
-	    " are mutually exclusive\n");
+	    " -j (JSON), -K[7] (Microtik ROS), -N (Nokia SR OS Classic),"
+	    " -n (Nokia SR OS MD-CLI), -U (Huawei), -u (Huawei XPL),"
+	    "-e (Arista) and -X (IOS XR) options are mutually exclusive\n");
 	exit(1);
 }
 
@@ -198,7 +198,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "46a:AbBdDEeF:S:jJKkf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "467a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:pr:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -218,6 +218,13 @@ main(int argc, char* argv[])
 		af = AF_INET6;
 		expander.family = AF_INET6;
 		expander.tree->family = AF_INET6;
+		break;
+	case '7':
+		if (expander.vendor != V_MIKROTIK6) {
+			sx_report(SX_FATAL, "'7' can only be used after -K\n");
+			exit(1);
+		}
+		expander.vendor = V_MIKROTIK7;
 		break;
 	case 'a':
 		parseasnumber(&expander, optarg);
@@ -299,11 +306,6 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_MIKROTIK6;
-		break;
-	case 'k':
-		if (expander.vendor)
-			vendor_exclusive();
-		expander.vendor = V_MIKROTIK7;
 		break;
 	case 'p':
 		expand_special_asn = 1;

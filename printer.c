@@ -1781,24 +1781,16 @@ checkSon:
 }
 
 static void
-bgpq4_print_mikrotik6_prefixlist(FILE *f, struct bgpq_expander *b)
+bgpq4_print_mikrotik_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
+	void *cbfunc = bgpq4_print_k6prefix;
+
+	if (b->vendor == V_MIKROTIK7)
+		cbfunc = bgpq4_print_k7prefix;
 
 	if (!sx_radix_tree_empty(b->tree)) {
-		sx_radix_tree_foreach(b->tree, bgpq4_print_k6prefix, f);
-	} else {
-		fprintf(f, "# generated prefix-list %s is empty\n", bname);
-	}
-}
-
-static void
-bgpq4_print_mikrotik7_prefixlist(FILE *f, struct bgpq_expander *b)
-{
-	bname = b->name ? b->name : "NN";
-
-	if (!sx_radix_tree_empty(b->tree)) {
-		sx_radix_tree_foreach(b->tree, bgpq4_print_k7prefix, f);
+		sx_radix_tree_foreach(b->tree, cbfunc, f);
 	} else {
 		fprintf(f, "# generated prefix-list %s is empty\n", bname);
 	}
@@ -1842,10 +1834,8 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		bgpq4_print_huawei_xpl_prefixlist(f, b);
 		break;
 	case V_MIKROTIK6:
-		bgpq4_print_mikrotik6_prefixlist(f, b);
-		break;
 	case V_MIKROTIK7:
-		bgpq4_print_mikrotik7_prefixlist(f, b);
+		bgpq4_print_mikrotik_prefixlist(f, b);
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);
