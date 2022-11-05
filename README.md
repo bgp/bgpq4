@@ -103,7 +103,7 @@ It's options are as follows:
 
 > generate config for Mikrotik ROSv6 (default: Cisco).
 
-**-k**
+**-K7**
 
 > generate config for Mikrotik ROSv7 (default: Cisco).
 
