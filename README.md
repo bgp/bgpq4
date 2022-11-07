@@ -339,19 +339,19 @@ be in one line (sometimes it makes sense):
 # NOTES ON SOURCES
 
 By default *bgpq4* trusts data from all databases mirrored into NTT's IRR service.
-Unfortunately, not all these databases are equal in how much can we trust their 
+Unfortunately, not all these databases are equal in how much can we trust their
 data.
 RIR maintained databases (AFRINIC, ARIN, APNIC, LACNIC and RIPE)
-shall be trusted more than the others because they have the knowledge about 
-which address space is allocated to each ASN, other databases lack this 
-knowledge and can (and actually do) contain some stale data: nobody but RIRs 
-care to remove outdated route-objects when address space is revoked from one 
-ASN and allocated to another. In order to keep their filters both compact and 
-current, *bgpq4 users* are encouraged to use one of two method to limit 
+shall be trusted more than the others because they have the knowledge about
+which address space is allocated to each ASN, other databases lack this
+knowledge and can (and actually do) contain some stale data: nobody but RIRs
+care to remove outdated route-objects when address space is revoked from one
+ASN and allocated to another. In order to keep their filters both compact and
+current, *bgpq4 users* are encouraged to use one of two method to limit
 database sources to only ones they trust.
 
-One option is to use the '-S' flag. This limits all queries to a specific data 
-source. For example, the following command tells IIRd to only use data from 
+One option is to use the '-S' flag. This limits all queries to a specific data
+source. For example, the following command tells IIRd to only use data from
 the RIPE RIR DB to build the prefix list for the AS-SET:
 
 	$./bgpq4 -S RIPE AS-VOSTRON
@@ -360,8 +360,8 @@ the RIPE RIR DB to build the prefix list for the AS-SET:
 	ip prefix-list NN permit 134.0.64.0/21
 
 Be aware though, than an AS-SET may contain members from other data sources.
-In this case IRRd won't respond to the bgpq4 query will all the prefixes in the 
-AS-SET tree. Make sure to use the '-S' flag with all the data sources required 
+In this case IRRd won't respond to the bgpq4 query will all the prefixes in the
+AS-SET tree. Make sure to use the '-S' flag with all the data sources required
 for the AS-SET being expanded:
 
 	$./bgpq4 -S RIPE,ARIN AS-VOSTRON
@@ -373,10 +373,10 @@ for the AS-SET being expanded:
 	ip prefix-list NN permit 208.86.234.0/24
 	ip prefix-list NN permit 208.86.235.0/24
 
-The other option is to specify a source for an AS-SET or Route Set using the 
-"::" notation. When bgpq4 detects this, it will look for "::" in the specified 
-AS-SET or RS on the CLI, and in all members of the AS-SET/RS, and for each 
-member with a data source specified in "::" format, it will set the IRRd data 
+The other option is to specify a source for an AS-SET or Route Set using the
+"::" notation. When bgpq4 detects this, it will look for "::" in the specified
+AS-SET or RS on the CLI, and in all members of the AS-SET/RS, and for each
+member with a data source specified in "::" format, it will set the IRRd data
 source to the given value, query the AS-SET/RS, then reset the data sources back
  to the default list for the next object in the tree.
 
@@ -390,9 +390,9 @@ source to the given value, query the AS-SET/RS, then reset the data sources back
 	ip prefix-list NN permit 208.86.234.0/24
 	ip prefix-list NN permit 208.86.235.0/24
 
-In comparison to the '-S' flag, this method return all the prefixes under the 
-AS-SET, but the root of the tree "AS-VOSTRON" was queries from RIPE only. None 
-of the member objects used the "::" notation so they were queries from the 
+In comparison to the '-S' flag, this method return all the prefixes under the
+AS-SET, but the root of the tree "AS-VOSTRON" was queries from RIPE only. None
+of the member objects used the "::" notation so they were queries from the
 default source list (which is all sources).
 
 
@@ -418,7 +418,7 @@ object.
 	ip prefix-list NN permit 45.65.184.0/22
 	[...]
 
-When known, use the "::" notation to speicy the authortative data source for 
+When known, use the "::" notation to speicy the authortative data source for
 an AS-SET or RS instead of the -S flag.
 
 # PERFORMANCE
