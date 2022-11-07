@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021 Job Snijders <job@sobornost.net>
+ * Copyright (c) 2019-2022 Job Snijders <job@sobornost.net>
  * Copyright (c) 2018 Peter Schoenmaker <pds@ntt.net>
  * Copyright (c) 2007-2019 Alexandre Snarskii <snar@snar.spb.ru>
  * All rights reserved.
@@ -201,7 +201,7 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 	}
 
 	if ((asne = malloc(sizeof(struct asn_entry))) == NULL)
-		sx_report(SX_FATAL, "malloc failed for asn\n");
+		err(1, NULL);
 
 	asne->asn = asno;
 	RB_INSERT(asn_tree, &b->asnlist, asne);
@@ -241,46 +241,60 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 	return sx_prefix_range_parse(b->tree, b->family, b->maxlen, prefix);
 }
 
-char*
-bgpq_get_asset(char *object){
-	char *asset, *d;
+char *
+bgpq_get_asset(char *object) {
+	char *d, *asset;
 
 	d = strstr(object, "::");
-	if (d){
+	if (d)
 		d += 2;
-	} else {
+	else
 		d = object;
-	}
 
 	if ((asset = calloc(1, 256)) == NULL)
-		sx_report(SX_FATAL, "calloc failed for asset\n");
+		err(1, NULL);
+
 	memcpy(asset, d, strlen(object) - (d - object));
+
 	return asset;
 }
 
-char*
-bgpq_get_rset(char *object){
-	char *d = strstr(object, "::");
-	if (d){
-		d += 2;
-	} else {
-		d = object;
-	}
+char *
+bgpq_get_rset(char *object) {
+	char *d, *rset;
 
-	char *rset = (char*)calloc(1, 256);
+	d = strstr(object, "::");
+
+	if (d)
+		d += 2;
+	else
+		d = object;
+
+	if ((rset = calloc(1, 256)) == NULL)
+		err(1, NULL);
+
 	memcpy(rset, d, strlen(object) - (d - object));
+
 	return rset;
 }
 
-char*
-bgpq_get_source(char *object){
-	char *d = strstr(object, "::");
-	if (d){
-		char *source = (char*)calloc(1, 256);
-		unsigned int slen = d - object;
+char *
+bgpq_get_source(char *object) {
+	char 		*d;
+	char 		*source;
+	unsigned int	 slen;
+
+	d = strstr(object, "::");
+
+	if (d) {
+		if ((source = calloc(1, 256)) == NULL)
+			err(1, NULL);
+
+		slen = d - object;
 		memcpy(source, object, slen);
 		return source;
 	}
+
 	return NULL;
 }
 
@@ -293,11 +307,13 @@ bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
 	return 1;
 }
 
-struct request *bgpq_pipeline(struct bgpq_expander *b,
+struct request *
+bgpq_pipeline(struct bgpq_expander *b,
     int (*callback)(char *, struct bgpq_expander *b, struct request *req),
     void *udata, char *fmt, ...);
 
-int bgpq_expand_irrd(struct bgpq_expander *b,
+int
+bgpq_expand_irrd(struct bgpq_expander *b,
     int (*callback)(char*, struct bgpq_expander *b, struct request *req),
     void *udata, char *fmt, ...);
 
@@ -305,9 +321,11 @@ static int
 bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
     struct request *req)
 {
+	char		*source;
+	struct request	*req1;
+
 	if (!strncasecmp(as, "AS-", 3) || strchr(as, '-') || strchr(as, ':')) {
 		struct sx_tentry tkey = { .text = as };
-		char *source;
 
 		if (RB_FIND(tentree, &b->already, &tkey)) {
 			SX_DEBUG(debug_expander > 2, "%s is already expanding, "
@@ -328,29 +346,29 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 			if (pipelining) {
 				if (b->usesource) {
 					source = bgpq_get_source(as);
-					if (source){
-						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
+					if (source) {
+						bgpq_pipeline(b, NULL, NULL,
+						    "!s%s\n", source);
 						free(source);
 					} else {
-						bgpq_pipeline(
-							b, NULL, NULL, "!s%s\n", b->defaultsources
-						);
+						bgpq_pipeline(b, NULL, NULL,
+						    "!s%s\n", b->defaultsources);
 					}
 				}
-				struct request *req1 = bgpq_pipeline(b,
-				    bgpq_expanded_macro_limit, NULL, "!i%s\n",
-				        bgpq_get_asset(as));
+
+				req1 = bgpq_pipeline(b, bgpq_expanded_macro_limit,
+				    NULL, "!i%s\n", bgpq_get_asset(as));
 				req1->depth = req->depth + 1;
 			} else {
 				if (b->usesource) {
 					source = bgpq_get_source(as);
 					if (source) {
-						bgpq_expand_irrd(b, NULL, NULL, "!s%s\n", source);
+						bgpq_expand_irrd(b, NULL, NULL,
+						    "!s%s\n", source);
 						free(source);
 					} else {
-						bgpq_expand_irrd(
-							b, NULL, NULL, "!s%s\n", b->defaultsources
-						);
+						bgpq_expand_irrd(b, NULL, NULL,
+						    "!s%s\n", b->defaultsources);
 					}
 				}
 				b->cdepth++;
@@ -360,8 +378,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 			}
 		} else {
 			SX_DEBUG(debug_expander > 2, "ignoring %s at depth %i\n",
-			    as,
-			    b->cdepth ? (b->cdepth + 1) : (req->depth + 1));
+			    as, b->cdepth ? (b->cdepth + 1) : (req->depth + 1));
 		}
 	} else if (!strncasecmp(as, "AS", 2)) {
 		struct sx_tentry tkey = { .text = as };
@@ -417,14 +434,21 @@ bgpq_expanded_v6prefix(char *prefix, struct bgpq_expander *ex,
 	return 1;
 }
 
-static char*
-bgpq_get_irrd_sources(int fd) {
-	int ret;
-	char *query = "!s-lc\n";
-	int qlen = strlen(query);
-	const unsigned int rsize = 256;
-	char *response = (char*)calloc(1, rsize);
-	char *sources = (char*)calloc(1, rsize);
+static char *
+bgpq_get_irrd_sources(int fd)
+{
+	char			*query, *response, *sources, *start, *end;
+	const unsigned int	 rsize = 256;
+	unsigned int		 slen;
+	int			 ret, qlen;
+
+	query = "!s-lc\n";
+	qlen = strlen(query);
+
+	if ((response = calloc(1, rsize)) == NULL)
+		err(1, NULL);
+	if ((sources = calloc(1, rsize)) == NULL)
+		err(1, NULL);
 
 	SX_DEBUG(debug_expander, "Requesting source list %s", query);
 	if ((ret = write(fd, query, strlen(query))) != qlen) {
@@ -454,10 +478,10 @@ bgpq_get_irrd_sources(int fd) {
 		exit(1);
 	}
 
-	char *start = strchr(response, '\n');
-	if (start){
+	start = strchr(response, '\n');
+	if (start) {
 		start += 1;
-		char *end = strchr(start, '\n');
+		end = strchr(start, '\n');
 		if (!end) {
 			sx_report(SX_ERROR, "No 2nd newline in response '%s': %s\n",
 				response, query);
@@ -466,12 +490,11 @@ bgpq_get_irrd_sources(int fd) {
 			free(response);
 			exit(1);
 		}
-		unsigned int slen = end - start;
-		if (slen > rsize) {
-			memcpy(sources, start, rsize-1);
-		} else {
+		slen = end - start;
+		if (slen > rsize)
+			memcpy(sources, start, rsize - 1);
+		else
 			memcpy(sources, start, slen);
-		}
 	} else {
 		sx_report(SX_ERROR, "No 1st newline in response '%s': %s\n",
 			response, query);
@@ -480,17 +503,19 @@ bgpq_get_irrd_sources(int fd) {
 		free(response);
 		exit(1);
 	}
+
 	free(response);
 	return sources;
 }
-
-int bgpq_pipeline_dequeue(int fd, struct bgpq_expander *b);
 
 static struct request *
 request_alloc(char *request, int (*callback)(char *, struct bgpq_expander *,
     struct request *), void *udata)
 {
-	struct request *bp = malloc(sizeof(struct request));
+	struct request *bp;
+
+	if ((bp = malloc(sizeof(struct request))) == NULL)
+		err(1, NULL);
 
 	if (!bp)
 		return NULL;
@@ -519,9 +544,9 @@ bgpq_pipeline(struct bgpq_expander *b,
     int (*callback)(char *, struct bgpq_expander *, struct request *),
     void *udata, char *fmt, ...)
 {
+	struct request		*bp = NULL;
 	char			 request[256];
 	int			 ret;
-	struct request	*bp = NULL;
 	va_list			 ap;
 
 	va_start(ap, fmt);
@@ -548,12 +573,14 @@ bgpq_pipeline(struct bgpq_expander *b,
 			sx_report(SX_FATAL, "Error writing request: %s\n",
 			    strerror(errno));
 		}
+
 		bp->offset=ret;
-		if (ret == bp->size) {
+
+		if (ret == bp->size)
 			STAILQ_INSERT_TAIL(&b->rq, bp, next);
-		} else {
+		else
 			STAILQ_INSERT_TAIL(&b->wq, bp, next);
-		}
+
 	} else
 		STAILQ_INSERT_TAIL(&b->wq, bp, next);
 
@@ -702,10 +729,8 @@ have:
 			unsigned long 	 togot = strtoul(response + 1, &eon, 10);
 			char 		*recvbuffer = malloc(togot + 2);
 
-			if (!recvbuffer) {
-				sx_report(SX_FATAL, "error allocating %lu "
-				    "bytes: %s\n", togot + 2, strerror(errno));
-			}
+			if (recvbuffer == NULL)
+				err(1, NULL);
 
 			memset(recvbuffer, 0, togot + 2);
 
@@ -1002,11 +1027,13 @@ have3:
 int
 bgpq_expand(struct bgpq_expander *b)
 {
-	int			 fd = -1, err, ret, aquery = 0;
+	char			*source;
 	struct slentry		*mc;
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
 	struct asn_entry	*asne;
+	int			 fd = -1, err, ret, aquery = 0;
+	int			 slen;
 
 	sl.l_onoff = 1;
 	sl.l_linger = 5;
@@ -1143,7 +1170,7 @@ bgpq_expand(struct bgpq_expander *b)
 	}
 
 	if (b->sources && b->sources[0] != 0) {
-		int slen = strlen(b->sources) + 4;
+		slen = strlen(b->sources) + 4;
 		if (slen < 256)
 			slen = 256;
 		char sources[slen];
@@ -1183,7 +1210,7 @@ bgpq_expand(struct bgpq_expander *b)
 	STAILQ_FOREACH(mc, &b->macroses, entry) {
 		if (!b->maxdepth && RB_EMPTY(&b->stoplist)) {
 			if (b->usesource) {
-				char *source = bgpq_get_source(mc->text);
+				source = bgpq_get_source(mc->text);
 				if (source){
 					if (pipelining){
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
@@ -1243,7 +1270,7 @@ bgpq_expand(struct bgpq_expander *b)
 	if (b->generation >= T_PREFIXLIST || b->validate_asns) {
 		STAILQ_FOREACH(mc, &b->rsets, entry) {
 			if (b->usesource) {
-				char *source = bgpq_get_source(mc->text);
+				source = bgpq_get_source(mc->text);
 				if (source){
 					if (pipelining){
 						printf("Checking %s\n", bgpq_get_rset(mc->text));
@@ -1346,6 +1373,7 @@ bgpq_expand(struct bgpq_expander *b)
 		fl &= ~O_NONBLOCK;
 		fcntl(fd, F_SETFL, fl);
 	}
+
 	close(fd);
 	free(b->defaultsources);
 
@@ -1353,8 +1381,8 @@ bgpq_expand(struct bgpq_expander *b)
 }
 
 void
-sx_radix_node_freeall(struct sx_radix_node *n) {
-
+sx_radix_node_freeall(struct sx_radix_node *n)
+{
 	if (n->l != NULL)
 		sx_radix_node_freeall(n->l);
 
@@ -1373,20 +1401,23 @@ sx_radix_node_freeall(struct sx_radix_node *n) {
 }
 
 void
-sx_radix_tree_freeall(struct sx_radix_tree *t) {
-
+sx_radix_tree_freeall(struct sx_radix_tree *t)
+{
 	if (t->head != NULL)
 		sx_radix_node_freeall(t->head);
 
 	free(t);
 }
 
+/* XXX: needs cleaning up / figuring out */
 void
-bgpq_prequest_freeall(struct bgpq_prequest *bpr) {
+bgpq_prequest_freeall(struct bgpq_prequest *bpr)
+{
 }
 
 void
-expander_freeall(struct bgpq_expander *expander) {
+expander_freeall(struct bgpq_expander *expander)
+{
 	struct sx_tentry	*var, *nxt;
 	struct asn_entry	*asne, *asne_next;
 
