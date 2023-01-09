@@ -1163,7 +1163,8 @@ bgpq_expand(struct bgpq_expander *b)
 	if (b->usesource) {
 		if (b->sources && b->sources[0] != 0) {
 			b->defaultsources = (char*)calloc(1, strlen(b->sources));
-			strcpy(b->defaultsources, b->sources);
+			strlcpy(b->defaultsources, b->sources,
+			    sizeof(b->defaultsources));
 		} else {
 			b->defaultsources = bgpq_get_irrd_sources(b->fd);
 		}
