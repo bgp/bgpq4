@@ -15,16 +15,16 @@ jobs:
           - ubuntu:jammy
           - ubuntu:focal
           - ubuntu:bionic
+          - fedora/fedora:38
           - fedora/fedora:37
           - fedora/fedora:36
-          - fedora/fedora:35
           - centos/centos:stream9
           - centos/centos:stream8
           - centos/centos:7
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.16
+          - alpine:3.17
     steps:
     - uses: actions/checkout@v3
     - name: Run build on ${{matrix.dockerenv}}
