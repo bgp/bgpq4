@@ -40,7 +40,7 @@
 .Fl H Ar asn
 .Fl t
 .Oc
-.Op Fl 46ABbDdJjNnsXU
+.Op Fl 46ABbDdJjNnpsXU
 .Op Fl a Ar asn
 .Op Fl r Ar len
 .Op Fl R Ar len
@@ -111,6 +111,8 @@ extra match conditions for Juniper route-filters.
 generate config for Nokia SR OS MD-CLI (Cisco IOS by default)
 .It Fl N
 generate config for Nokia SR OS classic CLI (Cisco IOS by default).
+.It Fl p
+emit prefixes where the origin ASN is in the private ASN range (disabled by default).
 .It Fl r Ar len
 allow more specific routes starting with specified masklen too.
 .It Fl R Ar len

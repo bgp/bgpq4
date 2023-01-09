@@ -50,6 +50,7 @@
 
 int debug_expander = 0;
 int pipelining = 1;
+int expand_special_asn = 0;
 
 static inline int
 tentry_cmp(struct sx_tentry *a, struct sx_tentry *b)
@@ -195,7 +196,8 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 		return 0;
 	}
 
-	if (asno >= 4200000000ul || (asno >= 64496 && asno <= 65551)) {
+	if (!expand_special_asn &&
+	    (asno >= 4200000000ul || (asno >= 64496 && asno <= 65551))) {
 		sx_report(SX_ERROR,"Invalid AS number: %u\n", asno);
 		return 0;
 	}

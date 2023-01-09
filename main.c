@@ -45,12 +45,13 @@
 extern int debug_expander;
 extern int debug_aggregation;
 extern int pipelining;
+extern int expand_special_asn;
 
 static int
 usage(int ecode)
 {
 	printf("\nUsage: bgpq4 [-h host[:port]] [-S sources] [-E|G|H <num>"
-	    "|f <num>|t] [-46ABbdJjKNnwXz] [-R len] <OBJECTS> ... "
+	    "|f <num>|t] [-46ABbdJjKNnpwXz] [-R len] <OBJECTS> ... "
 	    "[EXCEPT <OBJECTS> ...]\n");
 	printf("\nVendor targets:\n");
 	printf(" no option : Cisco IOS Classic (default)\n");
@@ -197,7 +198,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "467a:AbBdDEeF:S:jJKf:l:L:m:M:NnW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
@@ -392,6 +393,9 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_NOKIA_MD;
+		break;
+	case 'p':
+		expand_special_asn = 1;
 		break;
 	case 't':
 		if (expander.generation)
