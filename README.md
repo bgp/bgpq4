@@ -13,7 +13,7 @@
 **-G**&nbsp;*asn*
 **-H**&nbsp;*asn*
 **-t**]
-\[**-46ABbDdJjNnsXU**]
+\[**-46ABbDdJjNnpsXU**]
 \[**-a**&nbsp;*asn*]
 \[**-r**&nbsp;*len*]
 \[**-R**&nbsp;*len*]
@@ -131,6 +131,11 @@ It's options are as follows:
 **-N**
 
 > generate config for Nokia SR OS classic CLI (Cisco IOS by default).
+
+**-p**
+
+> emit prefixes where the origin ASN is in the private ASN range
+> (disabled by default).
 
 **-r** *len*
 
