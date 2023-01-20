@@ -840,7 +840,7 @@ have3:
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
 		} else if (response[0] == 'D') {
-			sx_report(SX_ERROR, "Key not found expanding %s",
+			SX_DEBUG(debug_expander, "Key not found expanding %s",
 			    req->request);
 			if (b->validate_asns)
 				bgpq_expander_invalidate_asn(b, req->request);
@@ -1006,7 +1006,7 @@ have3:
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
 	} else if (response[0] == 'D') {
-		sx_report(SX_ERROR, "Key not found expanding %s",
+		SX_DEBUG(debug_expander, "Key not found expanding %s",
 			req->request);
 		if (b->validate_asns)
 			bgpq_expander_invalidate_asn(b, request);
