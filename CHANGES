@@ -1,3 +1,6 @@
+1.9 (2023-03-05)
+    - Bugfix for -S problem (bgpq4#83) by James Bensley
+
 1.8 (2023-01-20)
     - Downgrade 'key not found' to DEBUG level to reduce noise
     - Re-introduce -p for private ASN support option
