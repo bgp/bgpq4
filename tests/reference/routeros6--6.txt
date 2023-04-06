@@ -1,0 +1,2 @@
+/routing filter add action=accept chain="NN-V6" prefix=2001:4:112::/48
+/routing filter add action=accept chain="NN-V6" prefix=2620:4f:8000::/48

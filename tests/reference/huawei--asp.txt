@@ -1,0 +1,2 @@
+undo ip as-path-filter NN
+ip as-path-filter NN permit ^112(_112)*$

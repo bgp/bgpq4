@@ -1,0 +1,36 @@
+name: basic unit tests
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - ready_for_review
+      - synchronize
+
+jobs:
+  output-unit-tests:
+    name: output unit tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: clone repo
+        uses: actions/checkout@v3
+      - name: install pre-reqs
+        run: |
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y --no-install-recommends install autoconf automake libtool make
+      - name: build bgpq4
+        run: |
+          ./bootstrap
+          ./configure
+          make
+          ./bgpq4 -v
+      - name: generate output
+        run: ./tests/generate_outputs.sh ./bgpq4 /tmp
+      - name: check output
+        run: >
+          for file in tests/reference/*.txt;
+          do
+            echo "$(sha256sum "${file}" | awk '{print $1}') /tmp/$(basename "${file}")" | sha256sum --check;
+          done

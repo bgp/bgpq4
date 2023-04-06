@@ -1,0 +1,2 @@
+no ip as-path access-list NN
+ip as-path access-list NN permit ^112(_112)*$

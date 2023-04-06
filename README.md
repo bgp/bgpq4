@@ -479,6 +479,12 @@ generates access-list to standard output and exits with status == 0.
 In case of errors they are printed to stderr and the program exits with
 non-zero status.
 
+# TESTS
+
+The [tests/](tests/) folder contains reference output data in [text files](tests/reference/). The [generate_outputs.sh](tests/generate_outputs.sh) script is used in the [Github workflow](.github/workflows/unit-tests.yml) to generate the same output data, using the latest commit, and compare the output data to the stored "known-good" reference data, and check there are no changes.
+
+To update the reference data (i.e. if the bgpq4 output is modified), simply run the script again (`./tests/generate_outputs.sh ./bgpq4 tests/reference`) and commit the changes.
+
 # AUTHORS
 
 Alexandre Snarskii, Christian David, Claudio Jeker, Job Snijders,

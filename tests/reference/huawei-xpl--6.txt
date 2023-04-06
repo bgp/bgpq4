@@ -1,0 +1,5 @@
+no xpl ipv6-prefix-list NN
+xpl ipv6-prefix-list NN
+  2001:4:112:: 48,
+  2620:4f:8000:: 48
+end-list

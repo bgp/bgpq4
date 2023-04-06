@@ -1,0 +1,3 @@
+no ip prefix-list NN
+! generated prefix-list NN is empty
+ip prefix-list NN deny 0.0.0.0/0

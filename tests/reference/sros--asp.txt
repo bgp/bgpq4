@@ -1,0 +1,7 @@
+configure router policy-options
+begin
+no as-path-group "NN"
+as-path-group "NN"
+  entry 1 expression "112+"
+exit
+commit
