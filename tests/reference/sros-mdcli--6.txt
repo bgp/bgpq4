@@ -1,0 +1,8 @@
+/configure policy-options
+delete prefix-list "NN"
+prefix-list "NN" {
+    prefix 2001:4:112::/48 type exact {
+    }
+    prefix 2620:4f:8000::/48 type exact {
+    }
+}

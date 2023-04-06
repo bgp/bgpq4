@@ -1,0 +1,5 @@
+no prefix-set NN
+prefix-set NN
+ 192.31.196.0/24,
+ 192.175.48.0/24
+end-set

@@ -1,0 +1,3 @@
+xpl as-path-list NN
+  regular ^112(_112)*$
+end-list

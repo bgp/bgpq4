@@ -1,0 +1,3 @@
+as-path-set NN
+  ios-regex '^112(_112)*$'
+end-set

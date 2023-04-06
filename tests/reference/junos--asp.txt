@@ -1,0 +1,6 @@
+policy-options {
+replace:
+ as-path-group NN {
+  as-path a0 "^112(112)*$";
+ }
+}

@@ -1,0 +1,8 @@
+/configure policy-options
+delete prefix-list "NN"
+prefix-list "NN" {
+    prefix 192.31.196.0/24 type exact {
+    }
+    prefix 192.175.48.0/24 type exact {
+    }
+}

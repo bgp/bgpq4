@@ -1,0 +1,3 @@
+undo ip ip-prefix NN
+ip ip-prefix NN permit 192.31.196.0 24
+ip ip-prefix NN permit 192.175.48.0 24

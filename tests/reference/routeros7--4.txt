@@ -1,0 +1,2 @@
+/routing filter rule add chain="NN-V4" rule="if (dst=192.31.196.0/24) {accept}"
+/routing filter rule add chain="NN-V4" rule="if (dst=192.175.48.0/24) {accept}"

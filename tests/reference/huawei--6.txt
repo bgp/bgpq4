@@ -1,0 +1,3 @@
+undo ip ipv6-prefix NN
+ip ipv6-prefix NN permit 2001:4:112:: 48
+ip ipv6-prefix NN permit 2620:4f:8000:: 48

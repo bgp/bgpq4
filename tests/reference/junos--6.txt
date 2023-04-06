@@ -1,0 +1,7 @@
+policy-options {
+replace:
+ prefix-list NN {
+    2001:4:112::/48;
+    2620:4f:8000::/48;
+ }
+}
