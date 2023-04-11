@@ -1,12 +1,18 @@
-name: Build and test (single linux distro)
+name: Build and test (latest Ubuntu/macOS)
 
 on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v3
+    - name: install macOS autogen prerequisites
+      run: brew install autoconf automake libtool
+      if: runner.os == 'macOS'
     - name: bootstrap
       run: ./bootstrap
     - name: configure
@@ -17,4 +23,5 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+      if: runner.os == 'Linux'
 
