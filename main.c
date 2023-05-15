@@ -81,6 +81,7 @@ usage(int ecode)
 		"registered routes\n");
 
 	printf("\nOutput modifiers:\n");
+	printf(" -3        : assume that your device is asn32-safe (default)\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
 	printf(" -E        : generate extended access-list (Cisco), "
 	    "route-filter (Juniper)\n"
@@ -198,8 +199,11 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "3467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
+	case '3':
+		/* do nothing, 32-bit ASN support is assumed */
+		break;
 	case '4':
 		/* do nothing, expander already configured for IPv4 */
 		if (expander.family == AF_INET6) {
