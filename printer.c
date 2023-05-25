@@ -1394,7 +1394,7 @@ bgpq4_print_nokia_srl_prefix(struct sx_radix_node *n, void *ff)
 	if (!n->isAggregate) {
 		fprintf(f, "    prefix %s mask-length-range exact { }\n", prefix);
 	} else {
-		fprintf(f, "    prefix %s mask-length-range %u..%u { }\n",  prefix, 
+		fprintf(f, "    prefix %s mask-length-range %u..%u { }\n", prefix, 
 		  max(n->aggregateLow,n->prefix->masklen), n->aggregateHi);
 	}
 
