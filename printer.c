@@ -40,6 +40,13 @@
 
 extern int debug_expander;
 
+#define max(a,b)             \
+({                           \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a > _b ? _a : _b;       \
+})
+
 static void 
 bgpq4_print_cisco_aspath(FILE *f, struct bgpq_expander *b)
 {
@@ -1371,6 +1378,32 @@ checkSon:
 }
 
 static void
+bgpq4_print_nokia_srl_prefix(struct sx_radix_node *n, void *ff)
+{
+	char 	 prefix[128];
+	FILE	*f = (FILE*)ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!f)
+		f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (!n->isAggregate) {
+		fprintf(f, "    prefix %s mask-length-range exact { }\n", prefix);
+	} else {
+		fprintf(f, "    prefix %s mask-length-range %u..%u { }\n",  prefix, 
+		  max(n->aggregateLow,n->prefix->masklen), n->aggregateHi);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_nokia_srl_prefix(n->son, ff);
+}
+
+static void
 bgpq4_print_juniper_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	fprintf(f, "policy-options {\nreplace:\n prefix-list %s {\n",
@@ -1717,6 +1750,24 @@ bgpq4_print_nokia_md_ipprefixlist(FILE *f, struct bgpq_expander *b)
 }
 
 static void
+bgpq4_print_nokia_srl_prefixset(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+
+	fprintf(f, "/routing-policy\ndelete prefix-set \"%s\"\n",
+	    bname);
+
+	fprintf(f, "prefix-set \"%s\" {\n", bname);
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		sx_radix_tree_foreach(b->tree, bgpq4_print_nokia_srl_prefix, f);
+	}
+
+	fprintf(f,"}\n");
+}
+
+
+static void
 bgpq4_print_k6prefix(struct sx_radix_node *n, void *ff)
 {
 	char	 prefix[128];
@@ -1827,6 +1878,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 	case V_NOKIA_MD:
 		bgpq4_print_nokia_md_ipprefixlist(f, b);
 		break;
+	case V_NOKIA_SRL:
+		bgpq4_print_nokia_srl_prefixset(f, b);
+		break;
 	case V_HUAWEI:
 		bgpq4_print_huawei_prefixlist(f, b);
 		break;
@@ -1862,6 +1916,9 @@ bgpq4_print_eacl(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_NOKIA_MD:
 		bgpq4_print_nokia_md_prefixlist(f, b);
+		break;
+	case V_NOKIA_SRL:
+		bgpq4_print_nokia_srl_prefixset(f, b);
 		break;
 	default:
 		sx_report(SX_FATAL, "unreachable point\n");
