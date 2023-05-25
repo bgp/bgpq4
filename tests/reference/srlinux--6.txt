@@ -1,0 +1,6 @@
+/routing-policy
+delete prefix-set "NN"
+prefix-set "NN" {
+    prefix 2001:4:112::/48 mask-length-range exact { }
+    prefix 2620:4f:8000::/48 mask-length-range exact { }
+}

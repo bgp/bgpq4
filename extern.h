@@ -62,7 +62,8 @@ typedef enum {
 	V_MIKROTIK6,
 	V_MIKROTIK7,
 	V_NOKIA_MD,
-	V_ARISTA
+	V_ARISTA,
+	V_NOKIA_SRL,
 } bgpq_vendor_t;
 
 typedef enum {

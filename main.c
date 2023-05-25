@@ -199,8 +199,15 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "3467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
+	case '2':
+		if (expander.vendor != V_NOKIA_MD) {
+			sx_report(SX_FATAL, "'2' can only be used after -n\n");
+			exit(1);
+		}
+		expander.vendor = V_NOKIA_SRL;
+		break;
 	case '3':
 		/* do nothing, 32-bit ASN support is assumed */
 		break;
@@ -473,6 +480,7 @@ main(int argc, char* argv[])
 			case V_JUNIPER:
 			case V_NOKIA:
 			case V_NOKIA_MD:
+			case V_NOKIA_SRL:
 				expander.aswidth = 8;
 				break;
 			case V_BIRD:
@@ -492,6 +500,7 @@ main(int argc, char* argv[])
 			case V_JUNIPER:
 			case V_NOKIA:
 			case V_NOKIA_MD:
+			case V_NOKIA_SRL:
 				expander.aswidth = 8;
 				break;
 			}
@@ -564,7 +573,7 @@ main(int argc, char* argv[])
 	}
 
 	if (aggregate
-	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA || expander.vendor == V_NOKIA_SRL)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
@@ -572,7 +581,7 @@ main(int argc, char* argv[])
 	}
 
 	if (refine
-	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	    && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA || expander.vendor == V_NOKIA_SRL)
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-R) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
@@ -580,7 +589,7 @@ main(int argc, char* argv[])
 	}
 
 	if (refineLow
-	     && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA)
+	     && (expander.vendor == V_NOKIA_MD || expander.vendor == V_NOKIA || expander.vendor == V_NOKIA_SRL)
 	     && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, more-specifics (-r) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");

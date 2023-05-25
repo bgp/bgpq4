@@ -45,6 +45,7 @@ fi
 "${BGPQ4_PATH}" -4 -K7 "AS${TEST_ASN}" > "${OUT_DIR}/routeros7--4.txt"
 "${BGPQ4_PATH}" -4 -N "AS${TEST_ASN}" > "${OUT_DIR}/sros--4.txt"
 "${BGPQ4_PATH}" -4 -n "AS${TEST_ASN}" > "${OUT_DIR}/sros-mdcli--4.txt"
+"${BGPQ4_PATH}" -4 -n2 "AS${TEST_ASN}" > "${OUT_DIR}/srlinux--4.txt"
 
 # Test the IPv6 prefix-list output formatting for each supported NOS:
 "${BGPQ4_PATH}" -6 -b "AS${TEST_ASN}" > "${OUT_DIR}/bird--6.txt"
@@ -61,6 +62,7 @@ fi
 "${BGPQ4_PATH}" -6 -K7 "AS${TEST_ASN}" > "${OUT_DIR}/routeros7--6.txt"
 "${BGPQ4_PATH}" -6 -N "AS${TEST_ASN}" > "${OUT_DIR}/sros--6.txt"
 "${BGPQ4_PATH}" -6 -n "AS${TEST_ASN}" > "${OUT_DIR}/sros-mdcli--6.txt"
+"${BGPQ4_PATH}" -6 -n2 "AS${TEST_ASN}" > "${OUT_DIR}/srlinux--6.txt"
 
 # Test the AS path list output formatting for each supported NOS:
 "${BGPQ4_PATH}" "${TEST_AS_SET}" -f "${TEST_ASN}" -b > "${OUT_DIR}/bird--asp.txt"
