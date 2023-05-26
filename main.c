@@ -65,6 +65,7 @@ usage(int ecode)
 	printf(" -b        : NIC.CZ BIRD\n");
 	printf(" -N        : Nokia SR OS (Classic CLI)\n");
 	printf(" -n        : Nokia SR OS (MD-CLI)\n");
+	printf(" -n2       : Nokia SR Linux\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
 	printf(" -e        : Arista EOS\n");
 	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
