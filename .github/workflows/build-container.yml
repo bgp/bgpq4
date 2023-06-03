@@ -1,0 +1,68 @@
+name: Container build
+"on":
+  push:
+    tags:
+      - "*" # Push events to any tag
+    branches:
+      - "main"
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Container tag to use for the build"
+        required: true
+        default: "test"
+
+jobs:
+  test:
+    uses: ./.github/workflows/unit-tests.yml
+
+  build:
+    name: Build container
+    runs-on: ubuntu-22.04
+    needs: test
+
+    steps:
+      - name: Set env vars
+        run: |
+          echo "CNT_TAG=${{ inputs.tag }}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - # Add support for more platforms with QEMU
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/bgpq4
+          tags: |
+            # pick up tag provided from workflow_dispatch user's input
+            type=raw,value=${{ inputs.tag }}
+            type=ref,event=tag
+            type=ref,event=branch
+            # git short commit
+            type=sha
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          file: .github/images/alpine:3.Dockerfile
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
