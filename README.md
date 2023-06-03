@@ -447,6 +447,31 @@ Linux can be tuned in the following way:
 
 	sysctl -w net.ipv4.tcp_wmem="4096 65536 2097152"
 
+# CONTAINER IMAGE
+
+A multi-arch (linux/amd64 and linux/arm64) container image is built automatically for all tagged releases and `main` branch. The image is based on Alpine Linux and is available on [GitHub Container Registry](https://github.com/bgp/bgpq4/pkgs/container/bgpq4).
+
+Using the image is as simple as:
+
+	```
+	docker run --rm ghcr.io/bgp/bgpq4:latest -Jl eltel AS20597
+	policy-options {
+		replace:
+		prefix-list eltel {
+			81.9.0.0/20;
+			81.9.32.0/20;
+			81.9.96.0/20;
+			81.222.128.0/20;
+			81.222.160.0/20;
+			81.222.192.0/18;
+			85.249.8.0/21;
+			85.249.224.0/19;
+			89.112.0.0/17;
+			217.170.64.0/19;
+		}
+		}
+	```
+
 # BUILDING
 
 This project uses autotools. If you are building from the repository,
