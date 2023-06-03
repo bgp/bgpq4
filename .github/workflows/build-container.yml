@@ -23,10 +23,6 @@ jobs:
     needs: test
 
     steps:
-      - name: Set env vars
-        run: |
-          echo "CNT_TAG=${{ inputs.tag }}" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v3
 
