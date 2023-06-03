@@ -128,6 +128,10 @@ It's options are as follows:
 
 > generate config for Nokia SR OS MD-CLI (Cisco IOS by default)
 
+**-n2**
+
+> generate config for Nokia SR Linux (Cisco IOS by default)
+
 **-N**
 
 > generate config for Nokia SR OS classic CLI (Cisco IOS by default).
