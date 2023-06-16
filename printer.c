@@ -1762,12 +1762,14 @@ bgpq4_print_nokia_md_prefixlist(FILE *f, struct bgpq_expander *b)
 static void
 bgpq4_print_nokia_md_counting_filter(FILE *f, struct bgpq_expander *b)
 {
-	bname = b->name ? b->name : "NN";
-
-	// Generate prefix list for all prefixes in each AS
 	struct asn_entry	*asne;
+	char namebuf[32];
 	char asbuf[16];
 
+	strncpy( namebuf, b->name ? b->name : "NN", sizeof(namebuf) );
+	namebuf[ sizeof(namebuf) - 1 ] = 0;
+
+	// Generate prefix list for all prefixes in each AS
 	RB_FOREACH(asne, asn_tree, &b->asnlist) {
 
 		uint32_t entry = max( asne->asn % 2097152, (uint32_t)1); // entry based on AS, max 2097151
@@ -1781,10 +1783,11 @@ bgpq4_print_nokia_md_counting_filter(FILE *f, struct bgpq_expander *b)
 
 		// Add an entry to match the prefix list to the named IP filters for ingress/egress based on dst/src IP
 		for (int i=0; i<2; ++i) {
-		  fprintf(f,"/configure filter delete %s-filter \"%s-%s\"\n",
-		      b->tree->family == AF_INET ? "ip" : "ipv6", bname, i==0 ? "in" : "out");
+		  // Do not delete, to allow for multiple filter entries for different AS
+		  // fprintf(f,"/configure filter delete %s-filter \"%s-%s\"\n",
+		  //    b->tree->family == AF_INET ? "ip" : "ipv6", namebuf, i==0 ? "in" : "out");
 		  fprintf(f,"/configure filter %s-filter \"%s-%s\" {\n",
-		      b->tree->family == AF_INET ? "ip" : "ipv6", bname, i==0 ? "in" : "out");
+		      b->tree->family == AF_INET ? "ip" : "ipv6", namebuf, i==0 ? "in" : "out");
 		  fprintf(f,"default-action accept\n");
 		  // Note: could add a port number or list of ports to match (say) only web traffic, DNS, etc.
 		  fprintf(f,"entry %u { match { %s-ip { ip-prefix-list \"%s\" } }\naction accept }\n", 
