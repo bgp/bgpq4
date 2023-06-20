@@ -1,3 +1,10 @@
+1.11 (2023-06-20)
+    - disallow AS 23456 as origin (can be bypassed via -p)
+
+1.10 (2023-06-03)
+    - Add support for Nokia SR Linux IP prefix lists / ACL filters
+    - Accept -3 as a no-op for bgpq3 compatibility
+
 1.9 (2023-03-05)
     - Bugfix for -S problem (bgpq4#83) by James Bensley
 
