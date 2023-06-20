@@ -94,6 +94,7 @@ usage(int ecode)
 	printf(" -M match  : extra match conditions for JunOS route-filters\n");
 	printf(" -l name   : use specified name for generated access/prefix/.."
 		" list\n");
+	printf(" -p        : allow special ASNs like 23456 or in the private range");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
 	printf(" -r len    : allow more specific routes from masklen specified\n");
 	printf(" -s        : generate sequence numbers in prefix-lists (IOS only)\n");

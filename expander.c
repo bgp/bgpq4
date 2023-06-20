@@ -183,7 +183,7 @@ int
 bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 {
 	char			*eoa;
-	uint32_t	 	 asno = 0;
+	uint32_t		 asno = 0;
 	struct asn_entry	*asne;
 
 	if (!b || !as)
@@ -191,14 +191,14 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 
 	asno = strtoul(as + 2, &eoa, 10);
 	if (eoa && *eoa != 0) {
-		sx_report(SX_ERROR,"Invalid symbol in AS number: '%c' in %s\n",
+		sx_report(SX_ERROR, "Invalid symbol in AS number: '%c' in %s\n",
 		    *eoa, as);
 		return 0;
 	}
 
-	if (!expand_special_asn &&
-	    (asno >= 4200000000ul || (asno >= 64496 && asno <= 65551))) {
-		sx_report(SX_ERROR,"Invalid AS number: %u\n", asno);
+	if (!expand_special_asn && (asno == 23456 || asno >= 4200000000ul
+	    || (asno >= 64496 && asno <= 65551))) {
+		sx_report(SX_ERROR, "Invalid AS number: %u\n", asno);
 		return 0;
 	}
 
