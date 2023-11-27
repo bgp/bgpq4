@@ -1,2 +1,2 @@
-/routing filter rule add chain="NN-V6" rule="if (dst=2001:4:112::/48) {accept}"
-/routing filter rule add chain="NN-V6" rule="if (dst=2620:4f:8000::/48) {accept}"
+/routing filter rule add chain="NN-V6" rule="if (dst==2001:4:112::/48) {accept}"
+/routing filter rule add chain="NN-V6" rule="if (dst==2620:4f:8000::/48) {accept}"

@@ -1870,7 +1870,7 @@ bgpq4_print_k7prefix(struct sx_radix_node *n, void *ff)
 		    prefix, n->aggregateLow, n->aggregateHi);
 	else
 		fprintf(f,"/routing filter rule add chain=\""
-		    "%s-%s\" rule=\"if (dst=%s) {accept}\"\n",
+		    "%s-%s\" rule=\"if (dst==%s) {accept}\"\n",
 		    bname ? bname : "NN",
 		    n->prefix->family == AF_INET ? "V4" : "V6",
 		    prefix);
