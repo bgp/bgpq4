@@ -9,23 +9,27 @@ jobs:
       fail-fast: false
       matrix:
         dockerenv:
+          - debian:trixie
           - debian:bookworm
           - debian:bullseye
           - debian:buster
           - ubuntu:jammy
           - ubuntu:focal
           - ubuntu:bionic
+          - fedora/fedora:40
+          - fedora/fedora:39
           - fedora/fedora:38
-          - fedora/fedora:37
-          - fedora/fedora:36
           - centos/centos:stream9
           - centos/centos:stream8
           - centos/centos:7
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.17
+          - alpine:3.19
     steps:
     - uses: actions/checkout@v3
+    - name: Work around Docker BuildKit regression
+      # https://github.com/moby/buildkit/issues/2119: `DOCKER_BUILDKIT=1 docker build` fails if Dockerfile is a symlink
+      run: cp --remove-destination $(readlink -f .github/images/${{matrix.dockerenv}}.Dockerfile) .github/images/${{matrix.dockerenv}}.Dockerfile
     - name: Run build on ${{matrix.dockerenv}}
       run: docker build . --file .github/images/${{matrix.dockerenv}}.Dockerfile --build-arg image=${{matrix.dockerenv}}
