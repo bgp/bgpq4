@@ -27,7 +27,7 @@ jobs:
           - alpine:edge
           - alpine:3.19
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Work around Docker BuildKit regression
       # https://github.com/moby/buildkit/issues/2119: `DOCKER_BUILDKIT=1 docker build` fails if Dockerfile is a symlink
       run: cp --remove-destination $(readlink -f .github/images/${{matrix.dockerenv}}.Dockerfile) .github/images/${{matrix.dockerenv}}.Dockerfile
