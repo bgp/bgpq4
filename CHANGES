@@ -1,3 +1,6 @@
+1.12 (2024-02-12)
+    - Fix a bug in the mikrotik printer
+
 1.11 (2023-06-20)
     - disallow AS 23456 as origin (can be bypassed via -p)
 
