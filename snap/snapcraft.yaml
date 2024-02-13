@@ -1,0 +1,22 @@
+name: bgpq4
+base: core18
+version: git
+summary: BGP filtering automation tool
+description: |
+  The bgpq4 utility used to generate configurations (prefix-lists, extended
+  access-lists, policy-statement terms and as-path lists) based on IRR data.
+license: BSD-2-Clause
+
+grade: stable
+confinement: strict
+
+apps:
+  bgpq4:
+    command: bin/bgpq4
+    plugs:
+      - network
+
+parts:
+  bgpq4:
+    plugin: autotools
+    source: .
