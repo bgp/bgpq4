@@ -85,9 +85,10 @@ usage(int ecode)
 	printf(" -3        : assume that your device is asn32-safe (default)\n");
 	printf(" -A        : try to aggregate prefix-lists/route-filters\n");
 	printf(" -E        : generate extended access-list (Cisco), "
-	    "route-filter (Juniper)\n"
-	    "             [ip|ipv6]-prefix-list (Nokia) or prefix-set "
-	    "(OpenBGPD)\n");
+		"route-filter (Juniper),\n"
+		"             [ip|ipv6]-prefix-list (Nokia), "
+		"prefix-set (OpenBGPD),\n"
+		"             or firewall address-list (MikroTik)\n");
 	printf(" -f number : generate input as-path access-list\n");
 	printf(" -G number : generate output as-path access-list\n");
 	printf(" -H number : generate origin as-lists (JunOS only)\n");
@@ -579,6 +580,14 @@ main(int argc, char* argv[])
 	    && expander.generation != T_PREFIXLIST) {
 		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
 		    "ip-prefix-lists (-E) on Nokia.\n");
+		exit(1);
+	}
+
+	if (aggregate
+	    && (expander.vendor == V_MIKROTIK6 || expander.vendor == V_MIKROTIK7)
+	    && expander.generation == T_EACL) {
+		sx_report(SX_FATAL, "Sorry, aggregation (-A) is not supported with "
+		    "firewall address-list (-E) on MikroTik.\n");
 		exit(1);
 	}
 
