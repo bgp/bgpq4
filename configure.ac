@@ -13,7 +13,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-AC_INIT([bgpq4], m4_esyscmd([tr -d '\n' < VERSION]), job@sobornost.net)
+AC_INIT([bgpq4], m4_esyscmd([tr -d '\n' < VERSION]), [job@sobornost.net])
 
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([subdir-objects foreign])
@@ -56,9 +56,8 @@ AM_CONDITIONAL([HOST_NETBSD],  [test x$HOST_OS = xnetbsd])
 AM_CONDITIONAL([HOST_SOLARIS], [test x$HOST_OS = xsolaris])
 
 AC_PROG_CC
-AC_PROG_CC_STDC
 AM_PROG_CC_C_O
-AC_PROG_LIBTOOL
+LT_INIT
 AC_PROG_INSTALL
 
 AC_ARG_ENABLE(warnings,
