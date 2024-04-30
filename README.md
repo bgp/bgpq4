@@ -1,3 +1,9 @@
+[![Build CI](https://github.com/bgp/bgpq4/workflows/Build%20CI/badge.svg)](https://github.com/bgp/bgpq4/actions?query=workflow%3A%22Build+CI%22)
+
+<a href="https://repology.org/project/bgpq4/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/bgpq4.svg" alt="Packaging status" align="right">
+</a>
+
 # NAME
 
 **bgpq4** - bgp filtering automation tool
