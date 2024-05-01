@@ -3,6 +3,7 @@
 
 1.13 (2024-05-01)
     - Fixed a bug for Mac users by removing sx_maxsockbuf()
+    - Fixed a comma printing bug in IOS XR as-path-set output
 
 1.12 (2024-02-12)
     - Fix a bug in the mikrotik printer
