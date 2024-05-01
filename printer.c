@@ -89,7 +89,7 @@ bgpq4_print_cisco_aspath(FILE *f, struct bgpq_expander *b)
 static void
 bgpq4_print_cisco_xr_aspath(FILE *f, struct bgpq_expander *b)
 {
-	int 			 nc = 0, comma = 1;
+	int 			 nc = 0, comma = 0;
 	struct asn_entry	*asne, find, *res;
 
 	fprintf(f, "as-path-set %s", b->name);
@@ -98,6 +98,7 @@ bgpq4_print_cisco_xr_aspath(FILE *f, struct bgpq_expander *b)
 	if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
 		fprintf(f, "\n  ios-regex '^%u(_%u)*$'", res->asn, res->asn);
 		RB_REMOVE(asn_tree, &b->asnlist, res);
+		comma = 1;
 	}
 
 	RB_FOREACH(asne, asn_tree, &b->asnlist) {
