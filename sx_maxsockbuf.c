@@ -44,7 +44,7 @@ sx_maxsockbuf(int s, int dir)
 {
 	int		optval = 0, voptval;
 	int		hiconf = -1, loconf = -1;
-	unsigned int	voptlen;
+	socklen_t	voptlen;
 	int		phase = 0, iterations = 0;
 
 	if (s < 0) {
