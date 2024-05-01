@@ -1075,16 +1075,6 @@ bgpq_expand(struct bgpq_expander *b)
 			continue;
 		}
 
-		err = sx_maxsockbuf(fd, SO_SNDBUF);
-		if (err > 0) {
-			SX_DEBUG(debug_expander, "Acquired sendbuf of %i "
-			    "bytes\n", err);
-		} else {
-			close(fd);
-			fd = -1;
-			continue;
-		}
-
 		break;
 	}
 

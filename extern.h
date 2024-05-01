@@ -149,9 +149,6 @@ void sx_radix_tree_freeall(struct sx_radix_tree *t);
 void bgpq_prequest_freeall(struct bgpq_prequest *bpr);
 void expander_freeall(struct bgpq_expander *expander);
 
-/* s - number of opened socket, dir is either SO_SNDBUF or SO_RCVBUF */
-int sx_maxsockbuf(int s, int dir);
-
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t size);
 #endif
