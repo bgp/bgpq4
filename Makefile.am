@@ -35,6 +35,6 @@ maintainer-clean-local:
 	-rm -rf m4 autom4te.cache
 
 check:
-	bgpq4 -v
+	./bgpq4 -v
 	@echo
-	bgpq4 -6 AS15562:AS-SNIJDERS | grep 2001:67c:208c::
+	./bgpq4 -6 AS15562:AS-SNIJDERS | grep 2001:67c:208c::
