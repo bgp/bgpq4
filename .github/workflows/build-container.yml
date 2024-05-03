@@ -48,6 +48,7 @@ jobs:
             type=sha
 
       - name: Login to GitHub Container Registry
+        if: github.repository_owner == 'bgp'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -60,5 +61,5 @@ jobs:
           file: .github/images/alpine:3.Dockerfile
           context: .
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.repository_owner == 'bgp' }}
           tags: ${{ steps.meta.outputs.tags }}
