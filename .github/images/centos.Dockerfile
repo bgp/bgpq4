@@ -2,8 +2,8 @@ ARG image=centos/centos:latest
 FROM quay.io/$image
 
 # Install dependencies
-RUN yum update -y
-RUN yum install -y autoconf automake gcc libtool make diffutils file gzip
+RUN if command -v yum > /dev/null; then dnf=yum; fi; ${dnf:-dnf} update -y
+RUN if command -v yum > /dev/null; then dnf=yum; fi; ${dnf:-dnf} install -y autoconf automake gcc libtool make diffutils file gzip
 
 # Add source code
 ADD . /src
