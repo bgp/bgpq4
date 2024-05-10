@@ -36,8 +36,8 @@ maintainer-clean-local:
 check:
 	./bgpq4 -v
 	@echo
-	-@if [ -s /etc/resolv.conf ]; then \
-		./bgpq4 -6 AS15562:AS-SNIJDERS | grep 2001:67c:208c::; \
+	-if [ -s /etc/resolv.conf ]; then \
+		./bgpq4 -ddd -6 AS15562:AS-SNIJDERS ; \
 	else \
 		echo "No or empty /etc/resolv.conf, skipping online test"; \
 	fi

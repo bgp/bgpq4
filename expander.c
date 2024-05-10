@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <netinet/tcp.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -1034,7 +1035,7 @@ bgpq_expand(struct bgpq_expander *b)
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
 	struct asn_entry	*asne;
-	int			 fd = -1, err, ret, aquery = 0;
+	int			 fd = -1, err, ret, aquery = 0, nodelay = 1;
 	int			 slen;
 
 	sl.l_onoff = 1;
@@ -1074,6 +1075,11 @@ bgpq_expand(struct bgpq_expander *b)
 			fd = -1;
 			continue;
 		}
+
+		if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay,
+		    sizeof(nodelay)) == -1)
+			SX_DEBUG(debug_expander, "Unable to set TCP_NODELAY on"
+			    " socket: %s\n", strerror(errno));
 
 		break;
 	}
