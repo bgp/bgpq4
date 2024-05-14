@@ -1,5 +1,5 @@
-1.14
-    - Set TCP_NODELAY on the whois socket
+1.14 (2024-05-14)
+    - Small performance gain: set TCP_NODELAY on the socket
 
 1.13 (2024-05-01)
     - Fixed a bug for Mac users by removing sx_maxsockbuf()

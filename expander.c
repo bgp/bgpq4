@@ -1035,7 +1035,7 @@ bgpq_expand(struct bgpq_expander *b)
 	struct addrinfo 	 hints, *res = NULL, *rp;
 	struct linger		 sl;
 	struct asn_entry	*asne;
-	int			 fd = -1, err, ret, aquery = 0, nodelay = 1;
+	int			 fd = -1, err, ret, aquery = 0, nodelay = 0;
 	int			 slen;
 
 	sl.l_onoff = 1;
@@ -1076,10 +1076,18 @@ bgpq_expand(struct bgpq_expander *b)
 			continue;
 		}
 
+		socklen_t len = sizeof(nodelay);
+		getsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, &len);
+		SX_DEBUG(debug_expander, "TCP_NODELAY set to %i\n", nodelay);
+
+		nodelay = 0;
 		if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay,
 		    sizeof(nodelay)) == -1)
 			SX_DEBUG(debug_expander, "Unable to set TCP_NODELAY on"
 			    " socket: %s\n", strerror(errno));
+
+		getsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, &len);
+		SX_DEBUG(debug_expander, "TCP_NODELAY set to %i\n", nodelay);
 
 		break;
 	}
