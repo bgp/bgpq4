@@ -15,7 +15,7 @@ jobs:
           - debian:buster
           - ubuntu:jammy
           - ubuntu:focal
-          - ubuntu:noble
+          - ubuntu:latest
           - fedora/fedora:40
           - fedora/fedora:39
           - centos/centos:stream9
