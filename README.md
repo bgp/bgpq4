@@ -91,7 +91,7 @@ It's options are as follows:
 
 **-H** *number*
 
-> generate output as-list for JunOS 21.3R1+ `as-path-origin` filter (JunOS only)
+> generate input as-list for JunOS 21.3R1+ `as-path-origin` filter (JunOS only)
 
 **-h** *host\[:port]*
 
