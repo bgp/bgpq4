@@ -300,11 +300,14 @@ bgpq4_print_juniper_aslist(FILE *f, struct bgpq_expander *b)
 
 	RB_FOREACH(asne, asn_tree, &b->asnlist) {
 		if (!nc) {
-			fprintf(f, "  as-list a%u members [ %u",
-			    lineNo, asne->asn);
-		} else {
-			fprintf(f," %u", asne->asn);
+			fprintf(f, "  as-list a%u members [",
+			    lineNo);
 		}
+
+		// Filter out AS 0
+		// "error: RPD Policy: Invalid AS 0"
+		if (asne->asn != 0)
+			fprintf(f," %u", asne->asn);
 
 		nc++;
 
