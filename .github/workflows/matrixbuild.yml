@@ -12,17 +12,18 @@ jobs:
           - debian:trixie
           - debian:bookworm
           - debian:bullseye
-          - debian:buster
+          - ubuntu:noble
           - ubuntu:jammy
           - ubuntu:focal
-          - ubuntu:latest
+          - fedora/fedora:42
+          - fedora/fedora:41
           - fedora/fedora:40
-          - fedora/fedora:39
+          - centos/centos:stream10
           - centos/centos:stream9
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.19
+          - alpine:3.21
     steps:
     - uses: actions/checkout@v4
     - name: Work around Docker BuildKit regression
