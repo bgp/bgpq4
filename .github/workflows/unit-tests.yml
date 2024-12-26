@@ -8,12 +8,15 @@ on:
       - reopened
       - ready_for_review
       - synchronize
+  push:
+    branches:
+      - main
   workflow_call:
 
 jobs:
   output-unit-tests:
     name: output unit tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: clone repo
         uses: actions/checkout@v4
