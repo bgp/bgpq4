@@ -604,6 +604,14 @@ main(int argc, char* argv[])
 		exit(1);
 	}
 
+	if (expander.vendor == V_ARISTA
+	    && expander.generation == T_EACL
+	    && expander.family == AF_INET6) {
+		sx_report(SX_FATAL, "Sorry, extended access-lists is not compatible "
+		    "with Arista EOS and IPv6\n");
+		exit(1);
+	}
+	
 	if (expander.sequence
 	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
