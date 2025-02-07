@@ -3,7 +3,7 @@ FROM quay.io/$image
 
 # Install dependencies
 RUN dnf -y update
-RUN dnf -y install autoconf automake gcc libtool make diffutils file gzip awk
+RUN dnf -y install autoconf automake gcc libtool make diffutils file gzip
 
 # Add source code
 ADD . /src
