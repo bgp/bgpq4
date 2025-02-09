@@ -101,6 +101,7 @@ usage(int ecode)
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
 	printf(" -z        : generate route-filter-list (Junos only)\n");
+	printf(" -c        : generate counting IP filters for ingress/egress (Nokia only)\n");
 	printf(" -W len    : specify max-entries on as-path/as-list line (use 0 for "
 		"infinity)\n");
 
@@ -201,7 +202,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBcdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
 	switch (c) {
 	case '2':
 		if (expander.vendor != V_NOKIA_MD) {
@@ -256,6 +257,11 @@ main(int argc, char* argv[])
 		if (expander.vendor)
 			vendor_exclusive();
 		expander.vendor = V_OPENBGPD;
+		break;
+	case 'c':
+		if (expander.generation)
+			exclusive();
+		expander.generation = T_TRAFFIC_COUNTING_FILTER;
 		break;
 	case 'd':
 		debug_expander++;
@@ -312,7 +318,7 @@ main(int argc, char* argv[])
 		break;
 	case 'j':
 		if (expander.vendor)
-			vendor_exclusive();
+			vendor_exclusive(); 
 		expander.vendor = V_JSON;
 		break;
 	case 'K':
@@ -557,6 +563,11 @@ main(int argc, char* argv[])
 	    && expander.vendor != V_JUNIPER)
 		sx_report(SX_FATAL, "Route-filter-lists (-z) supported for Juniper (-J)"
 		    " output only\n");
+
+	if (expander.generation == T_TRAFFIC_COUNTING_FILTER
+	    && expander.vendor != V_NOKIA_MD)
+		sx_report(SX_FATAL, "Packet counting IP ingress/egress filters based on "
+		    "prefix lists (-c) supported for Nokia MD (-n) output only\n");
 
 	if (expander.generation == T_ASSET
 	    && expander.vendor != V_JSON
@@ -808,6 +819,9 @@ main(int argc, char* argv[])
 			break;
 		case T_ROUTE_FILTER_LIST:
 			bgpq4_print_route_filter_list(stdout, &expander);
+			break;
+		case T_TRAFFIC_COUNTING_FILTER:
+			bgpq4_print_counting_filter(stdout, &expander);
 			break;
 	}
 
