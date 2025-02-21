@@ -1,4 +1,4 @@
 no ipv6 prefix-list NN
 ipv6 prefix-list NN
-    seq 1 permit 2001:4:112::/48
-    seq 2 permit 2620:4f:8000::/48
+   seq 1 permit 2001:4:112::/48
+   seq 2 permit 2620:4f:8000::/48

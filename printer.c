@@ -1165,7 +1165,7 @@ bgpq4_print_eprefix(struct sx_radix_node *n, void *ff)
 
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
-	snprintf(seqno, sizeof(seqno), " seq %i", seq++);
+	snprintf(seqno, sizeof(seqno), "seq %i", seq++);
 
 	if (n->isAggregate) {
 		if (n->aggregateLow > n->prefix->masklen) {
