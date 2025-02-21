@@ -1,4 +1,4 @@
 no ip prefix-list NN
 ip prefix-list NN
-    seq 1 permit 192.31.196.0/24
-    seq 2 permit 192.175.48.0/24
+   seq 1 permit 192.31.196.0/24
+   seq 2 permit 192.175.48.0/24
