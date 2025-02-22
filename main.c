@@ -68,6 +68,7 @@ usage(int ecode)
 	printf(" -n2       : Nokia SR Linux\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
 	printf(" -e        : Arista EOS\n");
+	printf(" -Z        : FRRouting\n");
 	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
 
 	printf("\nInput filters:\n");
@@ -201,7 +202,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvZz")) != EOF) {
 	switch (c) {
 	case '2':
 		if (expander.vendor != V_NOKIA_MD) {
@@ -457,6 +458,11 @@ main(int argc, char* argv[])
 		if (expander.generation)
 			exclusive();
 		expander.generation = T_ROUTE_FILTER_LIST;
+		break;
+	case 'Z':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_FRR;
 		break;
 	default:
 		usage(1);
