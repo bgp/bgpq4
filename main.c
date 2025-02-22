@@ -68,6 +68,7 @@ usage(int ecode)
 	printf(" -n2       : Nokia SR Linux\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
 	printf(" -e        : Arista EOS\n");
+	printf(" -V        : VyOS\n");
 	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
 
 	printf("\nInput filters:\n");
@@ -139,7 +140,7 @@ vendor_exclusive(void)
 	fprintf(stderr, "-b (BIRD), -B (OpenBGPD), -F (formatted), -J (Junos),"
 	    " -j (JSON), -K[7] (Microtik ROS), -N (Nokia SR OS Classic),"
 	    " -n (Nokia SR OS MD-CLI), -U (Huawei), -u (Huawei XPL),"
-	    "-e (Arista) and -X (IOS XR) options are mutually exclusive\n");
+	    " -e (Arista), -X (IOS XR) and -V (VyOS) options are mutually exclusive\n");
 	exit(1);
 }
 
@@ -201,7 +202,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsVvz")) != EOF) {
 	switch (c) {
 	case '2':
 		if (expander.vendor != V_NOKIA_MD) {
@@ -452,6 +453,11 @@ main(int argc, char* argv[])
 		break;
 	case 'v':
 		version();
+		break;
+	case 'V':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_VYOS;
 		break;
 	case 'z':
 		if (expander.generation)
