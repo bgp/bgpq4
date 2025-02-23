@@ -98,7 +98,7 @@ usage(int ecode)
 	printf(" -p        : allow special ASNs like 23456 or in the private range\n");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
 	printf(" -r len    : allow more specific routes from masklen specified\n");
-	printf(" -s        : generate sequence numbers in prefix-lists (IOS only)\n");
+	printf(" -s        : generate sequence numbers in prefix-lists (IOS, EOS and FRRouting only)\n");
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
 	printf(" -z        : generate route-filter-list (Junos only)\n");
@@ -619,9 +619,9 @@ main(int argc, char* argv[])
 	}
 	
 	if (expander.sequence
-	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
+	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA && expander.vendor != V_FRR)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
-		    " only for IOS and EOS\n");
+		    " only for IOS, EOS and FRRouting\n");
 		exit(1);
 	}
 

@@ -1187,7 +1187,7 @@ checkSon:
 static void
 bgpq4_print_frr_prefix(struct sx_radix_node *n, void *ff)
 {
-	char 	 prefix[128];
+	char 	 prefix[128], seqno[16] = "";
 	FILE	*f = (FILE*)ff;
 
 	if (!f)
@@ -1198,18 +1198,21 @@ bgpq4_print_frr_prefix(struct sx_radix_node *n, void *ff)
 
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 
+	if (seq)
+		snprintf(seqno, sizeof(seqno), " seq %i", seq++);
+
 	if (n->isAggregate) {
 		if (n->aggregateLow > n->prefix->masklen) {
-			fprintf(f,"ip prefix-list %s permit %s ge %u le %u\n",
-			    bname ? bname : "NN", prefix,
+			fprintf(f,"ip prefix-list %s%s permit %s ge %u le %u\n",
+			    bname ? bname : "NN", seqno, prefix,
 			    n->aggregateLow, n->aggregateHi);
 		} else {
-			fprintf(f,"ip prefix-list %s permit %s le %u\n",
-			    bname?bname:"NN", prefix, n->aggregateHi);
+			fprintf(f,"ip prefix-list %s%s permit %s le %u\n",
+			    bname?bname:"NN", seqno, prefix, n->aggregateHi);
 		}
 	} else {
-		fprintf(f,"ip prefix-list %s permit %s\n",
-		    bname ? bname : "NN", prefix);
+		fprintf(f,"ip prefix-list %s%s permit %s\n",
+		    bname ? bname : "NN", seqno, prefix);
 	}
 
 checkSon:
@@ -1937,6 +1940,7 @@ static void
 bgpq4_print_frr_prefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
 
 	if (!sx_radix_tree_empty(b->tree)) {
 		sx_radix_tree_foreach(b->tree, bgpq4_print_frr_prefix, f);
