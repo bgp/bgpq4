@@ -64,6 +64,7 @@ typedef enum {
 	V_NOKIA_MD,
 	V_ARISTA,
 	V_NOKIA_SRL,
+	V_VYOS,
 } bgpq_vendor_t;
 
 typedef enum {
