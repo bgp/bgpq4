@@ -613,10 +613,6 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 			sx_report(SX_ERROR, "out of range: %s\n", q);
 			return;
 		}
-		if (eptr && *eptr != '\n') {
-			sx_report(SX_ERROR, "no number? %s\n", q);
-			return;
-		}
 
 		find.asn = asn;
 		if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) == NULL) {
