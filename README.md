@@ -63,6 +63,10 @@ It's options are as follows:
 
 > generate output in BIRD format (default: Cisco).
 
+**-c**
+
+> generate IP prefix ingress/egress filters for counting traffic, based on dst/src IP matches to a per-AS prefix list (Nokia MD-CLI only)
+
 **-d**
 
 > enable some debugging output.
