@@ -68,6 +68,7 @@ usage(int ecode)
 	printf(" -n2       : Nokia SR Linux\n");
 	printf(" -B        : OpenBSD OpenBGPD\n");
 	printf(" -e        : Arista EOS\n");
+	printf(" -Z        : FRRouting\n");
 	printf(" -F fmt    : User defined format (example: '-F %%n/%%l')\n");
 
 	printf("\nInput filters:\n");
@@ -97,7 +98,7 @@ usage(int ecode)
 	printf(" -p        : allow special ASNs like 23456 or in the private range\n");
 	printf(" -R len    : allow more specific routes up to specified masklen\n");
 	printf(" -r len    : allow more specific routes from masklen specified\n");
-	printf(" -s        : generate sequence numbers in prefix-lists (IOS only)\n");
+	printf(" -s        : generate sequence numbers in prefix-lists (IOS, EOS and FRRouting only)\n");
 	printf(" -t        : generate as-sets for OpenBGPD (OpenBGPD 6.4+), BIRD "
 		"and JSON formats\n");
 	printf(" -z        : generate route-filter-list (Junos only)\n");
@@ -201,7 +202,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvZz")) != EOF) {
 	switch (c) {
 	case '2':
 		if (expander.vendor != V_NOKIA_MD) {
@@ -458,6 +459,11 @@ main(int argc, char* argv[])
 			exclusive();
 		expander.generation = T_ROUTE_FILTER_LIST;
 		break;
+	case 'Z':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_FRR;
+		break;
 	default:
 		usage(1);
 	}
@@ -613,9 +619,9 @@ main(int argc, char* argv[])
 	}
 	
 	if (expander.sequence
-	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA)) {
+	    && (expander.vendor != V_CISCO && expander.vendor != V_ARISTA && expander.vendor != V_FRR)) {
 		sx_report(SX_FATAL, "Sorry, prefix-lists sequencing (-s) supported"
-		    " only for IOS and EOS\n");
+		    " only for IOS, EOS and FRRouting\n");
 		exit(1);
 	}
 
