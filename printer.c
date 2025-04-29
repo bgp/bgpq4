@@ -39,6 +39,7 @@
 #include "sx_report.h"
 
 extern int debug_expander;
+static int needscomma = 0;
 
 #define max(a,b)             \
 ({                           \
@@ -661,8 +662,6 @@ bgpq4_print_jprefix(struct sx_radix_node *n, void *ff)
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 	fprintf(f,"    %s;\n", prefix);
 }
-
-static int   needscomma = 0;
 
 static void
 bgpq4_print_json_prefix(struct sx_radix_node *n, void *ff)
@@ -1410,13 +1409,13 @@ checkSon:
 typedef struct {
 	FILE *f;
 	int seq;
-} NOKIA_SRL_IPFILTER_PARAMS;
+} SEQUENCE_NUMBER_PARAMS;
 
 static void
 bgpq4_print_nokia_srl_ipfilter(struct sx_radix_node *n, void *ff)
 {
 	char 	 prefix[128];
-	NOKIA_SRL_IPFILTER_PARAMS *params = (NOKIA_SRL_IPFILTER_PARAMS*) ff;
+	SEQUENCE_NUMBER_PARAMS *params = (SEQUENCE_NUMBER_PARAMS*) ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1810,7 +1809,7 @@ bgpq4_print_nokia_srl_aclipfilter(FILE *f, struct bgpq_expander *b)
 	    b->tree->family == AF_INET ? '4' : '6', bname);
 
 	if (!sx_radix_tree_empty(b->tree)) {
-		NOKIA_SRL_IPFILTER_PARAMS params = { f, 10 };
+		SEQUENCE_NUMBER_PARAMS params = { f, 10 };
 		sx_radix_tree_foreach(b->tree, bgpq4_print_nokia_srl_ipfilter, &params);
 	} else {
 		fprintf(f,"# generated ipv%c-filter '%s' is empty\n",
