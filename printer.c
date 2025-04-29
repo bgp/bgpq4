@@ -1546,6 +1546,66 @@ bgpq4_print_cisco_prefixlist(FILE *f, struct bgpq_expander *b)
 	}
 }
 
+
+static void
+bgpq4_print_rtbrickrefix(struct sx_radix_node *n, void *ff)
+{
+	char prefix[128];
+	SEQUENCE_NUMBER_PARAMS *params = (SEQUENCE_NUMBER_PARAMS *) ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!params->f)
+		params->f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+	fprintf(params->f, "%s\n", needscomma ? "," : "");
+	fprintf(params->f, "            {\n");
+	fprintf(params->f, "              \"ordinal\": %d,\n", params->seq);
+	fprintf(params->f, "              \"value\": \"%s\"\n", prefix);
+	fprintf(params->f, "            }");
+
+	params->seq += 1;
+	needscomma = 1;
+
+checkSon:
+	if (n->son)
+		bgpq4_print_rtbrickrefix(n->son, ff);
+
+
+}
+
+
+static void
+bgpq4_print_rtbrick_prefixlist(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
+
+	fprintf(f, "{\n");
+	fprintf(f, "  \"ietf-restconf:data\": {\n");
+	fprintf(f, "    \"rtbrick-config:policy\": {\n");
+	fprintf(f, "      \"list\": [\n");
+	fprintf(f, "        {\n");
+	fprintf(f, "          \"name\": \"%s\",\n", bname);
+	fprintf(f, "          \"type\": \"%s-prefix\",\n",
+		b->family == AF_INET ? "ipv4" : "ipv6");
+	fprintf(f, "          \"ordinal\": [");
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		SEQUENCE_NUMBER_PARAMS params = { f, 1 };
+		sx_radix_tree_foreach(b->tree, bgpq4_print_rtbrickrefix, &params);
+	}
+
+	fprintf(f, "\n          ]\n");
+	fprintf(f, "        }\n");
+	fprintf(f, "      ]\n");
+	fprintf(f, "    }\n");
+	fprintf(f, "  }\n");
+	fprintf(f, "}\n");
+}
+
 static void
 bgpq4_print_ciscoxr_prefixlist(FILE *f, struct bgpq_expander *b)
 {
@@ -1945,6 +2005,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);
+		break;
+	case V_RTBRICK:
+		bgpq4_print_rtbrick_prefixlist(f, b);
 		break;
 	}
 }
