@@ -39,6 +39,7 @@
 #include "sx_report.h"
 
 extern int debug_expander;
+static int needscomma = 0;
 
 #define max(a,b)             \
 ({                           \
@@ -661,8 +662,6 @@ bgpq4_print_jprefix(struct sx_radix_node *n, void *ff)
 	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
 	fprintf(f,"    %s;\n", prefix);
 }
-
-static int   needscomma = 0;
 
 static void
 bgpq4_print_json_prefix(struct sx_radix_node *n, void *ff)
@@ -1410,13 +1409,13 @@ checkSon:
 typedef struct {
 	FILE *f;
 	int seq;
-} NOKIA_SRL_IPFILTER_PARAMS;
+} SEQUENCE_NUMBER_PARAMS;
 
 static void
 bgpq4_print_nokia_srl_ipfilter(struct sx_radix_node *n, void *ff)
 {
 	char 	 prefix[128];
-	NOKIA_SRL_IPFILTER_PARAMS *params = (NOKIA_SRL_IPFILTER_PARAMS*) ff;
+	SEQUENCE_NUMBER_PARAMS *params = (SEQUENCE_NUMBER_PARAMS*) ff;
 
 	if (n->isGlue)
 		goto checkSon;
@@ -1545,6 +1544,66 @@ bgpq4_print_cisco_prefixlist(FILE *f, struct bgpq_expander *b)
 		    seq ? " seq 1" : "",
 		    (b->family == AF_INET) ? "0.0.0.0/0" : "::/0");
 	}
+}
+
+
+static void
+bgpq4_print_rtbrickrefix(struct sx_radix_node *n, void *ff)
+{
+	char prefix[128];
+	SEQUENCE_NUMBER_PARAMS *params = (SEQUENCE_NUMBER_PARAMS *) ff;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	if (!params->f)
+		params->f = stdout;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+	fprintf(params->f, "%s\n", needscomma ? "," : "");
+	fprintf(params->f, "            {\n");
+	fprintf(params->f, "              \"ordinal\": %d,\n", params->seq);
+	fprintf(params->f, "              \"value\": \"%s\"\n", prefix);
+	fprintf(params->f, "            }");
+
+	params->seq += 1;
+	needscomma = 1;
+
+checkSon:
+	if (n->son)
+		bgpq4_print_rtbrickrefix(n->son, ff);
+
+
+}
+
+
+static void
+bgpq4_print_rtbrick_prefixlist(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
+
+	fprintf(f, "{\n");
+	fprintf(f, "  \"ietf-restconf:data\": {\n");
+	fprintf(f, "    \"rtbrick-config:policy\": {\n");
+	fprintf(f, "      \"list\": [\n");
+	fprintf(f, "        {\n");
+	fprintf(f, "          \"name\": \"%s\",\n", bname);
+	fprintf(f, "          \"type\": \"%s-prefix\",\n",
+		b->family == AF_INET ? "ipv4" : "ipv6");
+	fprintf(f, "          \"ordinal\": [");
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		SEQUENCE_NUMBER_PARAMS params = { f, 1 };
+		sx_radix_tree_foreach(b->tree, bgpq4_print_rtbrickrefix, &params);
+	}
+
+	fprintf(f, "\n          ]\n");
+	fprintf(f, "        }\n");
+	fprintf(f, "      ]\n");
+	fprintf(f, "    }\n");
+	fprintf(f, "  }\n");
+	fprintf(f, "}\n");
 }
 
 static void
@@ -1810,7 +1869,7 @@ bgpq4_print_nokia_srl_aclipfilter(FILE *f, struct bgpq_expander *b)
 	    b->tree->family == AF_INET ? '4' : '6', bname);
 
 	if (!sx_radix_tree_empty(b->tree)) {
-		NOKIA_SRL_IPFILTER_PARAMS params = { f, 10 };
+		SEQUENCE_NUMBER_PARAMS params = { f, 10 };
 		sx_radix_tree_foreach(b->tree, bgpq4_print_nokia_srl_ipfilter, &params);
 	} else {
 		fprintf(f,"# generated ipv%c-filter '%s' is empty\n",
@@ -1946,6 +2005,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);
+		break;
+	case V_RTBRICK:
+		bgpq4_print_rtbrick_prefixlist(f, b);
 		break;
 	}
 }

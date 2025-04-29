@@ -201,7 +201,7 @@ main(int argc, char* argv[])
 		expander.sources=getenv("IRRD_SOURCES");
 
 	while ((c = getopt(argc, argv,
-	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXsvz")) != EOF) {
+	    "23467a:AbBdDEeF:S:jJKf:l:L:m:M:NnpW:r:R:G:H:tTh:UuwXxsvz")) != EOF) {
 	switch (c) {
 	case '2':
 		if (expander.vendor != V_NOKIA_MD) {
@@ -450,6 +450,11 @@ main(int argc, char* argv[])
 			vendor_exclusive();
 		expander.vendor = V_CISCO_XR;
 		break;
+	case 'x':
+		if (expander.vendor)
+			vendor_exclusive();
+		expander.vendor = V_RTBRICK;
+		break;
 	case 'v':
 		version();
 		break;
@@ -539,6 +544,12 @@ main(int argc, char* argv[])
 	    && expander.generation != T_ASSET) {
 		sx_report(SX_FATAL, "Sorry, only prefix-lists and as-paths/as-sets "
 		    "supported for JSON output\n");
+	}
+
+	if (expander.vendor == V_RTBRICK
+	    && expander.generation != T_PREFIXLIST) {
+		sx_report(SX_FATAL, "Sorry, only prefix-lists "
+		    "supported for RtBrick output\n");
 	}
 
 	if (expander.vendor == V_FORMAT
