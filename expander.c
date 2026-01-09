@@ -1274,7 +1274,6 @@ bgpq_expand(struct bgpq_expander *b)
 				source = bgpq_get_source(mc->text);
 				if (source){
 					if (pipelining){
-						printf("Checking %s\n", bgpq_get_rset(mc->text));
 						bgpq_pipeline(b, NULL, NULL, "!s%s\n", source);
 						if (b->family == AF_INET)
 							bgpq_pipeline(b, bgpq_expanded_prefix,
