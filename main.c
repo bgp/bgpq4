@@ -78,7 +78,7 @@ usage(int ecode)
 	printf(" -L depth  : limit recursion depth (default: unlimited)\n"),
 	printf(" -S sources: only use specified IRR sources, in the specified "
 	    "order (comma separated)\n");
-	printf(" -w        : 'validate' AS numbers: accept only ones with "
+	printf(" -w        : 'validate' AS numbers: only accept ones with "
 		"registered routes\n");
 
 	printf("\nOutput modifiers:\n");
