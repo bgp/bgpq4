@@ -598,11 +598,10 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 	struct asn_entry	 find, *res;
 
 	if (!strncmp(q, "!gas", 4) || !strncmp(q, "!6as", 4)) {
-
 		errno = 0;
 		asn = strtoul(q + 4, &eptr, 10);
 		if (*eptr != '\n') {
-			sx_report(SX_ERROR, "not a number: %s\n", q);
+			sx_report(SX_ERROR, "bad number in query: %s\n", q);
 			return;
 		}
 		if (errno == ERANGE && asn == ULONG_MAX) {
