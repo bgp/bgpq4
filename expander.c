@@ -619,7 +619,7 @@ bgpq_expander_invalidate_asn(struct bgpq_expander *b, const char *q)
 		}
 
 		find.asn = asn;
-		if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) == NULL) {
+		if ((res = RB_FIND(asn_tree, &b->asnlist, &find)) != NULL) {
 			RB_REMOVE(asn_tree, &b->asnlist, res);
 			free(res);
 		}
