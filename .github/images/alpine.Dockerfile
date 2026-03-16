@@ -3,7 +3,7 @@ FROM $image
 
 # Install dependencies
 RUN apk upgrade
-RUN apk add autoconf automake file gcc gzip libtool make musl-dev
+RUN apk add autoconf automake file gcc gzip libtool make musl-dev tar
 
 # Add source code
 ADD . /src
