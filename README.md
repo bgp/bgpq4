@@ -71,6 +71,10 @@ It's options are as follows:
 
 > generate output in Arista EOS format (default: Cisco).
 
+**-V**
+
+> generate output in VyOS format (default: Cisco).
+
 **-E**
 
 > generate extended access-list (Cisco), policy-statement term using
