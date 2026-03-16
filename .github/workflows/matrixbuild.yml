@@ -15,15 +15,16 @@ jobs:
           - ubuntu:noble
           - ubuntu:jammy
           - ubuntu:focal
+          - fedora/fedora:44
+          - fedora/fedora:43
           - fedora/fedora:42
-          - fedora/fedora:41
-          - fedora/fedora:40
           - centos/centos:stream10
           - centos/centos:stream9
+          - rockylinux/rockylinux:10
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.21
+          - alpine:3.23
     steps:
     - uses: actions/checkout@v4
     - name: Work around Docker BuildKit regression
