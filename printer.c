@@ -1185,6 +1185,42 @@ checkSon:
 }
 
 static void
+bgpq4_print_frr_prefix(struct sx_radix_node *n, void *ff)
+{
+	char 	 prefix[128], seqno[16] = "";
+	FILE	*f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (seq)
+		snprintf(seqno, sizeof(seqno), " seq %i", seq++);
+
+	if (n->isAggregate) {
+		if (n->aggregateLow > n->prefix->masklen) {
+			fprintf(f,"ip prefix-list %s%s permit %s ge %u le %u\n",
+			    bname ? bname : "NN", seqno, prefix,
+			    n->aggregateLow, n->aggregateHi);
+		} else {
+			fprintf(f,"ip prefix-list %s%s permit %s le %u\n",
+			    bname?bname:"NN", seqno, prefix, n->aggregateHi);
+		}
+	} else {
+		fprintf(f,"ip prefix-list %s%s permit %s\n",
+		    bname ? bname : "NN", seqno, prefix);
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_frr_prefix(n->son, ff);
+}
+
+static void
 bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 {
 	char 	 	 prefix[128];
@@ -1900,6 +1936,19 @@ bgpq4_print_mikrotik_prefixlist(FILE *f, struct bgpq_expander *b)
 	}
 }
 
+static void
+bgpq4_print_frr_prefixlist(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+	seq = b->sequence;
+
+	if (!sx_radix_tree_empty(b->tree)) {
+		sx_radix_tree_foreach(b->tree, bgpq4_print_frr_prefix, f);
+	} else {
+		fprintf(f, "# generated prefix-list %s is empty\n", bname);
+	}
+}
+
 void
 bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 {
@@ -1946,6 +1995,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);
+		break;
+	case V_FRR:
+		bgpq4_print_frr_prefixlist(f, b);
 		break;
 	}
 }
