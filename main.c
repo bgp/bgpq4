@@ -752,7 +752,11 @@ main(int argc, char* argv[])
 					    " object %s\n", argv[0]);
 				}
 			} else {
-				bgpq_expander_add_as(&expander, argv[0]);
+				char *source = delim ? bgpq_get_source(argv[0]) : NULL;
+				obj[0] = toupper((unsigned char)obj[0]);
+				obj[1] = toupper((unsigned char)obj[1]);
+				bgpq_expander_add_as(&expander, obj, source);
+				free(source);
 			}
 		} else {
 			char *ec = strchr(argv[0], '^');

@@ -46,6 +46,7 @@ struct sx_tentry	*sx_tentry_new(char *text);
 struct asn_entry {
 	RB_ENTRY(asn_entry)	entry;
 	uint32_t		asn;
+	char			*source;
 };
 
 typedef enum {
@@ -125,7 +126,7 @@ RB_PROTOTYPE(asn_tree, asn_entry, entry, asn_cmp);
 int bgpq_expander_init(struct bgpq_expander *b, int af);
 int bgpq_expander_add_asset(struct bgpq_expander *b, char *set);
 int bgpq_expander_add_rset(struct bgpq_expander *b, char *set);
-int bgpq_expander_add_as(struct bgpq_expander *b, char *as);
+int bgpq_expander_add_as(struct bgpq_expander *b, char *as, char *source);
 int bgpq_expander_add_prefix(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix);
 int bgpq_expander_add_stop(struct bgpq_expander *b, char *object);
