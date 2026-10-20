@@ -247,6 +247,7 @@ bgpq_expander_add_prefix_range(struct bgpq_expander *b, char *prefix)
 char *
 bgpq_get_asset(char *object) {
 	char *d, *asset;
+	size_t len;
 
 	d = strstr(object, "::");
 	if (d)
@@ -254,10 +255,14 @@ bgpq_get_asset(char *object) {
 	else
 		d = object;
 
-	if ((asset = calloc(1, 256)) == NULL)
+	len = strlen(object) - (d - object);
+	if (len > MAX_OBJECT_LEN)
+		len = MAX_OBJECT_LEN;
+
+	if ((asset = calloc(1, MAX_OBJECT_LEN + 1)) == NULL)
 		err(1, NULL);
 
-	memcpy(asset, d, strlen(object) - (d - object));
+	memcpy(asset, d, len);
 
 	return asset;
 }
@@ -265,6 +270,7 @@ bgpq_get_asset(char *object) {
 char *
 bgpq_get_rset(char *object) {
 	char *d, *rset;
+	size_t len;
 
 	d = strstr(object, "::");
 
@@ -273,10 +279,14 @@ bgpq_get_rset(char *object) {
 	else
 		d = object;
 
-	if ((rset = calloc(1, 256)) == NULL)
+	len = strlen(object) - (d - object);
+	if (len > MAX_OBJECT_LEN)
+		len = MAX_OBJECT_LEN;
+
+	if ((rset = calloc(1, MAX_OBJECT_LEN + 1)) == NULL)
 		err(1, NULL);
 
-	memcpy(rset, d, strlen(object) - (d - object));
+	memcpy(rset, d, len);
 
 	return rset;
 }
@@ -290,10 +300,13 @@ bgpq_get_source(char *object) {
 	d = strstr(object, "::");
 
 	if (d) {
-		if ((source = calloc(1, 256)) == NULL)
+		slen = d - object;
+		if (slen > MAX_OBJECT_LEN)
+			slen = MAX_OBJECT_LEN;
+
+		if ((source = calloc(1, MAX_OBJECT_LEN + 1)) == NULL)
 			err(1, NULL);
 
-		slen = d - object;
 		memcpy(source, object, slen);
 		return source;
 	}
