@@ -11,7 +11,6 @@ jobs:
         dockerenv:
           - debian:trixie
           - debian:bookworm
-          - debian:bullseye
           - ubuntu:noble
           - ubuntu:jammy
           - ubuntu:focal
@@ -24,7 +23,7 @@ jobs:
           - rockylinux/rockylinux:9
           - rockylinux/rockylinux:8
           - alpine:edge
-          - alpine:3.23
+          - alpine:3.24
     steps:
     - uses: actions/checkout@v4
     - name: Work around Docker BuildKit regression
