@@ -29,6 +29,8 @@
 
 #include "sx_prefix.h"
 
+#define MAX_OBJECT_LEN 250
+
 struct slentry {
 	STAILQ_ENTRY(slentry)	 entry;
 	char			*text;

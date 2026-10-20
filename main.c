@@ -728,6 +728,13 @@ main(int argc, char* argv[])
 	while (argv[0]) {
 		char *obj = argv[0];
 		char *delim = strstr(argv[0], "::");
+
+		if (strcmp(argv[0], "EXCEPT") && strlen(argv[0]) > MAX_OBJECT_LEN) {
+			sx_report(SX_FATAL, "Object too long (max %d bytes): %s\n",
+			    MAX_OBJECT_LEN, argv[0]);
+			exit(1);
+		}
+
 		if (delim) {
 			expander.usesource = 1;
 			obj = delim + 2;
