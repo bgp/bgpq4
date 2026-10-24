@@ -181,7 +181,7 @@ bgpq_expander_add_stop(struct bgpq_expander *b, char *rs)
 }
 
 int
-bgpq_expander_add_as(struct bgpq_expander *b, char *as)
+bgpq_expander_add_as(struct bgpq_expander *b, char *as, char *source)
 {
 	char			*eoa;
 	uint32_t		 asno = 0;
@@ -207,6 +207,7 @@ bgpq_expander_add_as(struct bgpq_expander *b, char *as)
 		err(1, NULL);
 
 	asne->asn = asno;
+	asne->source = source ? strdup(source) : NULL;
 	RB_INSERT(asn_tree, &b->asnlist, asne);
 
 	return 1;
@@ -318,7 +319,7 @@ static int
 bgpq_expanded_macro(char *as, struct bgpq_expander *ex,
     struct request *req)
 {
-	bgpq_expander_add_as(ex, as);
+	bgpq_expander_add_as(ex, as, NULL);
 
 	return 1;
 }
@@ -405,7 +406,7 @@ bgpq_expanded_macro_limit(char *as, struct bgpq_expander *b,
 			return 0;
 		}
 
-		if (bgpq_expander_add_as(b, as)) {
+		if (bgpq_expander_add_as(b, as, NULL)) {
 			SX_DEBUG(debug_expander > 2, ".. added asn %s\n", as);
 		} else {
 			SX_DEBUG(debug_expander, ".. some error adding as %s "
@@ -1344,6 +1345,16 @@ bgpq_expand(struct bgpq_expander *b)
 		}
 
 		RB_FOREACH(asne, asn_tree, &b->asnlist) {
+			if (b->usesource) {
+				char *asnsource = asne->source ? asne->source :
+				    b->defaultsources;
+				if (pipelining)
+					bgpq_pipeline(b, NULL, NULL, "!s%s\n",
+					    asnsource);
+				else
+					bgpq_expand_irrd(b, NULL, NULL, "!s%s\n",
+					    asnsource);
+			}
 			if (b->family == AF_INET6) {
 				if (!pipelining) {
 					bgpq_expand_irrd(b, bgpq_expanded_v6prefix,
@@ -1461,6 +1472,7 @@ expander_freeall(struct bgpq_expander *expander)
 	    asne != NULL; asne = asne_next) {
 		asne_next = RB_NEXT(asn_tree, &expander->asnlist, asne);
 		RB_REMOVE(asn_tree, &expander->asnlist, asne);
+		free(asne->source);
 		free(asne);
 	}
 

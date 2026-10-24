@@ -15,7 +15,11 @@ fi
 
 BGPQ4_PATH="${1}"
 TEST_ASN="112"
+TEST_ASN_DB="RIPE-NONAUTH"
+TEST_ASN_INVALID_DB="APNIC"
 TEST_AS_SET="AS-AS112"
+TEST_AS_SET_DB="RIPE"
+TEST_AS_SET_INVALID_DB="APNIC"
 OUT_DIR="${2}"
 
 if [ ! -f "${BGPQ4_PATH}" ]
@@ -81,10 +85,14 @@ fi
 
 # Test IRR source scopes
 # Limit ASN to valid source:
-"${BGPQ4_PATH}" "AS${TEST_ASN}" -S RIPE-NONAUTH > "${OUT_DIR}/as112-ripe-nonauth.txt"
+"${BGPQ4_PATH}" "AS${TEST_ASN}" -S ${TEST_ASN_DB} > "${OUT_DIR}/AS${TEST_ASN}-${TEST_ASN_DB}.txt"
 # Limit ASN to invalid sources:
-"${BGPQ4_PATH}" "AS${TEST_ASN}" -S APNIC,AFRINIC > "${OUT_DIR}/as112-apnic.txt"
+"${BGPQ4_PATH}" "AS${TEST_ASN}" -S ${TEST_ASN_INVALID_DB} > "${OUT_DIR}/AS${TEST_ASN}-${TEST_ASN_INVALID_DB}.txt"
+# Limit ASN using IRR prefix notation to valid source:
+"${BGPQ4_PATH}" "${TEST_ASN_DB}::AS${TEST_ASN}" > "${OUT_DIR}/AS${TEST_ASN}-scoped-${TEST_ASN_DB}.txt"
+# Limit ASN using IRR prefix notation to invalid source:
+"${BGPQ4_PATH}" "${TEST_ASN_INVALID_DB}::AS${TEST_ASN}" > "${OUT_DIR}/AS${TEST_ASN}-scoped-${TEST_ASN_INVALID_DB}.txt"
 # Limit AS-SET using IRR prefix notation to valid source:
-"${BGPQ4_PATH}" "RIPE::${TEST_AS_SET}" > "${OUT_DIR}/as-as112-ripe-notation.txt"
+"${BGPQ4_PATH}" "${TEST_AS_SET_DB}::${TEST_AS_SET}" > "${OUT_DIR}/${TEST_AS_SET}-scoped-${TEST_AS_SET_DB}.txt"
 # Limit AS-SET using IRR prefix notation to invalid source:
-"${BGPQ4_PATH}" "APNIC::${TEST_AS_SET}" > "${OUT_DIR}/as-as112-apnic-notation.txt"
+"${BGPQ4_PATH}" "${TEST_AS_SET_INVALID_DB}::${TEST_AS_SET}" > "${OUT_DIR}/${TEST_AS_SET}-scoped-${TEST_AS_SET_INVALID_DB}.txt"
