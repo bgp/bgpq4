@@ -744,12 +744,14 @@ have:
 		if (response[0] == 'A') {
 			char		*eon, *c;
 			unsigned long	 offset = 0;
-			unsigned long 	 togot = strtoul(response + 1, &eon, 10);
+			unsigned long 	 togot;
 			char 		*recvbuffer;
 
-			if (togot > BGPQ_MAX_REPLY_LEN) {
-				sx_report(SX_ERROR, "A-code length %lu too "
-				    "large (max %lu)\n", togot,
+			errno = 0;
+			togot = strtoul(response + 1, &eon, 10);
+			if (errno != 0 || togot > BGPQ_MAX_REPLY_LEN) {
+				sx_report(SX_ERROR, "A-code length %lu invalid "
+				    "or too large (max %lu)\n", togot,
 				    BGPQ_MAX_REPLY_LEN);
 				exit(1);
 			}
@@ -946,14 +948,16 @@ repeat:
 
 	if (response[0] == 'A') {
 		char	*eon, *c;
-		unsigned long len = strtoul(response + 1, &eon, 10);
+		unsigned long len;
 		long 	 togot;
 		char 	*recvbuffer;
 		int 	 offset = 0;
 
-		if (len > BGPQ_MAX_REPLY_LEN) {
-			sx_report(SX_ERROR, "A-code length %lu too large "
-			    "(max %lu)\n", len, BGPQ_MAX_REPLY_LEN);
+		errno = 0;
+		len = strtoul(response + 1, &eon, 10);
+		if (errno != 0 || len > BGPQ_MAX_REPLY_LEN) {
+			sx_report(SX_ERROR, "A-code length %lu invalid or too "
+			    "large (max %lu)\n", len, BGPQ_MAX_REPLY_LEN);
 			exit(1);
 		}
 		togot = (long)len;
