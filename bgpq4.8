@@ -74,6 +74,8 @@ generate output in BIRD format (default: Cisco).
 enable some debugging output.
 .It Fl e
 generate output in Arista EOS format (default: Cisco).
+.It Fl Z
+generate output in FRRouting format (default: Cisco).
 .It Fl E
 generate extended access-list (Cisco), policy-statement term using
 route-filters (Juniper), [ip|ipv6]-prefix-list (Nokia) or prefix-sets
@@ -121,7 +123,7 @@ allow more specific routes starting with specified masklen too.
 .It Fl R Ar len
 allow more specific routes up to specified masklen too.
 .It Fl s
-generate sequence numbers in IOS-style prefix-lists.
+generate sequence numbers in prefix-lists (IOS, EOS and FRRouting only).
 .It Fl S Ar sources
 use specified sources only (recommended: RPKI,AFRINIC,APNIC,ARIN,LACNIC,RIPE).
 .It Fl t
