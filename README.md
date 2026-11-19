@@ -388,12 +388,14 @@ for the AS-SET being expanded:
 	ip prefix-list NN permit 208.86.234.0/24
 	ip prefix-list NN permit 208.86.235.0/24
 
-The other option is to specify a source for an AS-SET or Route Set using the
-"::" notation. When bgpq4 detects this, it will look for "::" in the specified
-AS-SET or RS on the CLI, and in all members of the AS-SET/RS, and for each
-member with a data source specified in "::" format, it will set the IRRd data
-source to the given value, query the AS-SET/RS, then reset the data sources back
- to the default list for the next object in the tree.
+The other option is to specify a source for an AS-SET or Route Set or ASN by
+using the "::" notation. When bgpq4 detects this, it will look for "::" in the
+specified AS-SET or RS or ASN on the CLI. In all members of an AS-SET/RS, and
+for each member with a data source specified in "::" format, bgpq4 will set the
+IRRd data source to the given value, query the AS-SET/RS, then reset the data
+sources back to the default list for the next object in the tree. For an ASN
+bgpq4 will set the data source to the given value, query the ASN, then reset
+the data sources back to the default list for the next object in the tree.
 
 	$./bgpq4 RIPE::AS-VOSTRON
 	no ip prefix-list NN
@@ -406,8 +408,8 @@ source to the given value, query the AS-SET/RS, then reset the data sources back
 	ip prefix-list NN permit 208.86.235.0/24
 
 In comparison to the '-S' flag, this method return all the prefixes under the
-AS-SET, but the root of the tree "AS-VOSTRON" was queries from RIPE only. None
-of the member objects used the "::" notation so they were queries from the
+AS-SET, but the root of the tree "AS-VOSTRON" was queried from RIPE only. None
+of the member objects used the "::" notation so they were queried from the
 default source list (which is all sources).
 
 
@@ -433,7 +435,7 @@ object.
 	ip prefix-list NN permit 45.65.184.0/22
 	[...]
 
-When known, use the "::" notation to speicy the authortative data source for
+When known, use the "::" notation to specify the authoritative data source for
 an AS-SET or RS instead of the -S flag.
 
 # PERFORMANCE
