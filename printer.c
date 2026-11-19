@@ -1185,6 +1185,44 @@ checkSon:
 }
 
 static void
+bgpq4_print_vyos_prefix(struct sx_radix_node *n, void *ff)
+{
+	char 	 prefix[128], seqno[16] = "";
+	FILE	*f = (FILE*)ff;
+
+	if (!f)
+		f = stdout;
+
+	if (n->isGlue)
+		goto checkSon;
+
+	sx_prefix_snprintf(n->prefix, prefix, sizeof(prefix));
+
+	if (seq) {
+		snprintf(seqno, sizeof(seqno), "%i", seq++);
+	} else {
+		seq = 1;
+		snprintf(seqno, sizeof(seqno), "%i", seq);
+	}
+
+	fprintf(f, "set rule %s action 'permit'\n", seqno);
+	fprintf(f, "set rule %s prefix '%s'\n", seqno, prefix);
+
+	if (n->isAggregate) {
+		if (n->aggregateLow > n->prefix->masklen) {
+			fprintf(f, "set rule %s ge '%u'\n", seqno, n->aggregateLow);
+			fprintf(f, "set rule %s le '%u'\n", seqno, n->aggregateHi);		
+		} else {
+			fprintf(f, "set rule %s le '%u'\n", seqno, n->aggregateHi);
+		}
+	}
+
+checkSon:
+	if (n->son)
+		bgpq4_print_vyos_prefix(n->son, ff);
+}
+
+static void
 bgpq4_print_ceacl(struct sx_radix_node *n, void *ff)
 {
 	char 	 	 prefix[128];
@@ -1900,6 +1938,17 @@ bgpq4_print_mikrotik_prefixlist(FILE *f, struct bgpq_expander *b)
 	}
 }
 
+static void
+bgpq4_print_vyos_prefixlist(FILE *f, struct bgpq_expander *b)
+{
+	bname = b->name ? b->name : "NN";
+
+	fprintf(f,"delete policy prefix-list%s %s\n", b->family == AF_INET ? "" : "6", bname);
+	fprintf(f,"edit policy prefix-list%s %s\n", b->family == AF_INET ? "" : "6", bname);
+	sx_radix_tree_foreach(b->tree, bgpq4_print_vyos_prefix, f);
+	fprintf(f,"exit\ncommit\n");
+}
+
 void
 bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 {
@@ -1946,6 +1995,9 @@ bgpq4_print_prefixlist(FILE *f, struct bgpq_expander *b)
 		break;
 	case V_ARISTA:
 		bgpq4_print_arista_prefixlist(f, b);
+		break;
+	case V_VYOS:
+		bgpq4_print_vyos_prefixlist(f, b);
 		break;
 	}
 }
