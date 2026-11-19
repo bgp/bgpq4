@@ -1378,7 +1378,6 @@ bgpq4_print_nokia_md_prefix(struct sx_radix_node *n, void *ff)
 checkSon:
 	if (n->son)
 		bgpq4_print_nokia_md_prefix(n->son, ff);
-
 }
 
 static void
@@ -1765,6 +1764,45 @@ bgpq4_print_nokia_md_prefixlist(FILE *f, struct bgpq_expander *b)
 }
 
 static void
+bgpq4_print_nokia_md_counting_filter(FILE *f, struct bgpq_expander *b)
+{
+	struct asn_entry	*asne;
+	char namebuf[32];
+	char asbuf[16];
+
+	strncpy( namebuf, b->name ? b->name : "NN", sizeof(namebuf) );
+	namebuf[ sizeof(namebuf) - 1 ] = 0;
+
+	// Generate prefix list for all prefixes in each AS
+	RB_FOREACH(asne, asn_tree, &b->asnlist) {
+
+		uint32_t entry = max( asne->asn % 2097152, (uint32_t)1); // entry based on AS, max 2097151
+
+		sprintf(asbuf, "AS%u", entry);
+		b->name = asbuf;
+		bgpq4_print_nokia_md_prefixlist(f,b);
+
+		// Enable auto-id for filters
+		fprintf(f,"/configure filter md-auto-id { filter-id-range { start 1 end 65535 } }\n");
+
+		// Add an entry to match the prefix list to the named IP filters for ingress/egress based on dst/src IP
+		for (int i=0; i<2; ++i) {
+		  // Do not delete, to allow for multiple filter entries for different AS
+		  // fprintf(f,"/configure filter delete %s-filter \"%s-%s\"\n",
+		  //    b->tree->family == AF_INET ? "ip" : "ipv6", namebuf, i==0 ? "in" : "out");
+		  fprintf(f,"/configure filter %s-filter \"%s-%s\" {\n",
+		      b->tree->family == AF_INET ? "ip" : "ipv6", namebuf, i==0 ? "in" : "out");
+		  fprintf(f,"default-action accept\n");
+		  // Note: could add a port number or list of ports to match (say) only web traffic, DNS, etc.
+		  fprintf(f,"entry %u { match { %s-ip { ip-prefix-list \"%s\" } }\naction accept }\n", 
+		      entry, i==0 ? "src" : "dst", asbuf );
+
+		  fprintf(f,"}\n");
+		}
+	}
+}
+
+static void
 bgpq4_print_nokia_md_ipprefixlist(FILE *f, struct bgpq_expander *b)
 {
 	bname = b->name ? b->name : "NN";
@@ -2001,6 +2039,25 @@ bgpq4_print_route_filter_list(FILE *f, struct bgpq_expander *b)
 	switch(b->vendor) {
 	case V_JUNIPER:
 		bgpq4_print_juniper_route_filter_list(f, b);
+		break;
+	default:
+		sx_report(SX_FATAL, "unreachable point\n");
+	}
+}
+
+/*
+ * Creates IP ingress/egress filters each with an entry to match all prefixes
+ * for the given AS. This can be used to collect fine grained statistics about
+ * peering traffic ( i.e. how many packets/bytes are sent to/received from a given AS)
+ * 
+ * Entries for different AS are not cleared, to allow multiple runs for different AS numbers
+ */
+void
+bgpq4_print_counting_filter(FILE *f, struct bgpq_expander *b)
+{
+	switch(b->vendor) {
+	case V_NOKIA_MD:
+		bgpq4_print_nokia_md_counting_filter(f, b);
 		break;
 	default:
 		sx_report(SX_FATAL, "unreachable point\n");
