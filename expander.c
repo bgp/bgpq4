@@ -53,6 +53,13 @@ int debug_expander = 0;
 int pipelining = 1;
 int expand_special_asn = 0;
 
+/*
+ * Upper bound for the length announced in an IRRd "A<len>" reply. It keeps
+ * malloc(togot + 2) from wrapping and the int offset below from overflowing,
+ * while leaving plenty of room for large AS-SET expansions.
+ */
+#define BGPQ_MAX_REPLY_LEN (256UL * 1024UL * 1024UL)
+
 static inline int
 tentry_cmp(struct sx_tentry *a, struct sx_tentry *b)
 {
@@ -738,9 +745,16 @@ have:
 			char		*eon, *c;
 			unsigned long	 offset = 0;
 			unsigned long 	 togot = strtoul(response + 1, &eon, 10);
-			char 		*recvbuffer = malloc(togot + 2);
+			char 		*recvbuffer;
 
-			if (recvbuffer == NULL)
+			if (togot > BGPQ_MAX_REPLY_LEN) {
+				sx_report(SX_ERROR, "A-code length %lu too "
+				    "large (max %lu)\n", togot,
+				    BGPQ_MAX_REPLY_LEN);
+				exit(1);
+			}
+
+			if ((recvbuffer = malloc(togot + 2)) == NULL)
 				err(1, NULL);
 
 			memset(recvbuffer, 0, togot + 2);
@@ -932,11 +946,19 @@ repeat:
 
 	if (response[0] == 'A') {
 		char	*eon, *c;
-		long 	 togot = strtoul(response + 1, &eon, 10);
-		char 	*recvbuffer = malloc(togot + 2);
+		unsigned long len = strtoul(response + 1, &eon, 10);
+		long 	 togot;
+		char 	*recvbuffer;
 		int 	 offset = 0;
 
-		if (!recvbuffer) {
+		if (len > BGPQ_MAX_REPLY_LEN) {
+			sx_report(SX_ERROR, "A-code length %lu too large "
+			    "(max %lu)\n", len, BGPQ_MAX_REPLY_LEN);
+			exit(1);
+		}
+		togot = (long)len;
+
+		if (!(recvbuffer = malloc(togot + 2))) {
 			sx_report(SX_FATAL, "Error allocating %lu bytes: %s\n",
 			    togot + 2, strerror(errno));
 		}
